@@ -1,0 +1,32 @@
+{% load static %}
+<div id="contenido-parcial">
+
+    <div class="col-md-10 content" >
+
+        <img src="{% static 'img/escudo.png' %}" width="40%">
+
+        <div class="row mt-4">
+
+            <div class="col-md-3">
+                <button class="btn btn-success w-100 nav-btn" data-url="/cursos/">Ver Cursos</button>
+            </div>
+
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100 nav-btn" data-url="/evaluaciones/">Presentar
+                    Evaluación</button>
+            </div>
+
+            <div class="col-md-3">
+                <button class="btn btn-warning w-100 nav-btn" data-url="/resultados/">Ver
+                    Resultados</button>
+            </div>
+
+            <div class="col-md-3">
+                <button class="btn btn-info w-100 nav-btn" data-url="/retro/">Evaluar
+                    Instructor</button>
+            </div>
+
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,123 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:url("../img/fondo_login.jpeg") no-repeat center center/cover;
+font-family:'Segoe UI',sans-serif;
+}
+
+/* TARJETA */
+.login-card{
+width:400px;
+height: 500px;
+padding:25px;
+border-radius:15px;
+background:rgba(10, 10, 10, 0.85);
+backdrop-filter: blur(15px);
+color:white;
+box-shadow:0 0 25px rgba(0,0,0,0.7);
+border:1px solid rgba(0,255,100,0.2);
+animation:fadeIn 0.8s ease;
+}
+
+/* LOGO */
+.logo{
+width:120px;
+height: 120px;
+display:block;
+margin:0 auto 15px;
+filter: drop-shadow(0 0 10px rgba(0,255,100,0.5));
+}
+
+/* TITULOS */
+.title{
+text-align:center;
+font-weight:bold;
+font-size:1.4rem;
+}
+
+.subtitle{
+text-align:center;
+font-size:0.9rem;
+color:#bbb;
+margin-bottom:15px;
+}
+
+/* INPUTS */
+.input-group{
+margin-bottom:15px;
+}
+
+.input-group-text{
+background:rgba(255,255,255,0.1);
+border:none;
+color:#ccc;
+}
+
+.form-control{
+background:rgba(255,255,255,0.1);
+border:none;
+color:white;
+}
+
+.form-control::placeholder{
+color:#aaa;
+}
+
+.form-control:focus{
+background:rgba(255,255,255,0.15);
+color:white;
+box-shadow:none;
+}
+
+/* ERROR */
+.error-text{
+color:#ff6b6b;
+font-size:0.8rem;
+margin-bottom:10px;
+text-align:center;
+}
+
+/* BOTON */
+.btn-login{
+background:#1b5e20;
+border:none;
+border-radius:10px;
+padding:10px;
+font-weight:bold;
+transition:0.3s;
+}
+
+.btn-login:hover{
+background:#2e7d32;
+transform:scale(1.03);
+}
+
+/* LINKS */
+.links{
+color:#90caf9;
+font-size:13px;
+}
+
+.links:hover{
+text-decoration:underline;
+}
+
+/* ANIMACION */
+@keyframes fadeIn{
+from{
+opacity:0;
+transform:translateY(20px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}

@@ -1,0 +1,347 @@
+/* =========================
+   BASE
+========================= */
+body {
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(to bottom right, #eef5ef, #dfe6df);
+    color: #1a1a1a;
+    overflow-x: hidden;
+}
+
+/* =========================
+   FONDO DECORATIVO
+========================= */
+.bg-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.07;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.pattern-overlay {
+    width: 100%;
+    height: 100%;
+    background-image:
+        repeating-linear-gradient(60deg, #1a5632 0 2px, transparent 2px 40px),
+        repeating-linear-gradient(-60deg, #1a5632 0 2px, transparent 2px 40px);
+}
+
+/* =========================
+   CONTENEDOR PRINCIPAL
+========================= */
+.background-container {
+    position: relative;
+    background-color: #ffffff;
+    min-height: 100vh;
+    overflow: hidden;
+    z-index: 0;
+}
+
+/* =========================
+   IMAGEN FONDO ÉLITE
+========================= */
+.bg-img {
+    position: absolute;
+    top: 50%;
+    left: 60%;
+    transform: translate(-50%, -50%);
+
+    width: 70%;
+    max-width: 900px;
+
+    z-index: -1;
+    opacity: 0.8;
+
+    animation: float 6s ease-in-out infinite;
+
+    filter:
+        drop-shadow(0 40px 80px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 150, 0.4)) drop-shadow(0 0 80px rgba(0, 150, 255, 0.3));
+}
+
+/* =========================
+   ANIMACIÓN FLOTANTE
+========================= */
+@keyframes float {
+    0% {
+        transform: translate(-50%, -50%) translateY(0px);
+    }
+
+    50% {
+        transform: translate(-50%, -52%) translateY(-10px);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) translateY(0px);
+    }
+}
+
+/* =========================
+   OVERLAY HUD
+========================= */
+.overlay {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+
+}
+
+/* =========================
+   SIDEBAR PRO
+========================= */
+.sidebar {
+    background: linear-gradient(#0d47a1f2,
+            rgba(21, 101, 192, 0.95));
+    color: white;
+    height: 100vh;
+    padding: 20px;
+    box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2);
+    border-top-right-radius: 20px;
+}
+
+/* =========================
+   CONTENIDO
+========================= */
+.content {
+    padding: 20px;
+    animation: fadeIn 1s ease;
+}
+
+/* =========================
+   ANIMACIÓN ENTRADA
+========================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================
+   BOTONES PRO
+========================= */
+.btn {
+    border-radius: 12px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* EFECTO HOVER */
+.btn:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* EFECTO BRILLO */
+.btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg,
+            transparent,
+            rgba(255, 255, 255, 0.6),
+            transparent);
+    transition: 0.5s;
+}
+
+.btn:hover::after {
+    left: 100%;
+}
+
+.imgEscudo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* CONTENEDOR MENU */
+.sidebar-menu {
+    padding: 0;
+    margin-top: 20px;
+}
+
+/* ITEMS */
+.sidebar-menu .nav-item {
+    list-style: none;
+    cursor: pointer;
+}
+
+/* LINKS */
+.sidebar-menu .nav-link {
+    display: block;
+    padding: 12px 15px;
+    color: white;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+/* HOVER */
+.sidebar-menu .nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(5px);
+}
+
+/* ACTIVO 🔥 */
+.sidebar-menu .nav-link.active {
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 198, 255, 0.6);
+}
+
+/* LOADER */
+.loader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.3s ease;
+}
+
+.loader.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* SPINNER */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #ffffff30;
+    border-top: 5px solid #00ffae;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loader p {
+    color: white;
+    margin-top: 10px;
+}
+
+/* TRANSICIÓN CONTENIDO */
+#contenido-dinamico {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-out {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.cursos {
+    background: linear-gradient(135deg, #198754, #0f51328a);
+    color: black;
+    padding: 30px;
+    border-radius: 15px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(0, 255, 150, 0.2);
+
+    animation: fadeInCard 0.6s ease;
+}
+
+/* TÍTULO */
+.cursos h2 {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* TEXTO */
+.cursos p {
+    opacity: 0.9;
+}
+
+/* ANIMACIÓN */
+@keyframes fadeInCard {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CARD BASE */
+.card-curso {
+    padding: 20px;
+    border-radius: 15px;
+    color: white;
+
+    transition: all 0.3s ease;
+
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* HOVER */
+.card-curso:hover {
+    transform: translateY(-8px) scale(1.03);
+}
+
+/* 🟢 VERDE */
+.verde {
+    background: linear-gradient(135deg, #198754, #0f5132);
+    box-shadow: 0 10px 30px rgba(0,255,150,0.3);
+}
+
+/* 🔵 AZUL */
+.azul {
+    background: linear-gradient(135deg, #0d6efd, #084298);
+    box-shadow: 0 10px 30px rgba(0,150,255,0.3);
+}
+
+/* 🔴 ROJO */
+.rojo {
+    background: linear-gradient(135deg, #dc3545, #7a1c24);
+    box-shadow: 0 10px 30px rgba(255,0,0,0.3);
+}
+
+/* BARRA DE PROGRESO */
+.barra {
+    height: 8px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+/* PROGRESO ANIMADO */
+.progreso {
+    height: 100%;
+    background: linear-gradient(90deg, #00ffae, #00c3ff);
+    transition: width 1s ease;
+}

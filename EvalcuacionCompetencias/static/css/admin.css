@@ -1,0 +1,185 @@
+/* =========================
+   BASE
+========================= */
+body {
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(to bottom right, #eef5ef, #dfe6df);
+    /* 🔥 blanco elegante */
+    color: #1e293b;
+    /* 🔥 texto oscuro */
+    overflow-x: hidden;
+    overflow: hidden;
+}
+
+/* =========================
+   FONDO DECORATIVO
+========================= */
+.bg-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.07;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.pattern-overlay {
+    width: 100%;
+    height: 100%;
+    background-image:
+        repeating-linear-gradient(60deg, #1a5632 0 2px, transparent 2px 40px),
+        repeating-linear-gradient(-60deg, #1a5632 0 2px, transparent 2px 40px);
+}
+
+/* =========================
+   CONTENEDOR PRINCIPAL
+========================= */
+.background-container {
+    position: relative;
+    background-color: #ffffff;
+    min-height: 100vh;
+    overflow: hidden;
+    z-index: 0;
+}
+
+/* =========================
+   IMAGEN FONDO ÉLITE
+========================= */
+.bg-img {
+    position: absolute;
+    top: 50%;
+    left: 60%;
+    transform: translate(-50%, -50%);
+
+    width: 70%;
+    max-width: 900px;
+
+    z-index: -1;
+    opacity: 0.8;
+
+    animation: float 6s ease-in-out infinite;
+
+    filter:
+        drop-shadow(0 40px 80px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 40px rgba(0, 255, 150, 0.4)) drop-shadow(0 0 80px rgba(0, 150, 255, 0.3));
+}
+
+/* =========================
+   ANIMACIÓN FLOTANTE
+========================= */
+@keyframes float {
+    0% {
+        transform: translate(-50%, -50%) translateY(0px);
+    }
+
+    50% {
+        transform: translate(-50%, -52%) translateY(-10px);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) translateY(0px);
+    }
+}
+
+/* =========================
+   OVERLAY HUD
+========================= */
+.overlay {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+.sidebar {
+    /*  background: linear-gradient(#000000, #020617);*/
+    background: linear-gradient(#000000,
+            rgba(2, 6, 23, 0.95));
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 220px;
+    color: white;
+    box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2);
+    border-top-right-radius: 20px;
+    z-index: 1000;
+}
+
+/* MENU */
+.sidebar-menu .nav-link {
+    color: #cbd5e1;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.sidebar-menu .nav-link:hover {
+    background: rgba(0, 153, 255, 0.2);
+    color: #38bdf8;
+}
+
+.sidebar-menu .nav-link.active {
+    background: linear-gradient(90deg, #0ea5e9, #2563eb);
+    color: white;
+}
+
+/* =========================
+   CONTENIDO
+========================= */
+.content {
+    padding: 30px;
+    margin-left: 220px;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+/* =========================
+   CARDS (🔥 CAMBIO CLAVE)
+========================= */
+.card-admin {
+    background: #ffffff;
+    /* 🔥 blanco */
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    /* 🔥 sombra elegante */
+    border: none;
+
+    transition: 0.3s;
+}
+
+/* HOVER */
+.card-admin:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* ICONOS */
+.card-admin i {
+    color: #0ea5e9;
+    margin-bottom: 10px;
+}
+
+/* TITULOS */
+.card-admin h5 {
+    color: #334155;
+}
+
+/* NUMEROS */
+.card-admin h2 {
+    color: #0f172a;
+    font-weight: bold;
+}
+
+/* =========================
+   LISTA
+========================= */
+.list-group-item {
+    border: none;
+    color: #1e293b;
+    /* 🔥 texto oscuro */
+}
