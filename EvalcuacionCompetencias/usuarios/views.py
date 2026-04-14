@@ -11,14 +11,21 @@ from .models import Perfil
 def login_view(request):
     if request.method == 'POST':
 
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email = (request.POST.get('email') or '').strip().lower()
+        password = request.POST.get('password') or ''
 
         if not email.endswith('@ejercito.mil.co'):
             messages.error(request, 'Correo no válido')
             return render(request, 'layout/login.html')
 
         user = authenticate(request, username=email, password=password)
+
+        if user is None:
+            try:
+                usuario = User.objects.get(email__iexact=email)
+                user = authenticate(request, username=usuario.username, password=password)
+            except User.DoesNotExist:
+                user = None
 
         if user is not None:
             login(request, user)
@@ -46,12 +53,12 @@ def login_view(request):
 def registro_view(request):
     if request.method == 'POST':
 
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email = (request.POST.get('email') or '').strip().lower()
+        password = request.POST.get('password') or ''
         rol = request.POST.get('rol')
 
         if not email.endswith('@ejercito.mil.co'):
-            return render(request, 'layout/registro.html', {
+            return render(request, 'registro.html', {
                 'error': 'Debe usar correo institucional'
             })
 
@@ -92,6 +99,31 @@ def admin_dashboard(request):
 @rol_requerido('instructor')
 def instructor_dashboard(request):
     return render(request, 'instructor.html')
+
+
+@rol_requerido('instructor')
+def instructor_inicio(request):
+    return render(request, 'instructor_inicio.html')
+
+
+@rol_requerido('instructor')
+def instructor_cursos(request):
+    return render(request, 'instructor_cursos.html')
+
+
+@rol_requerido('instructor')
+def instructor_evaluaciones(request):
+    return render(request, 'instructor_evaluaciones.html')
+
+
+@rol_requerido('instructor')
+def instructor_soldados(request):
+    return render(request, 'instructor_soldados.html')
+
+
+@rol_requerido('instructor')
+def instructor_reportes(request):
+    return render(request, 'instructor_reportes.html')
 
 
 @rol_requerido('soldado')

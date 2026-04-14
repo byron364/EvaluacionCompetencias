@@ -10,6 +10,11 @@ urlpatterns = [
     # 📊 Dashboards
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('instructor-dashboard/', instructor_dashboard, name='instructor_dashboard'),
+    path('instructor/inicio/', instructor_inicio, name='instructor_inicio'),
+    path('instructor/cursos/', instructor_cursos, name='instructor_cursos'),
+    path('instructor/evaluaciones/', instructor_evaluaciones, name='instructor_evaluaciones'),
+    path('instructor/soldados/', instructor_soldados, name='instructor_soldados'),
+    path('instructor/reportes/', instructor_reportes, name='instructor_reportes'),
     path('soldado-dashboard/', soldado_dashboard, name='soldado_dashboard'),
     path('soldado/', soldado_dashboard),  # 👈 AGREGA ESTA
 

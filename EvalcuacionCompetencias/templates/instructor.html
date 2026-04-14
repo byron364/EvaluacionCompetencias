@@ -1,2 +1,140 @@
-<h1>🟡 Panel Instructor</h1>
-<a href="/logout/">Cerrar sesión</a>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Instructor</title>
+    <link rel="icon" href="{% static 'img/escudo.png' %}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/instructor.css' %}">
+</head>
+<body>
+    <div class="bg-pattern">
+        <div class="pattern-overlay"></div>
+    </div>
+
+    <div class="background-container">
+        <img src="{% static 'img/paracaidista.png' %}" class="bg-img" alt="Fondo institucional">
+
+        <div class="overlay">
+            <div class="sidebar">
+                <div class="profile-block">
+                    <img src="{% static 'img/EJC2026bl.png' %}" alt="Logo Ejército">
+                    <h5>Instructor</h5>
+                    <p class="role-label">Centro educativo militar</p>
+                </div>
+
+                <hr class="border-secondary">
+
+                <ul class="nav flex-column sidebar-menu">
+                    <li class="nav-item"><a class="nav-link nav-link-spa active" data-url="/instructor/inicio/">Panel principal</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-spa" data-url="/instructor/cursos/">Mis cursos</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-spa" data-url="/instructor/evaluaciones/">Calificar</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-spa" data-url="/instructor/soldados/">Ver soldados</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-spa" data-url="/instructor/reportes/">Subir resultados</a></li>
+                    <li class="nav-item"><a class="nav-link logout-link" href="/logout/">Cerrar sesión</a></li>
+                </ul>
+            </div>
+
+            <div class="content" id="contenido-dinamico"></div>
+        </div>
+    </div>
+
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p>Cargando módulo del instructor...</p>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const content = document.getElementById("contenido-dinamico");
+            const loader = document.getElementById("loader");
+            const HOME_URL = "/instructor/inicio/";
+
+            function activarMenu(url) {
+                document.querySelectorAll(".nav-link-spa").forEach(link => {
+                    link.classList.remove("active");
+                    if (url.startsWith(link.dataset.url)) {
+                        link.classList.add("active");
+                    }
+                });
+            }
+
+            function activarEventosContenido() {
+                document.querySelectorAll(".nav-btn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const url = this.dataset.url;
+                        if (url) {
+                            cargarVista(url);
+                        }
+                    });
+                });
+            }
+
+            function cargarVista(url, addToHistory = true) {
+                loader.classList.add("active");
+                content.classList.add("fade-out");
+
+                fetch(url)
+                    .then(response => response.text())
+                    .then(data => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(data, "text/html");
+                        const nuevoContenido = doc.getElementById("contenido-parcial");
+
+                        setTimeout(() => {
+                            if (nuevoContenido) {
+                                content.innerHTML = nuevoContenido.outerHTML;
+                            } else {
+                                window.location.href = "/";
+                                return;
+                            }
+
+                            content.classList.remove("fade-out");
+                            content.classList.add("fade-in");
+                            loader.classList.remove("active");
+                            activarEventosContenido();
+                        }, 220);
+
+                        activarMenu(url);
+
+                        if (addToHistory) {
+                            history.pushState({ url: url }, "", url);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        loader.classList.remove("active");
+                    });
+            }
+
+            document.querySelectorAll(".nav-link-spa").forEach(link => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const url = this.dataset.url;
+                    activarMenu(url);
+                    cargarVista(url);
+                });
+            });
+
+            window.onpopstate = function (event) {
+                const url = (event.state && event.state.url) ? event.state.url : HOME_URL;
+                cargarVista(url, false);
+            };
+
+            if (location.pathname === "/" || location.pathname === "/instructor-dashboard/") {
+                cargarVista(HOME_URL, false);
+                activarMenu(HOME_URL);
+            } else if (location.pathname.startsWith("/instructor/")) {
+                cargarVista(location.pathname, false);
+                activarMenu(location.pathname);
+            } else {
+                cargarVista(HOME_URL, false);
+                activarMenu(HOME_URL);
+            }
+        });
+    </script>
+</body>
+</html>

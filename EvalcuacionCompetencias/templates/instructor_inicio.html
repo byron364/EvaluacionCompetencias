@@ -1,0 +1,114 @@
+{% load static %}
+<div id="contenido-parcial">
+    <div class="text-center mb-4">
+        <img src="{% static 'img/escudo.png' %}" width="26%" class="mb-3" alt="Escudo">
+    </div>
+
+    <div class="hero-card mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="hero-title">Panel de Instructor</h1>
+                <p class="hero-subtitle">Gestiona cursos, califica evaluaciones y acompaña el avance del personal asignado.</p>
+                <span class="badge-soft badge-blue"><i class="fa fa-book-open me-1"></i> 4 cursos activos</span>
+                <span class="badge-soft badge-gold"><i class="fa fa-user-graduate me-1"></i> 38 soldados asignados</span>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <button class="btn btn-primary quick-action nav-btn me-2 mb-2" data-url="/instructor/evaluaciones/"><i class="fa fa-file-pen me-1"></i>Calificar ahora</button>
+                <button class="btn btn-outline-dark quick-action nav-btn mb-2" data-url="/instructor/reportes/"><i class="fa fa-chart-column me-1"></i>Subir resultados</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <i class="fa fa-book"></i>
+                <p>Cursos activos</p>
+                <h2>4</h2>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <i class="fa fa-file-pen"></i>
+                <p>Evaluaciones pendientes</p>
+                <h2>12</h2>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <i class="fa fa-users"></i>
+                <p>Soldados asignados</p>
+                <h2>38</h2>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <i class="fa fa-award"></i>
+                <p>Promedio general</p>
+                <h2>91%</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="info-card">
+                <div class="section-title">Actividades por revisar</div>
+
+                <div class="task-item">
+                    <div>
+                        <strong>Evaluación de Combate Básico</strong>
+                        <span>8 respuestas pendientes de calificación</span>
+                    </div>
+                    <span class="status-pill status-pending">Pendiente</span>
+                </div>
+
+                <div class="task-item">
+                    <div>
+                        <strong>Lista de asistencia del módulo táctico</strong>
+                        <span>Validar antes del cierre del día</span>
+                    </div>
+                    <span class="status-pill status-progress">En proceso</span>
+                </div>
+
+                <div class="task-item">
+                    <div>
+                        <strong>Publicar resultados del módulo de liderazgo</strong>
+                        <span>Listo para compartir con la compañía</span>
+                    </div>
+                    <span class="status-pill status-ready">Listo</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="info-card">
+                <div class="section-title">Accesos rápidos</div>
+
+                <div class="session-item">
+                    <div>
+                        <strong>Calificar evaluación</strong>
+                        <span>Revisa respuestas pendientes</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary nav-btn" data-url="/instructor/evaluaciones/">Abrir</button>
+                </div>
+
+                <div class="session-item">
+                    <div>
+                        <strong>Ver soldados</strong>
+                        <span>Consulta estado por curso</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary nav-btn" data-url="/instructor/soldados/">Abrir</button>
+                </div>
+
+                <div class="session-item">
+                    <div>
+                        <strong>Subir resultados</strong>
+                        <span>Publica notas y observaciones</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-dark nav-btn" data-url="/instructor/reportes/">Abrir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

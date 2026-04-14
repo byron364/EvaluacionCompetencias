@@ -28,15 +28,24 @@
     <h4 class="title">Sistema de Evaluación</h4>
     <p class="subtitle">Acceso seguro - Ejército Nacional</p>
 
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-danger py-2" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
     <!-- FORMULARIO -->
-<form method="POST">
+<form method="POST" id="loginForm">
     {% csrf_token %}
 
     <!-- EMAIL -->
     <div class="input-group">
         <span class="input-group-text"><i class="fa fa-user"></i></span>
-        <input type="email" name="email" class="form-control" placeholder="Correo institucional" required>
+        <input id="email" type="email" name="email" class="form-control" placeholder="Correo institucional" required>
     </div>
+    <div id="emailError" class="text-danger small mt-1 mb-2"></div>
 
     <!-- PASSWORD -->
     <div class="input-group">
