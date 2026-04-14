@@ -75,8 +75,12 @@ WSGI_APPLICATION = 'EvalcuacionCompetencias.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'evaluacion_competencias',
+        'USER': 'root',
+        'PASSWORD': 'root',  # 👈 pon tu contraseña aquí
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
