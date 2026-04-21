@@ -150,3 +150,13 @@ def retroalimentacion(request):
 
 def inicio(request):
     return render(request, 'inicio.html')
+
+# ADMIN SPA VISTAS
+def admin_usuarios(request):
+    return render(request, 'admin_usuarios.html')
+
+def admin_cursos(request):
+    return render(request, 'admin_cursos.html')
+
+def admin_reportes(request):
+    return render(request, 'admin_reportes.html')

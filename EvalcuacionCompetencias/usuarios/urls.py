@@ -17,6 +17,9 @@ urlpatterns = [
     path('instructor/reportes/', instructor_reportes, name='instructor_reportes'),
     path('soldado-dashboard/', soldado_dashboard, name='soldado_dashboard'),
     path('soldado/', soldado_dashboard),  # 👈 AGREGA ESTA
+    path('usuarios/', admin_usuarios, name='usuarios'),
+    path('cursos/', admin_cursos, name='cursos'),
+    path('reportes/', admin_reportes, name='reportes'),
 
 
     # 🚀 SPA (VISTAS DINÁMICAS)

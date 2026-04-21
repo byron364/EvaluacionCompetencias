@@ -125,9 +125,7 @@ body {
     color: white;
 }
 
-/* =========================
-   CONTENIDO
-========================= */
+
 .content {
     padding: 30px;
     margin-left: 220px;
@@ -135,9 +133,6 @@ body {
     overflow-y: auto;
 }
 
-/* =========================
-   CARDS (🔥 CAMBIO CLAVE)
-========================= */
 .card-admin {
     background: #ffffff;
     /* 🔥 blanco */
