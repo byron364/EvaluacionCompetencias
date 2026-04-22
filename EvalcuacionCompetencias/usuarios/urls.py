@@ -20,6 +20,8 @@ urlpatterns = [
     path('usuarios/', admin_usuarios, name='usuarios'),
     path('cursos/', admin_cursos, name='cursos'),
     path('reportes/', admin_reportes, name='reportes'),
+    path('admin-dashboard-partial/', admin_dashboard_partial),
+    path('crear-usuario/', crear_usuario, name='crear_usuario'),
 
 
     # 🚀 SPA (VISTAS DINÁMICAS)

@@ -1,0 +1,150 @@
+{% load static %}
+
+<div id="contenido-parcial">
+
+    <!-- HEADER -->
+    <div class="mb-4">
+        <h2 class="text-white"><i class="fa fa-users"></i> Gestión de Usuarios</h2>
+        <p class="text-light">Administra soldados e instructores de la plataforma</p>
+    </div>
+
+    <!-- CARDS RESUMEN -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card-admin text-center">
+                <h6>Usuarios Totales</h6>
+                <h3>126</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-admin text-center">
+                <h6>Instructores</h6>
+                <h3>18</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-admin text-center">
+                <h6>Soldados</h6>
+                <h3>108</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-admin text-center">
+                <h6>Activos</h6>
+                <h3>122</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- FORMULARIOS -->
+    <div class="row">
+
+        <!-- CREAR USUARIO -->
+        <div class="col-md-6">
+            <div class="card-admin p-4">
+                <h5>Crear Usuario Individual</h5>
+
+                <div class="mb-3">
+                    <select class="form-control" id="rol">
+                        <option value="soldado">Soldado</option>
+                        <option value="instructor">Instructor</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <input type="text" class="form-control" placeholder="Nombres" id="nombres">
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <input type="text" class="form-control" placeholder="Apellidos" id="apellidos">
+                    </div>
+                </div>
+
+                <input type="email" class="form-control mb-2" placeholder="Correo institucional" id="email">
+
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <input type="text" class="form-control" placeholder="Documento" id="documento">
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <input type="text" class="form-control" placeholder="Unidad" id="unidad">
+                    </div>
+                </div>
+                <button id="btnCrearUsuario" class="btn btn-success w-100 mt-2">
+                    <i class="fa fa-user-plus"></i>Crear Usuario
+                </button>
+
+            </div>
+        </div>
+
+        <!-- CARGA MASIVA -->
+        <div class="col-md-6">
+            <div class="card-admin p-4">
+                <h5>Cargar Usuarios desde Excel</h5>
+
+                <div class="mb-3">
+                    <select class="form-control">
+                        <option>Soldados</option>
+                        <option>Instructores</option>
+                    </select>
+                </div>
+
+                <div class="border p-4 text-center rounded mb-3" style="border: 2px dashed #28a745;">
+                    <i class="fa fa-file-excel fa-2x text-success"></i>
+                    <p class="mt-2">Arrastra o selecciona archivo Excel</p>
+                    <input type="file" class="form-control">
+                </div>
+
+                <a href="#" class="text-success">Descargar plantilla</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABLA -->
+    <div class="card-admin mt-4 p-3">
+        <h5>Listado de Usuarios</h5>
+
+        <input type="text" class="form-control mb-3" placeholder="Buscar usuario...">
+
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th>Correo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td>Juan Pérez</td>
+                        <td><span class="badge bg-success">Soldado</span></td>
+                        <td>juan@ejercito.mil.co</td>
+                        <td><span class="badge bg-success">Activo</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-warning"><i class="fa fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>María López</td>
+                        <td><span class="badge bg-primary">Instructor</span></td>
+                        <td>maria@ejercito.mil.co</td>
+                        <td><span class="badge bg-success">Activo</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-warning"><i class="fa fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

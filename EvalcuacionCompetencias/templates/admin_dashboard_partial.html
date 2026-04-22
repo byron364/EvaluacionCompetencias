@@ -1,0 +1,94 @@
+{% load static %}
+<div id="contenido-parcial">
+    <div class="CompromisoColombia d-flex justify-content-center">
+        <img src="{% static 'img/CompromisoColombia.png' %}" width="40%" class="img-fluid">
+    </div>
+    <div class="row g-4">
+
+        <div class="col-md-3">
+            <div class="card-admin">
+                <i class="fa fa-users fa-2x"></i>
+                <h5>Usuarios</h5>
+                <h2>120</h2>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card-admin">
+                <i class="fa fa-book fa-2x"></i>
+                <h5>Cursos</h5>
+                <h2>35</h2>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card-admin">
+                <i class="fa fa-chart-line fa-2x"></i>
+                <h5>Evaluaciones</h5>
+                <h2>89</h2>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card-admin">
+                <i class="fa fa-check-circle fa-2x"></i>
+                <h5>Aprobados</h5>
+                <h2>72%</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-5">
+
+        <div class="col-md-8">
+            <div class="card-admin">
+                <h5>Rendimiento mensual</h5>
+                <canvas id="grafica"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card-admin">
+                <h5>Actividad reciente</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item bg-transparent text-white">
+                        Usuario nuevo registrado
+                    </li>
+                    <li class="list-group-item bg-transparent text-white">
+                        Curso actualizado
+                    </li>
+                    <li class="list-group-item bg-transparent text-white">
+                        Evaluación completada
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- LOADER -->
+<div id="loader" class="loader">
+    <div class="spinner"></div>
+    <p>Cargando módulo...</p>
+</div>
+
+<!-- SCRIPT GRAFICA -->
+<script>
+    const ctx = document.getElementById('grafica');
+
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Usuarios activos',
+                    data: [10, 25, 18, 30, 45, 60],
+                    borderWidth: 2,
+                    tension: 0.4
+                }]
+            }
+        });
+    }
+</script>

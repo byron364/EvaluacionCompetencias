@@ -8,7 +8,7 @@
     <title>Administrador</title>
     <link rel="icon" href="{% static 'img/escudo.png' %}" type="image/png">
 
-    ```
+
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -20,13 +20,14 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-    ```
+
 
 </head>
 
 <body>
+    <!-- CONTENEDOR GLOBAL TOAST -->
+    <div id="toast-container"></div>
 
-    ```
     <!-- FONDO DECORATIVO -->
     <div class="bg-pattern">
         <div class="pattern-overlay"></div>
@@ -52,7 +53,8 @@
                         <hr>
 
                         <ul class="nav flex-column sidebar-menu">
-                            <li><a class="nav-link nav-link-spa active" data-url="/admin-dashboard/">Dashboard</a></li>
+                            <li><a class="nav-link nav-link-spa active" data-url="/admin-dashboard-partial/">Inicio</a>
+                            </li>
                             <li><a class="nav-link nav-link-spa" data-url="/usuarios/">Usuarios</a></li>
                             <li><a class="nav-link nav-link-spa" data-url="/cursos/">Cursos</a></li>
                             <li><a class="nav-link nav-link-spa" data-url="/reportes/">Reportes</a></li>
@@ -143,109 +145,124 @@
         <p>Cargando módulo...</p>
     </div>
 
-    <!-- SCRIPT GRAFICA -->
-    <script>
-        const ctx = document.getElementById('grafica');
-
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Usuarios activos',
-                        data: [10, 25, 18, 30, 45, 60],
-                        borderWidth: 2,
-                        tension: 0.4
-                    }]
-                }
-            });
-        }
-    </script>
-
-    <!-- SCRIPT SPA -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
             const content = document.getElementById("contenido-dinamico");
-            const HOME_URL = "/admin-dashboard/";
+            const HOME_URL = "/admin-dashboard-partial/";
 
             function cargarVista(url, addToHistory = true) {
 
                 const loader = document.getElementById("loader");
-
-                loader.classList.add("active");
-                content.classList.add("fade-out");
+                loader.style.display = "block";
 
                 fetch(url)
-                    .then(response => response.text())
+                    .then(res => res.text())
                     .then(data => {
 
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(data, "text/html");
-                        const nuevoContenido = doc.getElementById("contenido-parcial");
+                        const nuevo = doc.getElementById("contenido-parcial");
 
-                        setTimeout(() => {
+                        if (nuevo) {
+                            content.innerHTML = nuevo.outerHTML;
+                        }
 
-                            if (nuevoContenido) {
-                                content.innerHTML = nuevoContenido.outerHTML;
-                            }
-
-                            content.classList.remove("fade-out");
-                            content.classList.add("fade-in");
-
-                            loader.classList.remove("active");
-
-                        }, 300);
-
-                        activarMenu(url);
+                        loader.style.display = "none";
 
                         if (addToHistory) {
                             history.pushState({ url: url }, "", url);
                         }
-
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                        loader.classList.remove("active");
                     });
-            }
-
-            function activarMenu(url) {
-                document.querySelectorAll(".nav-link-spa").forEach(link => {
-                    link.classList.remove("active");
-
-                    if (url.startsWith(link.dataset.url)) {
-                        link.classList.add("active");
-                    }
-                });
             }
 
             document.querySelectorAll(".nav-link-spa").forEach(link => {
                 link.addEventListener("click", function (e) {
                     e.preventDefault();
-                    let url = this.dataset.url;
-                    activarMenu(url);
-                    cargarVista(url);
+                    cargarVista(this.dataset.url);
                 });
             });
 
-            window.onpopstate = function (event) {
-                let url = (event.state && event.state.url) ? event.state.url : location.pathname;
-                cargarVista(url, false);
-            };
-
-            if (location.pathname === "/" || location.pathname === "/admin-dashboard/") {
-                cargarVista(HOME_URL, false);
-                activarMenu(HOME_URL);
-            } else {
-                cargarVista(location.pathname, false);
-                activarMenu(location.pathname);
-            }
-
+            cargarVista(HOME_URL, false);
         });
     </script>
-    ```
+
+    <script>
+        document.addEventListener("click", function (e) {
+            if (e.target.closest("#btnCrearUsuario")) {
+                crearUsuario();
+            }
+        });
+    </script>
+
+    <script>
+        window.crearUsuario = function () {
+
+            const data = {
+                nombres: document.getElementById("nombres")?.value.trim(),
+                apellidos: document.getElementById("apellidos")?.value.trim(),
+                email: document.getElementById("email")?.value.trim(),
+                documento: document.getElementById("documento")?.value.trim(),
+                unidad: document.getElementById("unidad")?.value.trim(),
+                grado: "",
+                rol: document.getElementById("rol")?.value
+            };
+
+            if (!data.nombres || !data.apellidos || !data.email || !data.documento) {
+                mostrarToast("⚠️ Completa los campos obligatorios", "warning");
+                return;
+            }
+
+            if (!data.email.endsWith("@ejercito.mil.co")) {
+                mostrarToast("⚠️ Debe ser correo institucional", "warning");
+                return;
+            }
+
+            fetch("/crear-usuario/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(res => {
+
+                    if (res.error) {
+                        mostrarToast("❌ " + res.error, "error");
+                    } else {
+                        mostrarToast("✅ Usuario creado correctamente", "success");
+
+                        document.getElementById("nombres").value = "";
+                        document.getElementById("apellidos").value = "";
+                        document.getElementById("email").value = "";
+                        document.getElementById("documento").value = "";
+                        document.getElementById("unidad").value = "";
+                    }
+                })
+                .catch(() => {
+                    mostrarToast("❌ Error en el servidor", "error");
+                });
+        };
+    </script>
+    <script>
+        window.mostrarToast = function (mensaje, tipo = "success") {
+
+            const container = document.getElementById("toast-container");
+
+            const toast = document.createElement("div");
+            toast.className = `toast-custom toast-${tipo}`;
+
+            const texto = document.createElement("span");
+            texto.textContent = mensaje;
+
+            toast.appendChild(texto);
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        };
+    </script>
 
 </body>
 
