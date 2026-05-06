@@ -62,4 +62,19 @@ urlpatterns = [
         "crear-curso/", 
         views.crear_curso, 
         name="crear_curso" ),
+
+    path(
+        'listar-cursos/',
+          views.listar_cursos,
+            name='listar_cursos' ),
+    
+    path(
+    'editar-curso/<int:curso_id>/',
+    views.editar_curso,
+    name='editar_curso' ),
+
+    path(
+    'eliminar-curso/<int:curso_id>/',
+    views.eliminar_curso,
+    name='eliminar_curso' ),
 ]

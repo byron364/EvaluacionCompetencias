@@ -9,10 +9,6 @@
 
     <div class="card-admin p-4">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-
-            <input type="text" class="form-control w-50" placeholder="Buscar cursos...">
-
             <div class="d-flex justify-content-end mb-4">
                 <button class="btn btn-success" onclick="abrirModalCurso()">
                     <i class="fa fa-plus-circle"></i>
@@ -20,61 +16,125 @@
                 </button>
             </div>
 
-        </div>
+        <!-- TABLA CURSOS -->
+        <div class="card-admin mt-4 p-3">
 
-        <div class="table-responsive">
-            <table id="tablaCursos" class="table table-dark table-hover">
+            <h5>Listado de Cursos</h5>
 
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Curso</th>
-                        <th>Instructor</th>
-                        <th>Fecha Inicio</th>
-                        <th>Fecha Fin</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
+            <div class="table-responsive">
 
-                <tbody>
+                <table id="tablaCursos" class="table table-dark table-hover">
 
-                    <tr>
-                        <td>CUR-001</td>
-                        <td>Competencias Militares</td>
-                        <td>Instructor Ejército</td>
-                        <td>2026-05-01</td>
-                        <td>2026-06-30</td>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Curso</th>
+                            <th>Instructor</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
 
-                        <td>
-                            <span class="badge bg-success">
-                                Activo
-                            </span>
-                        </td>
+                    <tbody>
 
-                        <td>
+                        {% for curso in cursos %}
 
-                            <button class="btn btn-info btn-sm">
-                                <i class="fa fa-eye"></i>
-                            </button>
+                        <tr class="fila-curso">
 
-                            <button class="btn btn-warning btn-sm">
-                                <i class="fa fa-edit"></i>
-                            </button>
+                            <!-- CODIGO -->
+                            <td>
+                                {{ curso.codigo }}
+                            </td>
 
-                            <button class="btn btn-danger btn-sm">
-                                <i class="fa fa-trash"></i>
-                            </button>
+                            <!-- NOMBRE -->
+                            <td>
+                                {{ curso.nombre }}
+                            </td>
 
-                        </td>
-                    </tr>
+                            <!-- INSTRUCTOR -->
+                            <td>
+                                {{ curso.instructor.first_name }}
+                                {{ curso.instructor.last_name }}
+                            </td>
 
-                </tbody>
+                            <!-- FECHA INICIO -->
+                            <td>
+                                {{ curso.fecha_inicio }}
+                            </td>
 
-            </table>
+                            <!-- FECHA FIN -->
+                            <td>
+                                {{ curso.fecha_fin }}
+                            </td>
+
+                            <!-- ESTADO -->
+                            <td>
+
+                                {% if curso.activo %}
+                                <span class="badge bg-success">
+                                    Activo
+                                </span>
+
+                                {% else %}
+                                <span class="badge bg-danger">
+                                    Inactivo
+                                </span>
+                                {% endif %}
+
+                            </td>
+
+                            <!-- ACCIONES -->
+                            <td>
+
+                                <!-- VER -->
+                                <button class="btn btn-info btn-sm btn-ver" data-id="{{ curso.id }}">
+                                    <i id="buttontable" class="fa fa-eye">
+                                    </i>
+                                </button>
+
+                                <!-- EDITAR -->
+                                <button class="btn btn-warning btn-sm btn-editar-curso" data-id="{{ curso.id }}"
+                                    data-codigo="{{ curso.codigo }}" data-nombre="{{ curso.nombre }}"
+                                    data-descripcion="{{ curso.descripcion }}"
+                                    data-instructor="{{ curso.instructor.id }}"
+                                    data-fecha_inicio="{{ curso.fecha_inicio|date:'Y-m-d' }}" data-fecha_fin="{{ curso.fecha_fin|date:'Y-m-d' }}"
+                                    data-cupo="{{ curso.cupo_maximo }}">
+                                    <i id="buttontable" class="fa fa-edit">
+                                    </i>
+                                </button>
+
+                                <!-- ELIMINAR -->
+                                <button class="btn btn-danger btn-sm btn-eliminar-curso" data-id="{{ curso.id }}">
+                                    <i id="buttontable" class="fa fa-trash">
+                                    </i>
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="7" class="text-center">
+
+                                No hay cursos registrados
+
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
         </div>
 
     </div>
 
 </div>
-

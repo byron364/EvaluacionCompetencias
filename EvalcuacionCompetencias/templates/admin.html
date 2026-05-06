@@ -200,6 +200,29 @@
                                 });
                             }
                         }
+                        // TABLA CURSOS
+                        if ($("#tablaCursos").length) {
+
+                            $("#tablaCursos").DataTable({
+                                pageLength: 5,
+                                lengthChange: false,
+                                ordering: true,
+                                searching: true,
+                                info: true,
+                                destroy: true,
+
+                                language: {
+                                    search: "Buscar curso:",
+                                    zeroRecords: "No se encontraron cursos",
+                                    info: "Mostrando _START_ a _END_ de _TOTAL_ cursos",
+                                    infoEmpty: "No hay cursos disponibles",
+                                    paginate: {
+                                        previous: "Anterior",
+                                        next: "Siguiente"
+                                    }
+                                }
+                            });
+                        }
 
                         // Ocultar loader al terminar
                         setTimeout(() => { loader.classList.remove("active"); content.classList.remove("fade-out"); content.classList.add("fade-in"); }, 500);
@@ -584,6 +607,110 @@
             </div>
         </div>
     </div>
+    <!-- MODAL EDITAR CURSO -->
+    <div class="modal fade" id="modalEditarCurso" tabindex="-1">
+
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-warning">
+
+                    <h4 class="modal-title">
+                        <i class="fa fa-edit"></i>
+                        Editar Curso
+                    </h4>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <!-- BODY -->
+                <div class="modal-body">
+
+                    <input type="hidden" id="editarCursoId">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label>Código</label>
+
+                            <input type="text" id="editarCodigoCurso" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Nombre</label>
+
+                            <input type="text" id="editarNombreCurso" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Instructor</label>
+
+                            <select id="editarInstructorCurso" class="form-control">
+
+                                {% for instructor in instructores %}
+                                <option value="{{ instructor.id }}">
+                                    {{ instructor.first_name }}
+                                    {{ instructor.last_name }}
+                                </option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Descripción</label>
+
+                            <textarea id="editarDescripcionCurso" class="form-control" rows="4">
+                        </textarea>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Fecha Inicio</label>
+
+                            <input type="date" id="editarFechaInicioCurso" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Fecha Fin</label>
+
+                            <input type="date" id="editarFechaFinCurso" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Cupo Máximo</label>
+
+                            <input type="number" id="editarCupoCurso" class="form-control">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button class="btn btn-warning" onclick="guardarEdicionCurso()">
+
+                        <i class="fa fa-save"></i>
+                        Guardar Cambios
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
     <script>
         window.crearCurso = function () {
 
@@ -632,7 +759,212 @@
                 });
         };
     </script>
+    <script>
 
+        document.addEventListener("click", function (e) {
+
+            const boton = e.target.closest(".btn-editar-curso");
+
+            if (!boton) return;
+
+            document.getElementById("editarCursoId").value =
+                boton.dataset.id;
+
+            document.getElementById("editarCodigoCurso").value =
+                boton.dataset.codigo;
+
+            document.getElementById("editarNombreCurso").value =
+                boton.dataset.nombre;
+
+            document.getElementById("editarDescripcionCurso").value =
+                boton.dataset.descripcion;
+
+            document.getElementById("editarInstructorCurso").value =
+                boton.dataset.instructor;
+
+            document.getElementById("editarFechaInicioCurso").value =
+                boton.dataset.fecha_inicio;
+
+            document.getElementById("editarFechaFinCurso").value =
+                boton.dataset.fecha_fin;
+
+            document.getElementById("editarCupoCurso").value =
+                boton.dataset.cupo;
+
+            const modal = new bootstrap.Modal(
+                document.getElementById("modalEditarCurso")
+            );
+
+            modal.show();
+
+        });
+
+    </script>
+    <script>
+
+        window.guardarEdicionCurso = function () {
+
+            const cursoId =
+                document.getElementById("editarCursoId").value;
+
+            const data = {
+
+                codigo:
+                    document.getElementById("editarCodigoCurso").value,
+
+                nombre:
+                    document.getElementById("editarNombreCurso").value,
+
+                descripcion:
+                    document.getElementById("editarDescripcionCurso").value,
+
+                instructor:
+                    document.getElementById("editarInstructorCurso").value,
+
+                fecha_inicio:
+                    document.getElementById("editarFechaInicioCurso").value,
+
+                fecha_fin:
+                    document.getElementById("editarFechaFinCurso").value,
+
+                cupo_maximo:
+                    document.getElementById("editarCupoCurso").value
+            };
+
+            fetch(`/editar-curso/${cursoId}/`, {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(data)
+
+            })
+                .then(res => res.json())
+                .then(res => {
+
+                    if (res.error) {
+
+                        mostrarToast(res.error, "error");
+
+                    } else {
+
+                        mostrarToast(
+                            "Curso actualizado correctamente",
+                            "success"
+                        );
+
+                        location.reload();
+                    }
+
+                });
+
+        }
+
+    </script>
+    <script>
+
+        document.addEventListener("click", async function (e) {
+
+            const boton = e.target.closest(".btn-eliminar-curso");
+
+            if (!boton) return;
+
+            e.preventDefault();
+
+            const cursoId = boton.dataset.id;
+
+            const result = await Swal.fire({
+
+                title: "¿Eliminar curso?",
+
+                text: "Esta acción no se puede deshacer",
+
+                icon: "warning",
+
+                showCancelButton: true,
+
+                confirmButtonColor: "#198754",
+
+                cancelButtonColor: "#dc3545",
+
+                confirmButtonText: "Sí, eliminar",
+
+                cancelButtonText: "Cancelar"
+
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+
+                const response = await fetch(
+
+                    `/eliminar-curso/${cursoId}/`,
+
+                    {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                if (data.error) {
+
+                    mostrarToast(data.error, "error");
+                    return;
+                }
+
+                // ELIMINAR FILA VISUALMENTE
+                const fila = boton.closest("tr");
+
+                // SI EXISTE DATATABLE
+                if ($.fn.DataTable.isDataTable("#tablaCursos")) {
+
+                    const tabla =
+                        $("#tablaCursos").DataTable();
+
+                    tabla
+                        .row(fila)
+                        .remove()
+                        .draw(false);
+
+                } else {
+
+                    fila.remove();
+
+                }
+
+                Swal.fire({
+
+                    title: "Eliminado",
+
+                    text: "Curso eliminado correctamente",
+
+                    icon: "success",
+
+                    confirmButtonColor: "#198754"
+
+                });
+
+            } catch (error) {
+
+                console.error(error);
+
+                mostrarToast(
+                    "Error eliminando curso",
+                    "error"
+                );
+            }
+
+        });
+
+    </script>
 </body>
 
 </html>
