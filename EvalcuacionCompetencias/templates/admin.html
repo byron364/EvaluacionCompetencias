@@ -18,6 +18,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
 
@@ -41,14 +44,14 @@
         <div class="overlay">
 
             <div class="container-fluid">
+                <button id="menuToggle" class="menu-toggle"> <i class="fa fa-bars"></i> </button>
                 <div class="row">
-
-                    <!-- SIDEBAR -->
                     <div class="col-md-2 sidebar">
                         <div class="text-center mb-4">
                             <img src="{% static 'img/EJC2026bl.png' %}" width="70">
                             <h5>Administrador</h5>
-                            <p>Nombre Admin</p>
+                            <p>{{ request.user.first_name }}
+                                {{ request.user.last_name }}</p>
                         </div>
                         <hr>
 
@@ -149,13 +152,15 @@
         document.addEventListener("DOMContentLoaded", function () {
 
             const content = document.getElementById("contenido-dinamico");
+            const loader = document.getElementById("loader");
             const HOME_URL = "/admin-dashboard-partial/";
 
-            function cargarVista(url, addToHistory = true) {
+            function cargarVista(url, guardar = true) {
 
-                const loader = document.getElementById("loader");
-                loader.style.display = "block";
 
+                loader.classList.add("active");
+
+                content.classList.add("fade-out");
                 fetch(url)
                     .then(res => res.text())
                     .then(data => {
@@ -166,24 +171,97 @@
 
                         if (nuevo) {
                             content.innerHTML = nuevo.outerHTML;
+
+                            // Si estamos en usuarios, actualizar cards automáticamente 
+                            if (url.includes("/usuarios/")) {
+                                actualizarTarjetas();
+                            }
+
+                            // Inicializar DataTable si existe la tabla
+                            if ($("#tablaUsuarios").length) {
+                                $("#tablaUsuarios").DataTable({
+                                    pageLength: 5,
+                                    lengthChange: false,
+                                    ordering: true,
+                                    searching: true,
+                                    info: true,
+                                    destroy: true,
+
+                                    language: {
+                                        search: "Buscar usuario:",
+                                        zeroRecords: "No se encontraron usuarios",
+                                        info: "Mostrando _START_ a _END_ de _TOTAL_ usuarios",
+                                        infoEmpty: "No hay usuarios disponibles",
+                                        paginate: {
+                                            previous: "Anterior",
+                                            next: "Siguiente"
+                                        }
+                                    }
+                                });
+                            }
                         }
 
-                        loader.style.display = "none";
+                        // Ocultar loader al terminar
+                        setTimeout(() => { loader.classList.remove("active"); content.classList.remove("fade-out"); content.classList.add("fade-in"); }, 500);
 
-                        if (addToHistory) {
-                            history.pushState({ url: url }, "", url);
+                        if (guardar) {
+                            localStorage.setItem("ultimaVista", url);
+
+                            history.replaceState(
+                                { url: url },
+                                "",
+                                "/admin-dashboard/"
+                            );
                         }
+                    })
+                    .catch((error) => {
+                        console.error("Error cargando vista:", error);
+
+                        // Ocultar loader también si falla
+                        setTimeout(() => { loader.classList.remove("active"); content.classList.remove("fade-out"); }, 500);
                     });
             }
 
+            // Eventos menú lateral SPA
             document.querySelectorAll(".nav-link-spa").forEach(link => {
                 link.addEventListener("click", function (e) {
                     e.preventDefault();
+
+                    // quitar active de todos
+                    document.querySelectorAll(".nav-link-spa").forEach(item => {
+                        item.classList.remove("active");
+                    });
+
+                    // activar solo el actual
+                    this.classList.add("active");
+
                     cargarVista(this.dataset.url);
                 });
             });
 
-            cargarVista(HOME_URL, false);
+
+            // Restaurar última vista abierta
+            const ultimaVista = localStorage.getItem("ultimaVista");
+
+            if (ultimaVista) {
+
+                // activar menú correcto
+                document.querySelectorAll(".nav-link-spa").forEach(link => {
+                    link.classList.remove("active");
+
+                    if (link.dataset.url === ultimaVista) {
+                        link.classList.add("active");
+                    }
+                });
+
+                // cargar última vista SIN cambiar URL
+                cargarVista(ultimaVista, false);
+
+            } else {
+
+                cargarVista(HOME_URL, false);
+            }
+
         });
     </script>
 
@@ -204,7 +282,7 @@
                 email: document.getElementById("email")?.value.trim(),
                 documento: document.getElementById("documento")?.value.trim(),
                 unidad: document.getElementById("unidad")?.value.trim(),
-                grado: "",
+                grado: document.getElementById("grado")?.value.trim(),
                 rol: document.getElementById("rol")?.value
             };
 
@@ -235,6 +313,7 @@
                         document.getElementById("apellidos").value = "";
                         document.getElementById("email").value = "";
                         document.getElementById("documento").value = "";
+                        document.getElementById("grado").value = "";
                         document.getElementById("unidad").value = "";
                     }
                 })
@@ -261,6 +340,296 @@
             setTimeout(() => {
                 toast.remove();
             }, 3000);
+        };
+    </script>
+
+    <script>
+        window.subirExcel = function () {
+
+            const archivo = document.getElementById("archivoExcel").files[0];
+            const rol = document.getElementById("tipoUsuarioExcel").value;
+
+            if (!archivo) {
+                mostrarToast("Seleccione un archivo Excel", "warning");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("archivo", archivo);
+            formData.append("rol", rol);
+
+            fetch("/cargar-usuarios-excel/", {
+                method: "POST",
+                body: formData
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.error) {
+                        mostrarToast(res.error, "error");
+                    } else {
+                        mostrarToast(res.mensaje, "success");
+
+                        actualizarTarjetas();
+                    }
+                });
+        };
+    </script>
+
+    <script>
+        function actualizarTarjetas() {
+            fetch("/obtener-estadisticas/")
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("total-usuarios").textContent =
+                        data.total_usuarios;
+
+                    document.getElementById("total-soldados").textContent =
+                        data.total_soldados;
+
+                    document.getElementById("total-instructores").textContent =
+                        data.total_instructores;
+
+                    document.getElementById("total-activos").textContent =
+                        data.total_activos;
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            actualizarTarjetas();
+        });
+    </script>
+    <script>
+        document.addEventListener("click", function (e) {
+            const boton = e.target.closest(".btn-eliminar");
+
+            if (!boton) return;
+
+            const userId = boton.dataset.id;
+
+            Swal.fire({
+                title: "¿Eliminar usuario?",
+                text: "Esta acción no se puede deshacer",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#198754",
+                cancelButtonColor: "#dc3545",
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar"
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    fetch(`/eliminar-usuario/${userId}/`, {
+                        method: "POST"
+                    })
+                        .then(res => res.json())
+                        .then(res => {
+                            if (res.error) {
+                                mostrarToast(res.error, "error");
+                            } else {
+                                boton.closest("tr").remove();
+
+                                actualizarTarjetas();
+
+                                Swal.fire({
+                                    title: "Eliminado",
+                                    text: "Usuario eliminado correctamente",
+                                    icon: "success",
+                                    confirmButtonColor: "#198754"
+                                });
+                            }
+                        });
+
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("click", function (e) {
+            const boton = e.target.closest(".btn-editar");
+
+            if (!boton) return;
+
+            const userId = boton.dataset.id;
+            const nombre = boton.dataset.nombre;
+            const apellido = boton.dataset.apellido;
+            const email = boton.dataset.email;
+            const rol = boton.dataset.rol;
+            const activo = boton.dataset.activo === "True";
+
+            Swal.fire({
+                title: "Editar Usuario",
+                html: `
+            <input id="swal-nombre" class="swal2-input" placeholder="Nombre" value="${nombre}">
+            <input id="swal-apellido" class="swal2-input" placeholder="Apellido" value="${apellido}">
+            <input id="swal-email" class="swal2-input" placeholder="Correo" value="${email}">
+            <select id="swal-rol" class="swal2-input">
+                <option value="soldado" ${rol === "soldado" ? "selected" : ""}>Soldado</option>
+                <option value="instructor" ${rol === "instructor" ? "selected" : ""}>Instructor</option>
+                <option value="admin" ${rol === "admin" ? "selected" : ""}>Admin</option>
+            </select>
+            <select id="swal-activo" class="swal2-input">
+                <option value="true" ${activo ? "selected" : ""}>Activo</option>
+                <option value="false" ${!activo ? "selected" : ""}>Inactivo</option>
+            </select>
+        `,
+                confirmButtonText: "Guardar cambios",
+                showCancelButton: true,
+                cancelButtonText: "Cancelar",
+                confirmButtonColor: "#198754",
+                preConfirm: () => {
+                    return {
+                        nombre: document.getElementById("swal-nombre").value,
+                        apellido: document.getElementById("swal-apellido").value,
+                        email: document.getElementById("swal-email").value,
+                        rol: document.getElementById("swal-rol").value,
+                        activo: document.getElementById("swal-activo").value === "true"
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/editar-usuario/${userId}/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(result.value)
+                    })
+                        .then(res => res.json())
+                        .then(res => {
+                            Swal.fire({
+                                title: "Actualizado",
+                                text: res.mensaje,
+                                icon: "success",
+                                confirmButtonColor: "#198754"
+                            }).then(() => {
+                                location.reload();
+                            });
+                        });
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuToggle = document.getElementById("menuToggle");
+            const sidebar = document.querySelector(".sidebar");
+
+            menuToggle.addEventListener("click", function () {
+                sidebar.classList.toggle("active");
+            });
+        });
+    </script>
+    <script>
+        function abrirModalCurso() {
+            const modalElement = document.getElementById("modalCrearCurso");
+
+            if (!modalElement) {
+                console.error("Modal no encontrado");
+                return;
+            }
+
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- MODAL CREAR CURSO -->
+    <div class="modal fade" id="modalCrearCurso" tabindex="-1" aria-labelledby="modalCrearCursoLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content"> <!-- HEADER -->
+                <div class="modal-header" style="background: #198754; color: white;">
+                    <h4 class="modal-title" id="modalCrearCursoLabel"> <i class="fa fa-book-open"></i> Crear Curso </h4>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div> <!-- BODY -->
+                <div class="modal-body">
+                    <div class="row g-3"> <!-- Código -->
+                        <div class="col-md-4"> <label>Código *</label> <input type="text" id="codigoCurso"
+                                class="form-control" placeholder="Ej: CUR-001"> </div> <!-- Nombre -->
+                        <div class="col-md-4"> <label>Nombre del Curso *</label> <input type="text" id="nombreCurso"
+                                class="form-control" placeholder="Nombre del curso"> </div> <!-- Instructor -->
+                        <div class="col-md-4">
+                            <label>Instructor *</label>
+                            <select id="instructorCurso" class="form-control">
+                                <option value="">
+                                    Seleccione instructor
+                                </option>
+                                {% for instructor in instructores %}
+                                <option value="{{ instructor.id }}">
+                                    {{ instructor.first_name }} {{ instructor.last_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div> <!-- Descripción -->
+                        <div class="col-md-12"> <label>Descripción</label> <textarea id="descripcionCurso"
+                                class="form-control" rows="4" placeholder="Descripción general del curso"></textarea>
+                        </div>
+                        <!-- Fecha Inicio -->
+                        <div class="col-md-4"> <label>Fecha inicio *</label> <input type="date" id="fechaInicioCurso"
+                                class="form-control"> </div> <!-- Fecha Fin -->
+                        <div class="col-md-4"> <label>Fecha fin *</label> <input type="date" id="fechaFinCurso"
+                                class="form-control"> </div> <!-- Cupo -->
+                        <div class="col-md-4"> <label>Cupo máximo *</label> <input type="number" id="cupoCurso"
+                                class="form-control" placeholder="Ej: 30"> </div>
+                    </div>
+                </div> <!-- FOOTER -->
+                <div class="modal-footer"> <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button> <button type="button" class="btn btn-success" onclick="crearCurso()"> <i
+                            class="fa fa-save"></i> Guardar Curso </button> </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.crearCurso = function () {
+
+            const data = {
+                codigo: document.getElementById("codigoCurso").value.trim(),
+                nombre: document.getElementById("nombreCurso").value.trim(),
+                descripcion: document.getElementById("descripcionCurso").value.trim(),
+                instructor: document.getElementById("instructorCurso").value,
+                fecha_inicio: document.getElementById("fechaInicioCurso").value,
+                fecha_fin: document.getElementById("fechaFinCurso").value,
+                cupo_maximo: document.getElementById("cupoCurso").value
+            };
+
+            if (!data.codigo || !data.nombre) {
+                mostrarToast("Complete los campos obligatorios", "warning");
+                return;
+            }
+
+            fetch("/crear-curso/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.error) {
+                        mostrarToast(res.error, "error");
+                    } else {
+                        mostrarToast(res.mensaje, "success");
+
+                        const modal = bootstrap.Modal.getInstance(
+                            document.getElementById("modalCrearCurso")
+                        );
+
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        location.reload();
+                    }
+                })
+                .catch(() => {
+                    mostrarToast("Error del servidor", "error");
+                });
         };
     </script>
 

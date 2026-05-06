@@ -1,4 +1,80 @@
 <div id="contenido-parcial">
-    <h2>Cursos</h2>
-    <p>Contenido de cursos Creados</p>
+
+    <div id="tittle" class="mb-4">
+        <h2>
+            <i class="fa fa-book"></i>
+            Gestión de Cursos
+        </h2>
+    </div>
+
+    <div class="card-admin p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <input type="text" class="form-control w-50" placeholder="Buscar cursos...">
+
+            <div class="d-flex justify-content-end mb-4">
+                <button class="btn btn-success" onclick="abrirModalCurso()">
+                    <i class="fa fa-plus-circle"></i>
+                    Crear Curso
+                </button>
+            </div>
+
+        </div>
+
+        <div class="table-responsive">
+            <table id="tablaCursos" class="table table-dark table-hover">
+
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Curso</th>
+                        <th>Instructor</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>CUR-001</td>
+                        <td>Competencias Militares</td>
+                        <td>Instructor Ejército</td>
+                        <td>2026-05-01</td>
+                        <td>2026-06-30</td>
+
+                        <td>
+                            <span class="badge bg-success">
+                                Activo
+                            </span>
+                        </td>
+
+                        <td>
+
+                            <button class="btn btn-info btn-sm">
+                                <i class="fa fa-eye"></i>
+                            </button>
+
+                            <button class="btn btn-warning btn-sm">
+                                <i class="fa fa-edit"></i>
+                            </button>
+
+                            <button class="btn btn-danger btn-sm">
+                                <i class="fa fa-trash"></i>
+                            </button>
+
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
 </div>
+

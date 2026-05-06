@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import *
-
+from .views import * 
+from . import views
+                                     
 urlpatterns = [
     # 🔐 Autenticación
     path('', login_view, name='login'),
@@ -24,10 +25,41 @@ urlpatterns = [
     path('crear-usuario/', crear_usuario, name='crear_usuario'),
 
 
-    # 🚀 SPA (VISTAS DINÁMICAS)
     path('inicio/', inicio, name='inicio'),
     path('cursos/', cursos, name='cursos'),
     path('evaluaciones/', evaluaciones, name='evaluaciones'),
     path('resultados/', resultados, name='resultados'),
     path('retro/', retroalimentacion, name='retroalimentacion'),
+    path( "cargar-usuarios-excel/", 
+         views.cargar_usuarios_excel, 
+         name="cargar_usuarios_excel" ),
+    path( "descargar-plantilla-excel/",
+            views.descargar_plantilla_excel, 
+            name="descargar_plantilla_excel" ),
+
+     path(
+        "obtener-estadisticas/",
+        views.obtener_estadisticas,
+        name="obtener_estadisticas"),
+
+
+    path(
+        "usuarios/",
+        views.listar_usuarios,
+        name="listar_usuarios"),
+
+    path(
+        "eliminar-usuario/<int:user_id>/",
+        views.eliminar_usuario,
+        name="eliminar_usuario"),
+
+    path(
+        "editar-usuario/<int:user_id>/",
+        views.editar_usuario,
+        name="editar_usuario"),
+
+    path( 
+        "crear-curso/", 
+        views.crear_curso, 
+        name="crear_curso" ),
 ]
