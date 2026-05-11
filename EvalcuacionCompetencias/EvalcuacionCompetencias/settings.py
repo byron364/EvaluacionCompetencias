@@ -78,7 +78,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'evaluacion_competencias',
         'USER': 'root',
-        'PASSWORD': 'root',  # 👈 pon tu contraseña aquí
+        'PASSWORD': '',  # 👈 pon tu contraseña aquí
         'HOST': 'localhost',
         'PORT': '3306',
     }

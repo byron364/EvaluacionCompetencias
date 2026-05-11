@@ -154,20 +154,49 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+@rol_requerido('soldado')
 def cursos(request):
-    return render(request, 'cursos.html')
 
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'cursos.html')
+
+    return render(request, 'soldado.html')
+
+
+@rol_requerido('soldado')
 def evaluaciones(request):
-    return render(request, 'evaluaciones.html')
 
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'evaluaciones.html')
+
+    return render(request, 'soldado.html')
+
+
+@rol_requerido('soldado')
 def resultados(request):
-    return render(request, 'resultados.html')
 
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'resultados.html')
+
+    return render(request, 'soldado.html')
+
+
+@rol_requerido('soldado')
 def retroalimentacion(request):
-    return render(request, 'retro.html')
 
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'retro.html')
+
+    return render(request, 'soldado.html')
+
+
+@rol_requerido('soldado')
 def inicio(request):
-    return render(request, 'inicio.html')
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'inicio.html')
+
+    return render(request, 'soldado.html')
 
 
 def admin_usuarios(request):

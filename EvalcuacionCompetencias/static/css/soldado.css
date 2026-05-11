@@ -63,6 +63,7 @@ body {
 /* =========================
    ANIMACIÓN FLOTANTE
 ========================= */
+/*
 @keyframes float {
     0% {
         transform: translate(-50%, -50%) translateY(0px);
@@ -75,7 +76,7 @@ body {
     100% {
         transform: translate(-50%, -50%) translateY(0px);
     }
-}
+} */
 
 /* =========================
    OVERLAY HUD
@@ -344,4 +345,162 @@ body {
     height: 100%;
     background: linear-gradient(90deg, #00ffae, #00c3ff);
     transition: width 1s ease;
+}
+/* =========================================
+   BOTÓN HAMBURGUESA
+========================================= */
+
+.menu-toggle {
+
+    display: none;
+
+    position: fixed;
+
+    top: 15px;
+    left: 15px;
+
+    z-index: 3000;
+
+    background: #198754;
+    color: white;
+
+    border: none;
+
+    border-radius: 12px;
+
+    padding: 10px 14px;
+
+    font-size: 22px;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+
+    transition: 0.3s ease;
+}
+
+.menu-toggle:hover {
+    transform: scale(1.05);
+}
+
+
+/* =========================================
+   RESPONSIVE TABLET Y CELULAR
+========================================= */
+
+@media (max-width: 768px) {
+
+    /* MOSTRAR BOTÓN */
+    .menu-toggle {
+        display: block;
+    }
+
+    /* SIDEBAR FLOTANTE */
+    .sidebar {
+
+        position: fixed;
+
+        top: 0;
+        left: -100%;
+
+        width: 260px;
+
+        height: 100vh;
+
+        z-index: 2500;
+
+        transition: 0.3s ease;
+
+        overflow-y: auto;
+
+        border-radius: 0;
+
+        padding-top: 70px;
+    }
+
+    /* CUANDO ABRE */
+    .sidebar.active {
+        left: 0;
+    }
+
+    /* CONTENIDO */
+    .content {
+
+        width: 100% !important;
+
+        margin-left: 0 !important;
+
+        padding: 80px 15px 20px !important;
+    }
+
+    /* IMÁGENES */
+    .content img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* BOTONES */
+    .nav-btn {
+        margin-bottom: 15px;
+    }
+
+    /* COLUMNAS */
+    .col-md-3,
+    .col-md-4,
+    .col-md-6 {
+        width: 100%;
+    }
+
+    /* CARDS */
+    .card-curso {
+        margin-bottom: 20px;
+    }
+
+    /* FONDO */
+    .bg-img {
+
+        width: 95%;
+
+        left: 50%;
+
+        transform: translate(-50%, -50%);
+
+        opacity: 0.2;
+    }
+}
+
+
+/* =========================================
+   CELULARES PEQUEÑOS
+========================================= */
+
+@media (max-width: 480px) {
+
+    .sidebar {
+        width: 230px;
+    }
+
+    .menu-toggle {
+
+        top: 10px;
+        left: 10px;
+
+        padding: 8px 12px;
+
+        font-size: 18px;
+    }
+
+    .content {
+        padding-top: 70px !important;
+    }
+
+    .card-curso {
+        padding: 15px;
+    }
+
+    .cursos {
+        padding: 20px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
 }
