@@ -16,8 +16,18 @@ from django.conf import settings
 from .models import Perfil
 import json
 import pandas as pd 
-from .models import Curso
+from .models import Curso, Inscripcion, Evaluacion, Calificacion
+from django.db.models import Count, Avg, Q
 
+
+def es_peticion_spa(request):
+    return request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+
+def contexto_admin():
+    return {
+        "instructores": User.objects.filter(perfil__rol="instructor")
+    }
 
 
 
@@ -107,12 +117,7 @@ def rol_requerido(rol_permitido):
 
 @rol_requerido('admin')
 def admin_dashboard(request): 
-    instructores = User.objects.filter( 
-        perfil__rol="instructor" 
-        ) 
-    return render(request, "admin.html", { 
-        "instructores": instructores 
-        })
+    return render(request, "admin.html", contexto_admin())
 
 @rol_requerido('instructor')
 def instructor_dashboard(request):
@@ -121,27 +126,66 @@ def instructor_dashboard(request):
 
 @rol_requerido('instructor')
 def instructor_inicio(request):
-    return render(request, 'instructor_inicio.html')
+    if not es_peticion_spa(request):
+        return render(request, 'instructor.html')
+
+    cursos = Curso.objects.filter(instructor=request.user)
+    curso_ids = cursos.values_list("id", flat=True)
+    soldados_asignados = User.objects.filter(mis_cursos__curso__in=curso_ids).distinct().count()
+    evaluaciones_pendientes = Evaluacion.objects.filter(curso__in=cursos).count()
+    promedio = Calificacion.objects.filter(curso__in=cursos).aggregate(promedio=Avg("nota"))["promedio"]
+
+    return render(request, 'instructor_inicio.html', {
+        "total_cursos": cursos.filter(activo=True).count(),
+        "soldados_asignados": soldados_asignados,
+        "evaluaciones_pendientes": evaluaciones_pendientes,
+        "promedio_general": round(float(promedio), 1) if promedio is not None else 0,
+        "cursos": cursos.annotate(total_soldados=Count("inscripciones", distinct=True))[:5],
+        "calificaciones": Calificacion.objects.filter(curso__in=cursos).select_related("estudiante", "curso").order_by("-creado_en")[:5],
+    })
 
 
 @rol_requerido('instructor')
 def instructor_cursos(request):
-    return render(request, 'instructor_cursos.html')
+    if not es_peticion_spa(request):
+        return render(request, 'instructor.html')
+
+    cursos = Curso.objects.filter(instructor=request.user).annotate(
+        total_soldados=Count("inscripciones", distinct=True)
+    ).order_by("-creado_en")
+    return render(request, 'instructor_cursos.html', {"cursos": cursos})
 
 
 @rol_requerido('instructor')
 def instructor_evaluaciones(request):
-    return render(request, 'instructor_evaluaciones.html')
+    if not es_peticion_spa(request):
+        return render(request, 'instructor.html')
+
+    evaluaciones = Evaluacion.objects.filter(curso__instructor=request.user).select_related("curso").order_by("-fecha")
+    return render(request, 'instructor_evaluaciones.html', {"evaluaciones": evaluaciones})
 
 
 @rol_requerido('instructor')
 def instructor_soldados(request):
-    return render(request, 'instructor_soldados.html')
+    if not es_peticion_spa(request):
+        return render(request, 'instructor.html')
+
+    inscripciones = Inscripcion.objects.filter(curso__instructor=request.user).select_related(
+        "curso", "estudiante", "estudiante__perfil"
+    ).order_by("estudiante__last_name", "estudiante__first_name")
+    return render(request, 'instructor_soldados.html', {"inscripciones": inscripciones})
 
 
 @rol_requerido('instructor')
 def instructor_reportes(request):
-    return render(request, 'instructor_reportes.html')
+    if not es_peticion_spa(request):
+        return render(request, 'instructor.html')
+
+    cursos = Curso.objects.filter(instructor=request.user).annotate(
+        total_soldados=Count("inscripciones", distinct=True),
+        promedio=Avg("calificacion__nota")
+    )
+    return render(request, 'instructor_reportes.html', {"cursos": cursos})
 
 
 @rol_requerido('soldado')
@@ -155,22 +199,78 @@ def logout_view(request):
     return redirect('login')
 
 def cursos(request):
-    return render(request, 'cursos.html')
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    rol = getattr(request.user.perfil, "rol", None)
+
+    if rol == "admin":
+        if not es_peticion_spa(request):
+            return render(request, "admin.html", contexto_admin())
+        return admin_cursos(request)
+
+    if rol == "soldado":
+        if not es_peticion_spa(request):
+            return render(request, 'soldado.html')
+        inscripciones = Inscripcion.objects.filter(estudiante=request.user).select_related("curso", "curso__instructor")
+        return render(request, 'cursos.html', {"inscripciones": inscripciones})
+
+    if rol == "instructor":
+        if not es_peticion_spa(request):
+            return render(request, 'instructor.html')
+        return instructor_cursos(request)
+
+    return redirect('login')
 
 def evaluaciones(request):
-    return render(request, 'evaluaciones.html')
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if not es_peticion_spa(request):
+        return render(request, 'soldado.html')
+
+    evaluaciones_usuario = Evaluacion.objects.filter(curso__inscripciones__estudiante=request.user).select_related("curso").distinct()
+    return render(request, 'evaluaciones.html', {"evaluaciones": evaluaciones_usuario})
 
 def resultados(request):
-    return render(request, 'resultados.html')
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if not es_peticion_spa(request):
+        return render(request, 'soldado.html')
+
+    calificaciones = Calificacion.objects.filter(estudiante=request.user).select_related("curso", "tarea", "evaluacion").order_by("-creado_en")
+    promedio = calificaciones.aggregate(promedio=Avg("nota"))["promedio"]
+    return render(request, 'resultados.html', {
+        "calificaciones": calificaciones,
+        "promedio": round(float(promedio), 1) if promedio is not None else 0
+    })
 
 def retroalimentacion(request):
+    if request.user.is_authenticated and not es_peticion_spa(request):
+        return render(request, 'soldado.html')
+
     return render(request, 'retro.html')
 
 def inicio(request):
-    return render(request, 'inicio.html')
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if not es_peticion_spa(request):
+        return render(request, 'soldado.html')
+
+    inscripciones = Inscripcion.objects.filter(estudiante=request.user)
+    calificaciones = Calificacion.objects.filter(estudiante=request.user)
+    promedio = calificaciones.aggregate(promedio=Avg("nota"))["promedio"]
+    return render(request, 'inicio.html', {
+        "total_cursos": inscripciones.count(),
+        "total_evaluaciones": Evaluacion.objects.filter(curso__inscripciones__estudiante=request.user).distinct().count(),
+        "total_resultados": calificaciones.count(),
+        "promedio": round(float(promedio), 1) if promedio is not None else 0,
+    })
 
 
 def admin_usuarios(request):
+    if request.user.is_authenticated and not es_peticion_spa(request):
+        return render(request, "admin.html", contexto_admin())
+
     usuarios = Perfil.objects.select_related("user").all()
 
     return render(
@@ -183,26 +283,51 @@ def admin_usuarios(request):
 
 
 def admin_cursos(request):
+    if request.user.is_authenticated and not es_peticion_spa(request):
+        return render(request, "admin.html", contexto_admin())
+
+    if request.user.is_authenticated and getattr(request.user.perfil, "rol", None) == "soldado":
+        return cursos(request)
+
+    if request.user.is_authenticated and getattr(request.user.perfil, "rol", None) == "instructor":
+        return instructor_cursos(request)
 
     instructores = User.objects.filter(
         perfil__rol="instructor"
     )
 
+    soldados = User.objects.filter(
+        perfil__rol="soldado",
+        is_active=True
+    ).select_related("perfil").order_by("last_name", "first_name")
+
     cursos = Curso.objects.select_related(
         'instructor'
-    ).all()
+    ).annotate(total_soldados=Count("inscripciones", distinct=True)).all()
 
     return render(
         request,
         "admin_cursos.html",
         {
             "instructores": instructores,
-            "cursos": cursos
+            "cursos": cursos,
+            "soldados": soldados
         }
     )
 
 def admin_reportes(request):
-    return render(request, 'admin_reportes.html')
+    if request.user.is_authenticated and not es_peticion_spa(request):
+        return render(request, "admin.html", contexto_admin())
+
+    resumen = {
+        "usuarios": User.objects.count(),
+        "soldados": Perfil.objects.filter(rol="soldado").count(),
+        "instructores": Perfil.objects.filter(rol="instructor").count(),
+        "cursos": Curso.objects.count(),
+        "inscripciones": Inscripcion.objects.count(),
+        "promedio": Calificacion.objects.aggregate(promedio=Avg("nota"))["promedio"] or 0,
+    }
+    return render(request, 'admin_reportes.html', {"resumen": resumen})
 def admin_dashboard_partial(request):
     return render(request, 'admin_dashboard_partial.html')
 
@@ -286,6 +411,11 @@ def cargar_usuarios_excel(request):
                 documento = str(row.get("documento", "")).strip()
                 grado = str(row.get("grado", "")).strip()
                 unidad = str(row.get("unidad", "")).strip()
+                batallon = str(row.get("batallon", "")).strip()
+                compania = str(row.get("compania", "")).strip()
+
+                if not unidad:
+                    unidad = " - ".join([valor for valor in [batallon, compania] if valor])
 
 
                 print( f"Fila {index+2}:", 
@@ -394,7 +524,8 @@ def descargar_plantilla_excel(request):
         "email",
         "documento",
         "grado",
-        "unidad"
+        "batallon",
+        "compania"
     ]
 
     for i, titulo in enumerate(encabezados, start=1):
@@ -407,7 +538,8 @@ def descargar_plantilla_excel(request):
         "juan@ejercito.mil.co",
         "12345678",
         "Capitán",
-        "Batallon Norte"
+        "Batallón Norte",
+        "Compañía A"
     ]
 
     ws["A9"] = "Juan"
@@ -415,7 +547,8 @@ def descargar_plantilla_excel(request):
     ws["C9"] = "juan@ejercito.mil.co"
     ws["D9"] = "12345678"
     ws["E9"] = "Capitán"
-    ws["F9"] = "Batallon Norte"
+    ws["F9"] = "Batallón Norte"
+    ws["G9"] = "Compañía A"
 
     for i, valor in enumerate(ejemplo, start=1):
         ws.cell(row=9, column=i, value=valor)
@@ -466,7 +599,8 @@ def descargar_plantilla_excel(request):
         "C": 35,
         "D": 20,
         "E": 28,
-        "F": 28
+        "F": 28,
+        "G": 28
     }
 
     for col, width in widths.items():
@@ -474,7 +608,7 @@ def descargar_plantilla_excel(request):
 
 
     for fila in range(10, 501):
-        for col in ["A", "B", "C", "D", "E", "F"]:
+        for col in ["A", "B", "C", "D", "E", "F", "G"]:
             ws[f"{col}{fila}"] = ""
 
     ws.protection.sheet = True
@@ -482,7 +616,7 @@ def descargar_plantilla_excel(request):
 
     # desbloquear celdas editables
     for fila in range(9, 501):
-        for col in ["A", "B", "C", "D", "E", "F"]:
+        for col in ["A", "B", "C", "D", "E", "F", "G"]:
             ws[f"{col}{fila}"].protection = (
                 ws[f"{col}{fila}"].protection.copy(locked=False)
             )
@@ -554,6 +688,9 @@ def editar_usuario(request, user_id):
             user.is_active = data.get("activo")
 
             perfil.rol = data.get("rol")
+            perfil.documento = data.get("documento") or perfil.documento
+            perfil.grado = data.get("grado")
+            perfil.unidad = data.get("unidad")
 
             user.save()
             perfil.save()
@@ -714,3 +851,94 @@ def eliminar_curso(request, curso_id):
         return JsonResponse({
             "error": "Curso no encontrado"
         }, status=404)
+
+@csrf_exempt
+def asignar_soldado_curso(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        curso = Curso.objects.get(id=data.get("curso_id"))
+        soldado = User.objects.get(id=data.get("soldado_id"), perfil__rol="soldado")
+
+        inscritos = Inscripcion.objects.filter(curso=curso).count()
+        if inscritos >= curso.cupo_maximo:
+            return JsonResponse({"error": "El curso ya alcanzó el cupo máximo"}, status=400)
+
+        _, creado = Inscripcion.objects.get_or_create(curso=curso, estudiante=soldado)
+
+        return JsonResponse({
+            "mensaje": "Soldado asignado correctamente" if creado else "El soldado ya estaba inscrito"
+        })
+
+    except Curso.DoesNotExist:
+        return JsonResponse({"error": "Curso no encontrado"}, status=404)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "Soldado no encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+def exportar_reporte(request, tipo):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = tipo.capitalize()
+
+    if tipo == "usuarios":
+        ws.append(["Nombre", "Apellido", "Correo", "Rol", "Documento", "Grado", "Unidad", "Activo"])
+        for perfil in Perfil.objects.select_related("user").order_by("rol", "user__last_name"):
+            ws.append([
+                perfil.user.first_name,
+                perfil.user.last_name,
+                perfil.user.email,
+                perfil.rol,
+                perfil.documento,
+                perfil.grado or "",
+                perfil.unidad or "",
+                "Sí" if perfil.user.is_active else "No",
+            ])
+    elif tipo == "cursos":
+        ws.append(["Código", "Curso", "Instructor", "Inicio", "Fin", "Cupo", "Inscritos", "Activo"])
+        cursos = Curso.objects.select_related("instructor").annotate(total_soldados=Count("inscripciones", distinct=True))
+        for curso in cursos:
+            ws.append([
+                curso.codigo,
+                curso.nombre,
+                curso.instructor.get_full_name() if curso.instructor else "Sin instructor",
+                curso.fecha_inicio,
+                curso.fecha_fin,
+                curso.cupo_maximo,
+                curso.total_soldados,
+                "Sí" if curso.activo else "No",
+            ])
+    elif tipo == "resultados":
+        ws.append(["Soldado", "Documento", "Curso", "Actividad", "Nota", "Observaciones", "Fecha"])
+        calificaciones = Calificacion.objects.select_related("estudiante", "estudiante__perfil", "curso", "tarea", "evaluacion")
+        for calificacion in calificaciones:
+            actividad = calificacion.evaluacion.titulo if calificacion.evaluacion else calificacion.tarea.titulo if calificacion.tarea else "General"
+            ws.append([
+                calificacion.estudiante.get_full_name(),
+                calificacion.estudiante.perfil.documento,
+                calificacion.curso.nombre,
+                actividad,
+                float(calificacion.nota),
+                calificacion.observaciones or "",
+                calificacion.creado_en.strftime("%Y-%m-%d"),
+            ])
+    else:
+        return JsonResponse({"error": "Reporte no válido"}, status=404)
+
+    for row in ws.iter_rows(min_row=1, max_row=1):
+        for cell in row:
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill(fill_type="solid", fgColor="789441")
+            cell.alignment = Alignment(horizontal="center")
+
+    for column_cells in ws.columns:
+        ws.column_dimensions[column_cells[0].column_letter].width = 22
+
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="reporte_{tipo}.xlsx"'
+    wb.save(response)
+    return response

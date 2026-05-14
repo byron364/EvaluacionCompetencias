@@ -71,14 +71,18 @@
 
                 <input type="email" class="form-control mb-2" placeholder="Correo institucional" id="email">
 
+                <input type="text" class="form-control mb-2" placeholder="Documento" id="documento">
+
                 <div class="row">
                     <div class="col-md-6 mb-2">
-                        <input type="text" class="form-control" placeholder="Documento" id="documento">
+                        <input type="text" class="form-control" placeholder="Batallón" id="batallon">
                     </div>
                     <div class="col-md-6 mb-2">
-                        <input type="text" class="form-control" placeholder="Unidad" id="unidad">
+                        <input type="text" class="form-control" placeholder="Compañía" id="compania">
                     </div>
                 </div>
+                <input type="hidden" id="unidad">
+
                 <button id="btnCrearUsuario" class="btn btn-success w-100 mt-2">
                     <i id="new_user" class="fa fa-user-plus"></i>Crear Usuario
                 </button>
@@ -132,6 +136,9 @@
                     <tr>
                         <th>Usuario</th>
                         <th>Rol</th>
+                        <th>Documento</th>
+                        <th>Grado</th>
+                        <th>Unidad</th>
                         <th>Correo</th>
                         <th>Estado</th>
                         <th>Acciones</th>
@@ -160,6 +167,18 @@
                         </td>
 
                         <td>
+                            {{ perfil.documento|default:"-" }}
+                        </td>
+
+                        <td>
+                            {{ perfil.grado|default:"-" }}
+                        </td>
+
+                        <td>
+                            {{ perfil.unidad|default:"-" }}
+                        </td>
+
+                        <td>
                             {{ perfil.user.email }}
                         </td>
 
@@ -175,7 +194,8 @@
                             <button class="btn btn-warning btn-sm btn-editar" data-id="{{ perfil.user.id }}"
                                 data-nombre="{{ perfil.user.first_name }}" data-apellido="{{ perfil.user.last_name }}"
                                 data-email="{{ perfil.user.email }}" data-rol="{{ perfil.rol }}"
-                                data-activo="{{ perfil.user.is_active }}">
+                                data-activo="{{ perfil.user.is_active }}" data-documento="{{ perfil.documento }}"
+                                data-grado="{{ perfil.grado }}" data-unidad="{{ perfil.unidad }}">
                                 <i id="buttontable" class="fa fa-edit"></i>
                             </button>
                             <button class="btn btn-danger btn-sm btn-eliminar" data-id="{{ perfil.user.id }}">
@@ -187,7 +207,7 @@
 
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center">
+                        <td colspan="8" class="text-center">
                             No hay usuarios registrados
                         </td>
                     </tr>

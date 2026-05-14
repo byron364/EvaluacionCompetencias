@@ -9,29 +9,20 @@
         </div>
 
         <div class="soldier-grid">
+            {% for inscripcion in inscripciones %}
             <div class="soldier-card">
-                <h5>Sld. Juan Pérez</h5>
-                <p>Curso: Combate Básico</p>
-                <span class="status-pill status-ready">Aprobado</span>
+                <h5>{{ inscripcion.estudiante.get_full_name }}</h5>
+                <p>{{ inscripcion.estudiante.perfil.grado|default:"Sin grado" }} · {{ inscripcion.estudiante.perfil.documento }}</p>
+                <p>Curso: {{ inscripcion.curso.nombre }}</p>
+                <span class="status-pill status-ready">Activo</span>
             </div>
-
+            {% empty %}
             <div class="soldier-card">
-                <h5>Sld. Camilo Torres</h5>
-                <p>Curso: Supervivencia</p>
-                <span class="status-pill status-progress">Seguimiento</span>
-            </div>
-
-            <div class="soldier-card">
-                <h5>Sld. Andrés León</h5>
-                <p>Curso: Liderazgo Operacional</p>
+                <h5>Sin soldados asignados</h5>
+                <p>Cuando existan inscripciones en tus cursos aparecerán aquí.</p>
                 <span class="status-pill status-pending">Pendiente</span>
             </div>
-
-            <div class="soldier-card">
-                <h5>Sld. Mateo Ruiz</h5>
-                <p>Curso: Disciplina Táctica</p>
-                <span class="status-pill status-ready">Aprobado</span>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </div>

@@ -9,8 +9,8 @@
             <div class="col-lg-8">
                 <h1 class="hero-title">Panel de Instructor</h1>
                 <p class="hero-subtitle">Gestiona cursos, califica evaluaciones y acompaña el avance del personal asignado.</p>
-                <span class="badge-soft badge-blue"><i class="fa fa-book-open me-1"></i> 4 cursos activos</span>
-                <span class="badge-soft badge-gold"><i class="fa fa-user-graduate me-1"></i> 38 soldados asignados</span>
+                <span class="badge-soft badge-blue"><i class="fa fa-book-open me-1"></i> {{ total_cursos }} cursos activos</span>
+                <span class="badge-soft badge-gold"><i class="fa fa-user-graduate me-1"></i> {{ soldados_asignados }} soldados asignados</span>
             </div>
             <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
                 <button class="btn btn-primary quick-action nav-btn me-2 mb-2" data-url="/instructor/evaluaciones/"><i class="fa fa-file-pen me-1"></i>Calificar ahora</button>
@@ -24,28 +24,28 @@
             <div class="stat-card">
                 <i class="fa fa-book"></i>
                 <p>Cursos activos</p>
-                <h2>4</h2>
+                <h2>{{ total_cursos }}</h2>
             </div>
         </div>
         <div class="col-md-6 col-xl-3">
             <div class="stat-card">
                 <i class="fa fa-file-pen"></i>
                 <p>Evaluaciones pendientes</p>
-                <h2>12</h2>
+                <h2>{{ evaluaciones_pendientes }}</h2>
             </div>
         </div>
         <div class="col-md-6 col-xl-3">
             <div class="stat-card">
                 <i class="fa fa-users"></i>
                 <p>Soldados asignados</p>
-                <h2>38</h2>
+                <h2>{{ soldados_asignados }}</h2>
             </div>
         </div>
         <div class="col-md-6 col-xl-3">
             <div class="stat-card">
                 <i class="fa fa-award"></i>
                 <p>Promedio general</p>
-                <h2>91%</h2>
+                <h2>{{ promedio_general }}</h2>
             </div>
         </div>
     </div>
@@ -55,29 +55,25 @@
             <div class="info-card">
                 <div class="section-title">Actividades por revisar</div>
 
+                {% for curso in cursos %}
                 <div class="task-item">
                     <div>
-                        <strong>Evaluación de Combate Básico</strong>
-                        <span>8 respuestas pendientes de calificación</span>
+                        <strong>{{ curso.nombre }}</strong>
+                        <span>{{ curso.total_soldados }} soldados inscritos · {{ curso.fecha_inicio }} a {{ curso.fecha_fin }}</span>
+                    </div>
+                    <span class="status-pill {% if curso.activo %}status-ready{% else %}status-pending{% endif %}">
+                        {% if curso.activo %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </div>
+                {% empty %}
+                <div class="task-item">
+                    <div>
+                        <strong>Sin cursos asignados</strong>
+                        <span>Cuando el administrador te asigne cursos aparecerán aquí.</span>
                     </div>
                     <span class="status-pill status-pending">Pendiente</span>
                 </div>
-
-                <div class="task-item">
-                    <div>
-                        <strong>Lista de asistencia del módulo táctico</strong>
-                        <span>Validar antes del cierre del día</span>
-                    </div>
-                    <span class="status-pill status-progress">En proceso</span>
-                </div>
-
-                <div class="task-item">
-                    <div>
-                        <strong>Publicar resultados del módulo de liderazgo</strong>
-                        <span>Listo para compartir con la compañía</span>
-                    </div>
-                    <span class="status-pill status-ready">Listo</span>
-                </div>
+                {% endfor %}
             </div>
         </div>
 
@@ -85,29 +81,23 @@
             <div class="info-card">
                 <div class="section-title">Accesos rápidos</div>
 
+                {% for calificacion in calificaciones %}
                 <div class="session-item">
                     <div>
-                        <strong>Calificar evaluación</strong>
-                        <span>Revisa respuestas pendientes</span>
+                        <strong>{{ calificacion.estudiante.get_full_name }}</strong>
+                        <span>{{ calificacion.curso.nombre }} · Nota {{ calificacion.nota }}</span>
                     </div>
-                    <button class="btn btn-sm btn-primary nav-btn" data-url="/instructor/evaluaciones/">Abrir</button>
+                    <button class="btn btn-sm btn-primary nav-btn" data-url="/instructor/reportes/">Abrir</button>
                 </div>
-
+                {% empty %}
                 <div class="session-item">
                     <div>
-                        <strong>Ver soldados</strong>
-                        <span>Consulta estado por curso</span>
-                    </div>
-                    <button class="btn btn-sm btn-outline-primary nav-btn" data-url="/instructor/soldados/">Abrir</button>
-                </div>
-
-                <div class="session-item">
-                    <div>
-                        <strong>Subir resultados</strong>
-                        <span>Publica notas y observaciones</span>
+                        <strong>Sin resultados recientes</strong>
+                        <span>Las últimas calificaciones aparecerán en este panel.</span>
                     </div>
                     <button class="btn btn-sm btn-outline-dark nav-btn" data-url="/instructor/reportes/">Abrir</button>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </div>

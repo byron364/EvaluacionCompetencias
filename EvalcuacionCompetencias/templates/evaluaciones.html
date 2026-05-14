@@ -1,4 +1,27 @@
 <div id="contenido-parcial">
-    <h2>📝 Evaluaciones</h2>
-    <p>Aquí van las evaluaciones del soldado</p>
+    <div class="cursos">
+        <h2 class="mb-4">📝 Evaluaciones</h2>
+
+        <div class="row">
+            {% for evaluacion in evaluaciones %}
+            <div class="col-md-4 mb-3">
+                <div class="card-curso azul">
+                    <h5>{{ evaluacion.titulo }}</h5>
+                    <p>Curso: {{ evaluacion.curso.nombre }}</p>
+                    <p>Fecha: {{ evaluacion.fecha }}</p>
+                    <div class="barra">
+                        <div class="progreso" style="width: {{ evaluacion.porcentaje }}%;"></div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="card-curso azul">
+                    <h5>Sin evaluaciones disponibles</h5>
+                    <p>Aún no hay evaluaciones asociadas a tus cursos.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>

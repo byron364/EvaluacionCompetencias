@@ -7,6 +7,15 @@ body {
     min-height: 100vh;
 }
 
+* {
+    box-sizing: border-box;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
 .bg-pattern {
     position: absolute;
     inset: 0;
@@ -25,23 +34,26 @@ body {
 
 .background-container {
     position: relative;
-    background-color: #ffffff;
+    background-color: #0b1221;
     min-height: 100vh;
-    overflow: hidden;
+    overflow-x: hidden;
     z-index: 0;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+}
+
+.background-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 18, 33, 0.32);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .bg-img {
-    position: absolute;
-    top: 50%;
-    left: 72%;
-    transform: translate(-50%, -50%);
-    height: 92%;
-    width: auto;
-    max-width: 60%;
-    z-index: -1;
-    opacity: 0.18;
-    filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.18));
+    display: none;
 }
 
 .overlay {
@@ -73,6 +85,7 @@ body {
     border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
     z-index: 1000;
+    overflow-y: auto;
 }
 
 .sidebar .profile-block {
@@ -128,6 +141,7 @@ body {
     margin-left: 220px;
     padding: 30px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .hero-card,
@@ -275,6 +289,7 @@ body {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     border: none;
     padding: 22px;
+    overflow-wrap: anywhere;
 }
 
 .module-header {
@@ -350,6 +365,37 @@ body {
 .nav-btn {
     border-radius: 12px;
     font-weight: 600;
+    white-space: normal;
+}
+
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 3000;
+    background: #198754;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-backdrop {
+    display: none;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.module-table {
+    min-width: 620px;
 }
 
 .loader {
@@ -408,19 +454,128 @@ body {
 
 @media (max-width: 991px) {
     .sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
-        border-radius: 0;
+        left: -100%;
+        width: 260px;
+        max-width: 86vw;
+        height: 100vh;
+        border-radius: 0 18px 18px 0;
+        transition: 0.3s ease;
+        z-index: 2500;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        display: block;
+        background: rgba(15, 23, 42, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.25s ease;
+        z-index: 2400;
+    }
+
+    .sidebar-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
     }
 
     .content {
         margin-left: 0;
+        padding: 72px 18px 22px;
     }
 
     .bg-img {
-        left: 50%;
-        max-width: 90%;
-        height: 70%;
+        top: 45%;
+        right: 10px;
+        left: auto;
+        transform: translateY(-50%);
+        width: min(70vw, 380px);
+        height: auto;
+        max-width: 85vw;
+        max-height: 55vh;
+        object-position: center;
+        opacity: 1;
+    }
+
+    .hero-title {
+        font-size: 1.7rem;
+    }
+
+    .hero-card,
+    .info-card,
+    .stat-card,
+    .module-card {
+        border-radius: 14px;
+    }
+
+    .task-item,
+    .session-item,
+    .module-header {
+        align-items: stretch;
+    }
+
+    .task-item,
+    .session-item {
+        flex-direction: column;
+    }
+
+    .session-item .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 575px) {
+    .content {
+        padding: 68px 12px 18px;
+    }
+
+    .hero-card,
+    .info-card,
+    .module-card {
+        padding: 16px;
+    }
+
+    .hero-title {
+        font-size: 1.45rem;
+    }
+
+    .stat-card h2 {
+        font-size: 1.65rem;
+    }
+
+    .course-grid,
+    .soldier-grid,
+    .report-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .module-table {
+        min-width: 540px;
+    }
+
+    .bg-img {
+        top: 50%;
+        right: 5px;
+        left: auto;
+        bottom: auto;
+        transform: translateY(-50%);
+        width: min(75vw, 280px);
+        height: auto;
+        max-height: 40vh;
+        opacity: 1;
+    }
+
+    .badge-soft,
+    .status-pill,
+    .action-chip {
+        white-space: normal;
     }
 }

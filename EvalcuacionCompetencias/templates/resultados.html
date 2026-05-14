@@ -1,3 +1,29 @@
 <div id="contenido-parcial">
-    <h2>📊 Resultados</h2>
+    <div class="cursos">
+        <h2 class="mb-4">📊 Resultados</h2>
+
+        <div class="card-curso verde mb-3">
+            <h5>Promedio general</h5>
+            <h2>{{ promedio }}</h2>
+        </div>
+
+        <div class="row">
+            {% for calificacion in calificaciones %}
+            <div class="col-md-4 mb-3">
+                <div class="card-curso azul">
+                    <h5>{{ calificacion.curso.nombre }}</h5>
+                    <p>Nota: {{ calificacion.nota }}</p>
+                    <p>{{ calificacion.observaciones|default:"Sin observaciones" }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="card-curso azul">
+                    <h5>Sin resultados publicados</h5>
+                    <p>Cuando un instructor registre calificaciones aparecerán aquí.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>

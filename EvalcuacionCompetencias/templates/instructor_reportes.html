@@ -9,23 +9,21 @@
         </div>
 
         <div class="report-grid">
+            {% for curso in cursos %}
             <div class="report-box">
-                <h5>Resultados del módulo táctico</h5>
-                <p>18 registros listos para publicar con promedio de 89%.</p>
-                <span class="status-pill status-ready">Disponible</span>
+                <h5>{{ curso.nombre }}</h5>
+                <p>{{ curso.total_soldados }} soldados · Promedio {{ curso.promedio|default:0|floatformat:1 }}</p>
+                <span class="status-pill {% if curso.activo %}status-ready{% else %}status-pending{% endif %}">
+                    {% if curso.activo %}Disponible{% else %}Inactivo{% endif %}
+                </span>
             </div>
-
+            {% empty %}
             <div class="report-box">
-                <h5>Observaciones de liderazgo</h5>
-                <p>Falta validar 2 comentarios antes del cierre.</p>
-                <span class="status-pill status-progress">En proceso</span>
+                <h5>Sin reportes</h5>
+                <p>No hay cursos asignados para consolidar resultados.</p>
+                <span class="status-pill status-pending">Pendiente</span>
             </div>
-
-            <div class="report-box">
-                <h5>Retroalimentación de supervivencia</h5>
-                <p>Reporte consolidado y listo para exportar.</p>
-                <span class="status-pill status-ready">Completo</span>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </div>

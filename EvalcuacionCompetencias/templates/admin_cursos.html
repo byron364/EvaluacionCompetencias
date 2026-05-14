@@ -32,6 +32,8 @@
                             <th>Instructor</th>
                             <th>Fecha Inicio</th>
                             <th>Fecha Fin</th>
+                            <th>Cupo</th>
+                            <th>Inscritos</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
@@ -69,6 +71,14 @@
                                 {{ curso.fecha_fin }}
                             </td>
 
+                            <td>
+                                {{ curso.cupo_maximo }}
+                            </td>
+
+                            <td>
+                                {{ curso.total_soldados }}
+                            </td>
+
                             <!-- ESTADO -->
                             <td>
 
@@ -89,8 +99,17 @@
                             <td>
 
                                 <!-- VER -->
-                                <button class="btn btn-info btn-sm btn-ver" data-id="{{ curso.id }}">
+                                <button class="btn btn-info btn-sm btn-ver-curso" data-id="{{ curso.id }}"
+                                    data-nombre="{{ curso.nombre }}" data-codigo="{{ curso.codigo }}"
+                                    data-descripcion="{{ curso.descripcion|default:'Sin descripción' }}"
+                                    data-inscritos="{{ curso.total_soldados }}" data-cupo="{{ curso.cupo_maximo }}">
                                     <i id="buttontable" class="fa fa-eye">
+                                    </i>
+                                </button>
+
+                                <button class="btn btn-primary btn-sm btn-asignar-curso" data-id="{{ curso.id }}"
+                                    data-nombre="{{ curso.nombre }}">
+                                    <i id="buttontable" class="fa fa-user-plus">
                                     </i>
                                 </button>
 
@@ -118,7 +137,7 @@
                         {% empty %}
 
                         <tr>
-                            <td colspan="7" class="text-center">
+                            <td colspan="9" class="text-center">
 
                                 No hay cursos registrados
 
@@ -135,6 +154,14 @@
 
         </div>
 
+    </div>
+
+    <div class="d-none" id="soldadosDisponibles">
+        {% for soldado in soldados %}
+        <option value="{{ soldado.id }}">
+            {{ soldado.first_name }} {{ soldado.last_name }} - {{ soldado.perfil.documento }}
+        </option>
+        {% endfor %}
     </div>
 
 </div>

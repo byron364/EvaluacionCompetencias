@@ -14,29 +14,23 @@
                     <tr>
                         <th>Evaluación</th>
                         <th>Curso</th>
-                        <th>Pendientes</th>
+                        <th>Fecha</th>
                         <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for evaluacion in evaluaciones %}
                     <tr>
-                        <td>Prueba teórica #3</td>
-                        <td>Combate Básico</td>
-                        <td>8</td>
-                        <td><span class="status-pill status-pending">Calificar</span></td>
+                        <td>{{ evaluacion.titulo }}</td>
+                        <td>{{ evaluacion.curso.nombre }}</td>
+                        <td>{{ evaluacion.fecha }}</td>
+                        <td><span class="status-pill status-progress">{{ evaluacion.porcentaje }}%</span></td>
                     </tr>
+                    {% empty %}
                     <tr>
-                        <td>Simulación de mando</td>
-                        <td>Liderazgo Operacional</td>
-                        <td>3</td>
-                        <td><span class="status-pill status-progress">En revisión</span></td>
+                        <td colspan="4" class="text-center">No hay evaluaciones registradas para tus cursos.</td>
                     </tr>
-                    <tr>
-                        <td>Informe de supervivencia</td>
-                        <td>Supervivencia</td>
-                        <td>1</td>
-                        <td><span class="status-pill status-ready">Listo</span></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

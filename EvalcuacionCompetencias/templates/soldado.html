@@ -1,8 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="es">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soldado</title>
     <!-- FAVICON -->
     <link rel="icon" href="{% static 'img/escudo.png' %}" type="image/png">
@@ -36,6 +38,10 @@
         <div class="overlay">
 
             <div class="container-fluid">
+                <button id="menuToggle" class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
                 <div class="row">
 
                     <!-- SIDEBAR -->
@@ -133,9 +139,26 @@
     document.addEventListener("DOMContentLoaded", function () {
 
         const content = document.getElementById("contenido-dinamico");
+        const menuToggle = document.getElementById("menuToggle");
+        const sidebar = document.querySelector(".sidebar");
+        const backdrop = document.getElementById("sidebarBackdrop");
 
         // 🔥 URL de inicio (dashboard)
         const HOME_URL = "/inicio/";
+
+        function cerrarMenuMovil() {
+            sidebar.classList.remove("active");
+            backdrop.classList.remove("active");
+            menuToggle.setAttribute("aria-expanded", "false");
+        }
+
+        menuToggle.addEventListener("click", function () {
+            sidebar.classList.toggle("active");
+            backdrop.classList.toggle("active", sidebar.classList.contains("active"));
+            menuToggle.setAttribute("aria-expanded", sidebar.classList.contains("active"));
+        });
+
+        backdrop.addEventListener("click", cerrarMenuMovil);
 
         function cargarVista(url, addToHistory = true) {
 
@@ -144,7 +167,11 @@
             loader.classList.add("active"); // 🔥 mostrar loader
             content.classList.add("fade-out");
 
-            fetch(url)
+            fetch(url, {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
                 .then(response => response.text())
                 .then(data => {
 
@@ -206,7 +233,12 @@
 
                 activarMenu(url);
                 cargarVista(url);
+                cerrarMenuMovil();
             });
+        });
+
+        document.querySelectorAll(".sidebar .nav-link").forEach(link => {
+            link.addEventListener("click", cerrarMenuMovil);
         });
 
         // 🔙 BOTÓN ATRÁS / ADELANTE

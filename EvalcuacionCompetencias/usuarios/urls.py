@@ -19,14 +19,13 @@ urlpatterns = [
     path('soldado-dashboard/', soldado_dashboard, name='soldado_dashboard'),
     path('soldado/', soldado_dashboard),  # 👈 AGREGA ESTA
     path('usuarios/', admin_usuarios, name='usuarios'),
-    path('cursos/', admin_cursos, name='cursos'),
+    path('cursos/', cursos, name='cursos'),
     path('reportes/', admin_reportes, name='reportes'),
     path('admin-dashboard-partial/', admin_dashboard_partial),
     path('crear-usuario/', crear_usuario, name='crear_usuario'),
 
 
     path('inicio/', inicio, name='inicio'),
-    path('cursos/', cursos, name='cursos'),
     path('evaluaciones/', evaluaciones, name='evaluaciones'),
     path('resultados/', resultados, name='resultados'),
     path('retro/', retroalimentacion, name='retroalimentacion'),
@@ -77,4 +76,14 @@ urlpatterns = [
     'eliminar-curso/<int:curso_id>/',
     views.eliminar_curso,
     name='eliminar_curso' ),
+
+    path(
+    'asignar-soldado-curso/',
+    views.asignar_soldado_curso,
+    name='asignar_soldado_curso' ),
+
+    path(
+    'exportar-reporte/<str:tipo>/',
+    views.exportar_reporte,
+    name='exportar_reporte' ),
 ]

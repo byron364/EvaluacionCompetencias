@@ -8,22 +8,19 @@
         <div class="row mt-4">
 
             <div class="col-md-3">
-                <button class="btn btn-success w-100 nav-btn" data-url="/cursos/">Ver Cursos</button>
+                <button class="btn btn-success w-100 nav-btn" data-url="/cursos/">Cursos: {{ total_cursos }}</button>
             </div>
 
             <div class="col-md-3">
-                <button class="btn btn-primary w-100 nav-btn" data-url="/evaluaciones/">Presentar
-                    Evaluación</button>
+                <button class="btn btn-primary w-100 nav-btn" data-url="/evaluaciones/">Evaluaciones: {{ total_evaluaciones }}</button>
             </div>
 
             <div class="col-md-3">
-                <button class="btn btn-warning w-100 nav-btn" data-url="/resultados/">Ver
-                    Resultados</button>
+                <button class="btn btn-warning w-100 nav-btn" data-url="/resultados/">Resultados: {{ total_resultados }}</button>
             </div>
 
             <div class="col-md-3">
-                <button class="btn btn-info w-100 nav-btn" data-url="/retro/">Evaluar
-                    Instructor</button>
+                <button class="btn btn-info w-100 nav-btn" data-url="/resultados/">Promedio: {{ promedio }}</button>
             </div>
 
         </div>

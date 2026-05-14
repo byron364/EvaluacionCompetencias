@@ -1,4 +1,53 @@
 <div id="contenido-parcial">
-    <h2>Reportes</h2>
-    <p>Contenido de reportes disponibles</p>
+    <div id="tittle" class="mb-4">
+        <h2><i class="fa fa-chart-column"></i> Reportes</h2>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card-admin">
+                <i class="fa fa-users fa-2x"></i>
+                <h6>Usuarios</h6>
+                <h2>{{ resumen.usuarios }}</h2>
+                <p>Soldados: {{ resumen.soldados }} · Instructores: {{ resumen.instructores }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-admin">
+                <i class="fa fa-book fa-2x"></i>
+                <h6>Cursos</h6>
+                <h2>{{ resumen.cursos }}</h2>
+                <p>Inscripciones: {{ resumen.inscripciones }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-admin">
+                <i class="fa fa-award fa-2x"></i>
+                <h6>Promedio general</h6>
+                <h2>{{ resumen.promedio|floatformat:1 }}</h2>
+                <p>Con base en calificaciones registradas</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-admin p-4">
+        <h5>Exportar información</h5>
+        <div class="row g-3 mt-2">
+            <div class="col-md-4">
+                <a class="btn btn-success w-100" href="/exportar-reporte/usuarios/">
+                    <i class="fa fa-file-excel me-1"></i> Usuarios
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a class="btn btn-success w-100" href="/exportar-reporte/cursos/">
+                    <i class="fa fa-file-excel me-1"></i> Cursos
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a class="btn btn-success w-100" href="/exportar-reporte/resultados/">
+                    <i class="fa fa-file-excel me-1"></i> Resultados
+                </a>
+            </div>
+        </div>
+    </div>
 </div>

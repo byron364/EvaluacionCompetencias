@@ -5,6 +5,8 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administrador</title>
     <link rel="icon" href="{% static 'img/escudo.png' %}" type="image/png">
 
@@ -44,7 +46,10 @@
         <div class="overlay">
 
             <div class="container-fluid">
-                <button id="menuToggle" class="menu-toggle"> <i class="fa fa-bars"></i> </button>
+                <button id="menuToggle" class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
                 <div class="row">
                     <div class="col-md-2 sidebar">
                         <div class="text-center mb-4">
@@ -161,7 +166,11 @@
                 loader.classList.add("active");
 
                 content.classList.add("fade-out");
-                fetch(url)
+                fetch(url, {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
                     .then(res => res.text())
                     .then(data => {
 
@@ -245,6 +254,8 @@
                     });
             }
 
+            window.cargarVista = cargarVista;
+
             // Eventos menú lateral SPA
             document.querySelectorAll(".nav-link-spa").forEach(link => {
                 link.addEventListener("click", function (e) {
@@ -299,12 +310,20 @@
     <script>
         window.crearUsuario = function () {
 
+            const batallon = document.getElementById("batallon")?.value.trim() || "";
+            const compania = document.getElementById("compania")?.value.trim() || "";
+            const unidad = [batallon, compania].filter(Boolean).join(" - ");
+
+            if (document.getElementById("unidad")) {
+                document.getElementById("unidad").value = unidad;
+            }
+
             const data = {
                 nombres: document.getElementById("nombres")?.value.trim(),
                 apellidos: document.getElementById("apellidos")?.value.trim(),
                 email: document.getElementById("email")?.value.trim(),
                 documento: document.getElementById("documento")?.value.trim(),
-                unidad: document.getElementById("unidad")?.value.trim(),
+                unidad: unidad,
                 grado: document.getElementById("grado")?.value.trim(),
                 rol: document.getElementById("rol")?.value
             };
@@ -338,6 +357,8 @@
                         document.getElementById("documento").value = "";
                         document.getElementById("grado").value = "";
                         document.getElementById("unidad").value = "";
+                        document.getElementById("batallon").value = "";
+                        document.getElementById("compania").value = "";
                     }
                 })
                 .catch(() => {
@@ -479,6 +500,9 @@
             const email = boton.dataset.email;
             const rol = boton.dataset.rol;
             const activo = boton.dataset.activo === "True";
+            const documento = boton.dataset.documento || "";
+            const grado = boton.dataset.grado || "";
+            const unidad = boton.dataset.unidad || "";
 
             Swal.fire({
                 title: "Editar Usuario",
@@ -486,6 +510,9 @@
             <input id="swal-nombre" class="swal2-input" placeholder="Nombre" value="${nombre}">
             <input id="swal-apellido" class="swal2-input" placeholder="Apellido" value="${apellido}">
             <input id="swal-email" class="swal2-input" placeholder="Correo" value="${email}">
+            <input id="swal-documento" class="swal2-input" placeholder="Documento" value="${documento}">
+            <input id="swal-grado" class="swal2-input" placeholder="Grado" value="${grado}">
+            <input id="swal-unidad" class="swal2-input" placeholder="Unidad / Batallón - Compañía" value="${unidad}">
             <select id="swal-rol" class="swal2-input">
                 <option value="soldado" ${rol === "soldado" ? "selected" : ""}>Soldado</option>
                 <option value="instructor" ${rol === "instructor" ? "selected" : ""}>Instructor</option>
@@ -505,6 +532,9 @@
                         nombre: document.getElementById("swal-nombre").value,
                         apellido: document.getElementById("swal-apellido").value,
                         email: document.getElementById("swal-email").value,
+                        documento: document.getElementById("swal-documento").value,
+                        grado: document.getElementById("swal-grado").value,
+                        unidad: document.getElementById("swal-unidad").value,
                         rol: document.getElementById("swal-rol").value,
                         activo: document.getElementById("swal-activo").value === "true"
                     };
@@ -537,9 +567,24 @@
         document.addEventListener("DOMContentLoaded", function () {
             const menuToggle = document.getElementById("menuToggle");
             const sidebar = document.querySelector(".sidebar");
+            const backdrop = document.getElementById("sidebarBackdrop");
+
+            function cerrarMenuMovil() {
+                sidebar.classList.remove("active");
+                backdrop.classList.remove("active");
+                menuToggle.setAttribute("aria-expanded", "false");
+            }
 
             menuToggle.addEventListener("click", function () {
                 sidebar.classList.toggle("active");
+                backdrop.classList.toggle("active", sidebar.classList.contains("active"));
+                menuToggle.setAttribute("aria-expanded", sidebar.classList.contains("active"));
+            });
+
+            backdrop.addEventListener("click", cerrarMenuMovil);
+
+            document.querySelectorAll(".sidebar .nav-link").forEach(link => {
+                link.addEventListener("click", cerrarMenuMovil);
             });
         });
     </script>
@@ -964,6 +1009,74 @@
 
         });
 
+    </script>
+    <script>
+        document.addEventListener("click", function (e) {
+            const botonVer = e.target.closest(".btn-ver-curso");
+
+            if (botonVer) {
+                Swal.fire({
+                    title: botonVer.dataset.nombre,
+                    html: `
+                        <p><strong>Código:</strong> ${botonVer.dataset.codigo}</p>
+                        <p><strong>Descripción:</strong> ${botonVer.dataset.descripcion}</p>
+                        <p><strong>Cupo:</strong> ${botonVer.dataset.inscritos}/${botonVer.dataset.cupo}</p>
+                    `,
+                    icon: "info",
+                    confirmButtonColor: "#198754"
+                });
+                return;
+            }
+
+            const botonAsignar = e.target.closest(".btn-asignar-curso");
+
+            if (!botonAsignar) return;
+
+            const opciones = document.getElementById("soldadosDisponibles")?.innerHTML || "";
+
+            Swal.fire({
+                title: `Asignar soldado`,
+                html: `
+                    <p class="mb-2">${botonAsignar.dataset.nombre}</p>
+                    <select id="swal-soldado" class="swal2-input">
+                        <option value="">Seleccione soldado</option>
+                        ${opciones}
+                    </select>
+                `,
+                confirmButtonText: "Asignar",
+                showCancelButton: true,
+                cancelButtonText: "Cancelar",
+                confirmButtonColor: "#198754",
+                preConfirm: () => {
+                    const soldadoId = document.getElementById("swal-soldado").value;
+                    if (!soldadoId) {
+                        Swal.showValidationMessage("Seleccione un soldado");
+                    }
+                    return soldadoId;
+                }
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                fetch("/asignar-soldado-curso/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        curso_id: botonAsignar.dataset.id,
+                        soldado_id: result.value
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            mostrarToast(data.error, "error");
+                        } else {
+                            mostrarToast(data.mensaje, "success");
+                            cargarVista("/cursos/", false);
+                        }
+                    })
+                    .catch(() => mostrarToast("Error asignando soldado", "error"));
+            });
+        });
     </script>
 </body>
 

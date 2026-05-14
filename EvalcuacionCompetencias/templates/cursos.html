@@ -3,37 +3,28 @@
         <h2 class="mb-4">📚 Cursos</h2>
 
         <div class="row">
-
-            <div class="col-md-4">
+            {% for inscripcion in inscripciones %}
+            <div class="col-md-4 mb-3">
                 <div class="card-curso verde">
-                    <h5>Combate Básico</h5>
-                    <p>Nivel: Inicial</p>
+                    <h5>{{ inscripcion.curso.nombre }}</h5>
+                    <p>Instructor: {{ inscripcion.curso.instructor.get_full_name|default:"Sin instructor" }}</p>
+                    <p>{{ inscripcion.curso.fecha_inicio }} - {{ inscripcion.curso.fecha_fin }}</p>
                     <div class="barra">
-                        <div class="progreso" style="width: 70%;"></div>
+                        <div class="progreso" style="width: 65%;"></div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-4">
+            {% empty %}
+            <div class="col-12">
                 <div class="card-curso azul">
-                    <h5>Estrategia Militar</h5>
-                    <p>Nivel: Intermedio</p>
+                    <h5>No tienes cursos inscritos</h5>
+                    <p>Cuando el administrador te inscriba a un curso aparecerá aquí.</p>
                     <div class="barra">
-                        <div class="progreso" style="width: 40%;"></div>
+                        <div class="progreso" style="width: 0%;"></div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-4">
-                <div class="card-curso rojo">
-                    <h5>Supervivencia</h5>
-                    <p>Nivel: Avanzado</p>
-                    <div class="barra">
-                        <div class="progreso" style="width: 90%;"></div>
-                    </div>
-                </div>
-            </div>
-
+            {% endfor %}
         </div>
     </div>
 </div>
