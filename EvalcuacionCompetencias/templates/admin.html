@@ -26,6 +26,9 @@
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 </head>
 
@@ -63,8 +66,13 @@
                         <ul class="nav flex-column sidebar-menu">
                             <li><a class="nav-link nav-link-spa active" data-url="/admin-dashboard-partial/">Inicio</a>
                             </li>
+                            <li><a class="nav-link nav-link-spa" data-url="/batallones/">Batallones</a></li>
+                            <li><a class="nav-link nav-link-spa" data-url="/companias/">Compañias</a></li>
                             <li><a class="nav-link nav-link-spa" data-url="/usuarios/">Usuarios</a></li>
-                            <li><a class="nav-link nav-link-spa" data-url="/cursos/">Cursos</a></li>
+                            <li><a class="nav-link nav-link-spa" data-url="/cursos/">Evaluaciones</a></li>
+                            <li><a class="nav-link nav-link-spa" data-url="/inscripciones/">Inscripciones</a></li>
+                            <li><a class="nav-link nav-link-spa" data-url="/test/">Test</a></li>
+                            <li><a class="nav-link nav-link-spa" data-url="/configuracion/">Configuración</a></li>
                             <li><a class="nav-link nav-link-spa" data-url="/reportes/">Reportes</a></li>
                             <li><a class="nav-link text-danger" href="/logout/">Cerrar sesión</a></li>
                         </ul>
@@ -75,13 +83,14 @@
                         <div class="CompromisoColombia d-flex justify-content-center">
                             <img src="{% static 'img/CompromisoColombia.png' %}" width="40%" class="img-fluid">
                         </div>
+
                         <div class="row g-4">
 
                             <div class="col-md-3">
                                 <div class="card-admin">
                                     <i class="fa fa-users fa-2x"></i>
-                                    <h5>Usuarios</h5>
-                                    <h2>120</h2>
+                                    <h5>USER</h5>
+                                    <h2 id="total-usuarios">0</h2>
                                 </div>
                             </div>
 
@@ -89,7 +98,7 @@
                                 <div class="card-admin">
                                     <i class="fa fa-book fa-2x"></i>
                                     <h5>Cursos</h5>
-                                    <h2>35</h2>
+                                    <h2 id="total-cursos">0</h2>
                                 </div>
                             </div>
 
@@ -97,7 +106,7 @@
                                 <div class="card-admin">
                                     <i class="fa fa-chart-line fa-2x"></i>
                                     <h5>Evaluaciones</h5>
-                                    <h2>89</h2>
+                                    <h2 id="total-evaluaciones">0</h2>
                                 </div>
                             </div>
 
@@ -105,7 +114,7 @@
                                 <div class="card-admin">
                                     <i class="fa fa-check-circle fa-2x"></i>
                                     <h5>Aprobados</h5>
-                                    <h2>72%</h2>
+                                    <h2 id="porcentaje-aprobados">0%</h2>
                                 </div>
                             </div>
 
@@ -152,7 +161,10 @@
         <div class="spinner"></div>
         <p>Cargando módulo...</p>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
@@ -179,11 +191,114 @@
                         const nuevo = doc.getElementById("contenido-parcial");
 
                         if (nuevo) {
-                            content.innerHTML = nuevo.outerHTML;
+                            content.innerHTML = nuevo.innerHTML;
 
+                            if (url.includes("/usuarios/")) {
+
+                                inicializarUsuarios();
+
+                            }
+
+                            // MAPA BATALLONES
+                            if (document.getElementById("mapaBatallones")) {
+
+                                setTimeout(() => {
+
+                                    // evitar duplicar mapa
+                                    const mapaContainer =
+                                        L.DomUtil.get('mapaBatallones');
+
+                                    if (mapaContainer != null) {
+
+                                        mapaContainer._leaflet_id = null;
+
+                                    }
+
+                                    const mapa = L.map(
+                                        'mapaBatallones'
+                                    ).setView(
+                                        [4.5709, -74.2973],
+                                        5
+                                    );
+
+                                    L.tileLayer(
+                                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                        {
+                                            attribution: '&copy; OpenStreetMap'
+                                        }
+                                    ).addTo(mapa);
+
+                                    // BOGOTÁ
+                                    L.marker([4.7110, -74.0721])
+                                        .addTo(mapa)
+                                        .bindPopup(`
+                <b>Batallón Bogotá</b><br>
+                Bogotá
+            `);
+
+                                    // MEDELLÍN
+                                    L.marker([6.2442, -75.5812])
+                                        .addTo(mapa)
+                                        .bindPopup(`
+                <b>Batallón Medellín</b><br>
+                Medellín
+            `);
+
+                                    // CALI
+                                    L.marker([3.4516, -76.5320])
+                                        .addTo(mapa)
+                                        .bindPopup(`
+                <b>Batallón Cali</b><br>
+                Cali
+            `);
+
+                                }, 300);
+                            }
                             // Si estamos en usuarios, actualizar cards automáticamente 
                             if (url.includes("/usuarios/")) {
                                 actualizarTarjetas();
+                            }
+
+                            // TABLA BATALLONES
+                            if ($("#tablaBatallones").length) {
+
+                                $("#tablaBatallones").DataTable({
+
+                                    pageLength: 5,
+
+                                    lengthChange: false,
+
+                                    ordering: true,
+
+                                    searching: true,
+
+                                    info: true,
+
+                                    destroy: true,
+
+                                    responsive: true,
+
+                                    language: {
+
+                                        search: "Buscar batallón:",
+
+                                        zeroRecords:
+                                            "No se encontraron batallones",
+
+                                        info:
+                                            "Mostrando _START_ a _END_ de _TOTAL_ batallones",
+
+                                        infoEmpty:
+                                            "No hay batallones disponibles",
+
+                                        paginate: {
+
+                                            previous: "Anterior",
+
+                                            next: "Siguiente"
+                                        }
+                                    }
+                                });
                             }
 
                             // Inicializar DataTable si existe la tabla
@@ -233,11 +348,35 @@
                             });
                         }
 
+                        // TABLA COMPAÑÍAS
+                        if ($("#tablaCompanias").length) {
+
+                            $("#tablaCompanias").DataTable({
+                                pageLength: 5,
+                                lengthChange: false,
+                                ordering: true,
+                                searching: true,
+                                info: true,
+                                destroy: true,
+
+                                language: {
+                                    search: "Buscar compañía:",
+                                    zeroRecords: "No se encontraron compañías",
+                                    info: "Mostrando _START_ a _END_ de _TOTAL_ compañías",
+                                    infoEmpty: "No hay compañías disponibles",
+                                    paginate: {
+                                        previous: "Anterior",
+                                        next: "Siguiente"
+                                    }
+                                }
+                            });
+                        }
+
                         // Ocultar loader al terminar
                         setTimeout(() => { loader.classList.remove("active"); content.classList.remove("fade-out"); content.classList.add("fade-in"); }, 500);
 
                         if (guardar) {
-                            localStorage.setItem("ultimaVista", url);
+                            sessionStorage.setItem("ultimaVista", url);
 
                             history.replaceState(
                                 { url: url },
@@ -275,7 +414,7 @@
 
 
             // Restaurar última vista abierta
-            const ultimaVista = localStorage.getItem("ultimaVista");
+            const ultimaVista = sessionStorage.getItem("ultimaVista");
 
             if (ultimaVista) {
 
@@ -325,17 +464,46 @@
                 documento: document.getElementById("documento")?.value.trim(),
                 unidad: unidad,
                 grado: document.getElementById("grado")?.value.trim(),
-                rol: document.getElementById("rol")?.value
+                rol: document.getElementById("rol")?.value,
+                compania: document.getElementById("companiaSeleccionada")?.value,
             };
 
-            if (!data.nombres || !data.apellidos || !data.email || !data.documento) {
+            if (!data.nombres || !data.apellidos || !data.email || !data.documento || !data.unidad || !data.grado || !data.compania) {
                 mostrarToast("⚠️ Completa los campos obligatorios", "warning");
                 return;
             }
 
-            if (!data.email.endsWith("@ejercito.mil.co")) {
-                mostrarToast("⚠️ Debe ser correo institucional", "warning");
-                return;
+            if (data.rol === "soldado") {
+
+                if (
+                    !data.email.endsWith(
+                        "@buzonejercito.mil.co"
+                    )
+                ) {
+
+                    mostrarToast(
+                        "⚠️ El soldado debe usar @buzonejercito.mil.co",
+                        "warning"
+                    );
+
+                    return;
+                }
+
+            } else {
+
+                if (
+                    !data.email.endsWith(
+                        "@ejercito.mil.co"
+                    )
+                ) {
+
+                    mostrarToast(
+                        "⚠️ Debe usar @ejercito.mil.co",
+                        "warning"
+                    );
+
+                    return;
+                }
             }
 
             fetch("/crear-usuario/", {
@@ -359,6 +527,37 @@
                         document.getElementById("unidad").value = "";
                         document.getElementById("batallon").value = "";
                         document.getElementById("compania").value = "";
+                        document.getElementById("buscarCompania").value = "";
+                        document.getElementById("companiaSeleccionada").value = "";
+                        document.getElementById("rol").value = "soldado";
+
+                        // OCULTAR RESULTADOS
+
+                        const resultados =
+                            document.getElementById(
+                                "resultadosCompanias"
+                            );
+
+                        if (resultados) {
+
+                            resultados.style.display =
+                                "none";
+
+                            resultados.innerHTML = "";
+                        }
+
+                        // RESETEAR INPUT GRADO
+
+                        const contenedorGrado =
+                            document.getElementById(
+                                "contenedorGrado"
+                            );
+
+                        if (contenedorGrado) {
+
+                            contenedorGrado.style.display =
+                                "none";
+                        }
                     }
                 })
                 .catch(() => {
@@ -391,7 +590,7 @@
         window.subirExcel = function () {
 
             const archivo = document.getElementById("archivoExcel").files[0];
-            const rol = document.getElementById("tipoUsuarioExcel").value;
+            const batallon = document.getElementById("batallonExcelSeleccionado").value;
 
             if (!archivo) {
                 mostrarToast("Seleccione un archivo Excel", "warning");
@@ -400,7 +599,7 @@
 
             let formData = new FormData();
             formData.append("archivo", archivo);
-            formData.append("rol", rol);
+            formData.append("batallon", batallon);
 
             fetch("/cargar-usuarios-excel/", {
                 method: "POST",
@@ -408,12 +607,61 @@
             })
                 .then(res => res.json())
                 .then(res => {
-                    if (res.error) {
-                        mostrarToast(res.error, "error");
-                    } else {
-                        mostrarToast(res.mensaje, "success");
 
-                        actualizarTarjetas();
+                    console.log(res);
+
+                    if (res.error) {
+
+                        mostrarToast(
+                            res.error,
+                            "error"
+                        );
+
+                        return;
+                    }
+
+                    mostrarToast(
+                        res.mensaje,
+                        "success"
+                    );
+
+                    actualizarTarjetas();
+
+                    // MOSTRAR ERRORES DEL EXCEL
+
+                    if (
+
+                        res.errores &&
+
+                        res.errores.length > 0
+
+                    ) {
+
+                        Swal.fire({
+
+                            icon: "warning",
+
+                            title: "Usuarios omitidos",
+
+                            html: `
+
+                <div style="
+                    text-align:left;
+                    max-height:300px;
+                    overflow:auto;
+                    font-size:14px;
+                ">
+
+                    ${res.errores.map(
+                                e => `• ${e}`
+                            ).join("<br>")}
+
+                </div>
+
+            `,
+
+                            width: 700
+                        });
                     }
                 });
         };
@@ -424,17 +672,50 @@
             fetch("/obtener-estadisticas/")
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById("total-usuarios").textContent =
-                        data.total_usuarios;
+                    const soldados =
+                        document.getElementById("total-soldados");
 
-                    document.getElementById("total-soldados").textContent =
-                        data.total_soldados;
+                    if (soldados) {
 
-                    document.getElementById("total-instructores").textContent =
-                        data.total_instructores;
+                        soldados.textContent =
+                            data.total_soldados;
+                    }
 
-                    document.getElementById("total-activos").textContent =
-                        data.total_activos;
+                    const instructores =
+                        document.getElementById("total-instructores");
+
+                    if (instructores) {
+
+                        instructores.textContent =
+                            data.total_instructores;
+                    }
+
+                    const activos =
+                        document.getElementById("total-activos");
+
+                    if (activos) {
+
+                        activos.textContent =
+                            data.total_activos;
+                    }
+                    const cursos = document.getElementById("total-cursos");
+                    if (cursos) {
+                        cursos.textContent = data.total_cursos;
+                    }
+
+                    const evaluaciones = document.getElementById("total-evaluaciones");
+                    if (evaluaciones) {
+                        evaluaciones.textContent = data.total_evaluaciones;
+                    }
+
+                    const aprobados =
+                        document.getElementById("porcentaje-aprobados");
+
+                    if (aprobados) {
+
+                        aprobados.textContent =
+                            data.porcentaje_aprobados + "%";
+                    }
                 });
         }
 
@@ -601,10 +882,195 @@
             modal.show();
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function generarCodigoVisual() {
+
+            const input =
+                document.getElementById(
+                    'codigoBatallon'
+                );
+
+            // SI NO EXISTE EL INPUT
+            // NO HACER NADA
+
+            if (!input) return;
+
+            const filas = document.querySelectorAll(
+                '#tablaBatallones tbody tr'
+            );
+
+            let numero = filas.length + 1;
+
+            let codigo =
+                `BAT-${String(numero).padStart(4, '0')}`;
+
+            input.value = codigo;
+        }
+
+        window.onload = function () {
+
+            const input =
+                document.getElementById(
+                    "codigoBatallon"
+                );
+
+            if (input) {
+
+                generarCodigoVisual();
+
+            }
+
+        };
+
+    </script>
+    <script>
+
+        async function crearBatallon() {
+
+            const nombre =
+
+                document.getElementById(
+                    "nombreBatallon"
+                ).value;
+
+            const ciudad =
+
+                document.getElementById(
+                    "ciudadBatallon"
+                ).value;
+
+            const descripcion =
+
+                document.getElementById(
+                    "descripcionBatallon"
+                ).value;
+
+            if (!nombre.trim()) {
+
+                mostrarToast(
+                    "⚠️ Debe ingresar el nombre del batallón",
+                    "warning"
+                );
+
+                return;
+            }
+
+            try {
+
+                const response = await fetch(
+
+                    "/crear-batallon/",
+
+                    {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body: JSON.stringify({
+
+                            nombre,
+                            ciudad,
+                            descripcion
+
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                if (data.error) {
+
+                    mostrarToast(
+                        "❌ " + data.error,
+                        "error"
+                    );
+
+                    return;
+                }
+
+                mostrarToast(
+                    "✅ " + data.mensaje,
+                    "success"
+                );
+
+                setTimeout(() => {
+
+                    location.reload();
+
+                }, 1200);
+
+            } catch (error) {
+
+                mostrarToast(
+                    "❌ Error del sistema",
+                    "error"
+                );
+
+                console.error(error);
+
+            }
+
+        }
+
+
+        function generarCodigoVisual() {
+
+            const filas = document.querySelectorAll(
+                '#tablaBatallones tbody tr'
+            );
+
+            let numero = filas.length + 1;
+
+            let codigo =
+
+                `BAT-${String(numero).padStart(4, '0')}`;
+
+            document.getElementById(
+                'codigoBatallon'
+            ).value = codigo;
+
+        }
+
+
+        $(document).ready(function () {
+
+            $('#tablaBatallones').DataTable({
+
+                responsive: true,
+
+                language: {
+
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                }
+
+            });
+
+            generarCodigoVisual();
+
+        });
+        $(document).ready(function () {
+
+            $('#tablaCompanias').DataTable({
+
+                responsive: true,
+
+                language: {
+
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                }
+
+            });
+
+        });
+
+    </script>
+
     <!-- MODAL CREAR CURSO -->
     <div class="modal fade" id="modalCrearCurso" tabindex="-1" aria-labelledby="modalCrearCursoLabel"
         aria-hidden="true">
@@ -743,6 +1209,167 @@
                     </button>
 
                     <button class="btn btn-warning" onclick="guardarEdicionCurso()">
+
+                        <i class="fa fa-save"></i>
+                        Guardar Cambios
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- MODAL EDITAR BATALLÓN -->
+    <div class="modal fade" id="modalEditarBatallon" tabindex="-1">
+
+        <div class="modal-dialog modal-lg">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-warning">
+
+                    <h4 class="modal-title">
+
+                        <i class="fa fa-edit"></i>
+                        Editar Batallón
+
+                    </h4>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <!-- BODY -->
+                <div class="modal-body">
+
+                    <input type="hidden" id="editarBatallonId">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label>Nombre</label>
+
+                            <input type="text" id="editarNombreBatallon" class="form-control">
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label>Ciudad</label>
+
+                            <input type="text" id="editarCiudadBatallon" class="form-control">
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Descripción</label>
+
+                        <textarea id="editarDescripcionBatallon" class="form-control" rows="5">
+                    </textarea>
+
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="btn btn-warning" onclick="guardarEdicionBatallon()">
+
+                        <i class="fa fa-save"></i>
+                        Guardar Cambios
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- MODAL EDITAR COMPAÑÍA -->
+    <div class="modal fade" id="modalEditarCompania" tabindex="-1">
+
+        <div class="modal-dialog modal-lg">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-warning">
+
+                    <h4 class="modal-title">
+
+                        <i class="fa fa-edit"></i>
+                        Editar Compañía
+
+                    </h4>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <!-- BODY -->
+                <div class="modal-body">
+
+                    <input type="hidden" id="editarCompaniaId">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label>Nombre</label>
+
+                            <input type="text" id="editarNombreCompania" class="form-control">
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label>Estado</label>
+
+                            <input type="text" class="form-control" value="Editable" disabled>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Descripción</label>
+
+                        <textarea id="editarDescripcionCompania" class="form-control" rows="5"></textarea>
+
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="btn btn-warning" onclick="guardarEdicionCompania()">
 
                         <i class="fa fa-save"></i>
                         Guardar Cambios
@@ -1011,6 +1638,7 @@
 
     </script>
     <script>
+<<<<<<< HEAD
         document.addEventListener("click", function (e) {
             const botonVer = e.target.closest(".btn-ver-curso");
 
@@ -1077,6 +1705,911 @@
                     .catch(() => mostrarToast("Error asignando soldado", "error"));
             });
         });
+=======
+
+        // ABRIR MODAL EDITAR
+        $(document).on(
+            "click",
+            ".btn-editar-batallon",
+            function () {
+
+                const id =
+                    $(this).data("id");
+
+                const nombre =
+                    $(this).data("nombre");
+
+                const ciudad =
+                    $(this).data("ciudad");
+
+                const descripcion =
+                    $(this).data("descripcion");
+
+                $("#editarBatallonId").val(id);
+
+                $("#editarNombreBatallon")
+                    .val(nombre);
+
+                $("#editarCiudadBatallon")
+                    .val(ciudad);
+
+                $("#editarDescripcionBatallon")
+                    .val(descripcion);
+
+                $("#modalEditarBatallon")
+                    .modal("show");
+
+            }
+        );
+
+    </script>
+    <script>
+
+        async function guardarEdicionBatallon() {
+
+            const id =
+                document.getElementById(
+                    "editarBatallonId"
+                ).value;
+
+            const nombre =
+                document.getElementById(
+                    "editarNombreBatallon"
+                ).value;
+
+            const ciudad =
+                document.getElementById(
+                    "editarCiudadBatallon"
+                ).value;
+
+            const descripcion =
+                document.getElementById(
+                    "editarDescripcionBatallon"
+                ).value;
+
+            try {
+
+                const response = await fetch(
+
+                    `/editar-batallon/${id}/`,
+
+                    {
+
+                        method: "PUT",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body: JSON.stringify({
+
+                            nombre,
+                            ciudad,
+                            descripcion
+
+                        })
+
+                    }
+
+                );
+
+                const data =
+                    await response.json();
+
+                if (data.error) {
+
+                    mostrarToast(
+                        "❌ " + data.error,
+                        "error"
+                    );
+
+                    return;
+                }
+
+                mostrarToast(
+                    "✅ Batallón actualizado",
+                    "success"
+                );
+
+                $("#modalEditarBatallon")
+                    .modal("hide");
+
+                setTimeout(() => {
+
+                    location.reload();
+
+                }, 1000);
+
+            } catch (error) {
+
+                mostrarToast(
+                    "❌ Error del sistema",
+                    "error"
+                );
+
+                console.error(error);
+
+            }
+
+        }
+
+    </script>
+    <script>
+
+        $(document).on(
+            "click",
+            ".btn-cambiar-estado",
+            async function () {
+
+                const id =
+                    $(this).data("id");
+
+                const activo =
+                    $(this).data("activo");
+
+                let accion =
+                    activo ? "desactivar" : "activar";
+
+                const resultado = await Swal.fire({
+
+                    title:
+                        `¿Desea ${accion} este batallón?`,
+
+                    text:
+                        "El estado del batallón cambiará",
+
+                    icon: "warning",
+
+                    showCancelButton: true,
+
+                    confirmButtonColor: "#198754",
+
+                    cancelButtonColor: "#dc3545",
+
+                    confirmButtonText:
+                        `Sí, ${accion}`,
+
+                    cancelButtonText:
+                        "Cancelar"
+
+                });
+
+                if (!resultado.isConfirmed) {
+
+                    return;
+
+                }
+
+                try {
+
+                    const response = await fetch(
+
+                        `/cambiar-estado-batallon/${id}/`,
+
+                        {
+
+                            method: "PUT",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json"
+
+                            }
+
+                        }
+
+                    );
+
+                    const data =
+                        await response.json();
+
+                    if (data.error) {
+
+                        mostrarToast(
+                            "❌ " + data.error,
+                            "error"
+                        );
+
+                        return;
+
+                    }
+
+                    mostrarToast(
+                        "✅ " + data.mensaje,
+                        "success"
+                    );
+
+                    setTimeout(() => {
+
+                        location.reload();
+
+                    }, 1000);
+
+                } catch (error) {
+
+                    mostrarToast(
+                        "❌ Error del sistema",
+                        "error"
+                    );
+
+                    console.error(error);
+
+                }
+
+            }
+        );
+
+    </script>
+
+    <script>
+        function inicializarUsuarios() {
+
+            // =========================
+            // BUSCADOR COMPAÑÍAS
+            // =========================
+
+            const dataCompanias =
+                document.getElementById(
+                    "companias-data"
+                );
+
+            if (!dataCompanias) return;
+
+            const companias = JSON.parse(
+                dataElement.innerHTML
+            );
+
+            const inputBuscar =
+                document.getElementById(
+                    "buscarCompania"
+                );
+
+            const resultados =
+                document.getElementById(
+                    "resultadosCompanias"
+                );
+
+            const hiddenCompania =
+                document.getElementById(
+                    "companiaSeleccionada"
+                );
+
+            if (!inputBuscar || !resultados) return;
+
+            inputBuscar.addEventListener(
+                "input",
+                function () {
+
+                    const texto =
+                        this.value.toLowerCase().trim();
+
+                    resultados.innerHTML = "";
+
+                    if (texto.length < 1) {
+
+                        resultados.style.display = "none";
+
+                        return;
+                    }
+
+                    const filtrados =
+                        companias.filter(c =>
+
+                            c.nombre.toLowerCase()
+                                .includes(texto)
+
+                            ||
+
+                            c.batallon.toLowerCase()
+                                .includes(texto)
+                        );
+
+                    filtrados.forEach(c => {
+
+                        const item =
+                            document.createElement("div");
+
+                        item.className =
+                            "item-batallon";
+
+                        item.innerHTML = `
+
+                <strong>
+                    ${c.nombre}
+                </strong>
+
+                <small>
+                    ${c.batallon}
+                </small>
+            `;
+
+                        item.onclick = () => {
+
+                            inputBuscar.value =
+                                `${c.nombre} - ${c.batallon}`;
+
+                            hiddenCompania.value =
+                                c.id;
+
+                            resultados.style.display =
+                                "none";
+                        };
+
+                        resultados.appendChild(item);
+                    });
+
+                    resultados.style.display =
+                        "block";
+                }
+            );
+
+            const rol = document.getElementById("rol");
+
+            const contenedorGrado =
+                document.getElementById("contenedorGrado");
+
+            if (rol && contenedorGrado) {
+
+                function validarRol() {
+
+                    if (rol.value === "soldado") {
+
+                        contenedorGrado.style.display = "none";
+
+                    } else {
+
+                        contenedorGrado.style.display = "block";
+
+                    }
+                }
+
+                validarRol();
+
+                rol.addEventListener(
+                    "change",
+                    validarRol
+                );
+            }
+
+            // =========================
+            // BUSCADOR BATALLONES
+            // =========================
+
+
+            // CERRAR LISTA SI HACE CLICK AFUERA
+
+            document.addEventListener(
+                "click",
+                function (e) {
+
+                    if (!e.target.closest(".buscador-batallon")) {
+
+                        resultados.style.display = "none";
+                    }
+                }
+            );
+
+            const buscadorExcel =
+                document.getElementById(
+                    "buscarBatallonExcel"
+                );
+
+            const resultadosExcel =
+                document.getElementById(
+                    "resultadosBatallonesExcel"
+                );
+
+            const hiddenExcel =
+                document.getElementById(
+                    "batallonExcelSeleccionado"
+                );
+
+            if (
+
+                buscadorExcel &&
+
+                resultadosExcel &&
+
+                hiddenExcel
+
+            ) {
+
+                buscadorExcel.addEventListener(
+                    "input",
+                    function () {
+
+                        const texto =
+                            this.value.toLowerCase().trim();
+
+                        resultadosExcel.innerHTML = "";
+
+                        if (texto.length < 1) {
+
+                            resultadosExcel.style.display =
+                                "none";
+
+                            return;
+                        }
+
+                        const filtrados =
+                            companias.filter(c =>
+
+                                c.nombre.toLowerCase()
+                                    .includes(texto)
+
+                                ||
+
+                                c.batallon.toLowerCase()
+                                    .includes(texto)
+                            );
+
+                        filtrados.forEach(c => {
+
+                            const item =
+                                document.createElement("div");
+
+                            item.className =
+                                "item-batallon";
+
+                            item.innerHTML = `
+        <strong>${c.nombre}</strong>
+        <small>${c.batallon}</small>
+    `;
+
+                            item.onclick = () => {
+
+                                buscadorExcel.value =
+                                    `${c.nombre} - ${c.batallon}`;
+
+                                hiddenExcel.value =
+                                    c.id;
+
+                                resultadosExcel.style.display =
+                                    "none";
+                            };
+
+                            resultadosExcel.appendChild(item);
+                        });
+                        resultadosExcel.style.display =
+                            "block";
+                    }
+                );
+            }
+        }
+
+    </script>
+    <script>
+
+        async function crearCompania() {
+
+            const nombre =
+
+                document.getElementById(
+                    "nombreCompania"
+                ).value.trim();
+
+            const descripcion =
+
+                document.getElementById(
+                    "descripcionCompania"
+                ).value.trim();
+
+            const batallon =
+
+                document.getElementById(
+                    "batallonCompania"
+                ).value;
+
+            // =========================
+            // VALIDAR
+            // =========================
+
+            if (!nombre) {
+
+                mostrarToast(
+
+                    "⚠️ Ingrese el nombre",
+
+                    "warning"
+                );
+
+                return;
+            }
+
+            if (!batallon) {
+
+                mostrarToast(
+
+                    "⚠️ Seleccione un batallón",
+
+                    "warning"
+                );
+
+                return;
+            }
+
+            try {
+
+                const response = await fetch(
+
+                    "/crear-compania/",
+
+                    {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            nombre,
+                            descripcion,
+                            batallon
+                        })
+                    }
+                );
+
+                const data =
+                    await response.json();
+
+                if (data.error) {
+
+                    mostrarToast(
+
+                        "❌ " + data.error,
+
+                        "error"
+                    );
+
+                    return;
+                }
+
+                mostrarToast(
+
+                    "✅ " + data.mensaje,
+
+                    "success"
+                );
+
+                setTimeout(() => {
+
+                    location.reload();
+
+                }, 1000);
+
+            } catch (error) {
+
+                mostrarToast(
+
+                    "❌ Error del servidor",
+
+                    "error"
+                );
+            }
+        }
+
+    </script>
+    <script>
+
+        function abrirModalEditarCompania(
+
+            id,
+            nombre,
+            descripcion
+
+        ) {
+
+            document.getElementById(
+                "editarCompaniaId"
+            ).value = id;
+
+            document.getElementById(
+                "editarNombreCompania"
+            ).value = nombre;
+
+            document.getElementById(
+                "editarDescripcionCompania"
+            ).value = descripcion;
+
+            const modal = new bootstrap.Modal(
+
+                document.getElementById(
+                    "modalEditarCompania"
+                )
+            );
+
+            modal.show();
+        }
+
+        async function guardarEdicionCompania() {
+
+            const id =
+                document.getElementById(
+                    "editarCompaniaId"
+                ).value;
+
+            const nombre =
+                document.getElementById(
+                    "editarNombreCompania"
+                ).value;
+
+            const descripcion =
+                document.getElementById(
+                    "editarDescripcionCompania"
+                ).value;
+
+            try {
+
+                const response = await fetch(
+
+                    `/editar-compania/${id}/`,
+
+                    {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            nombre,
+                            descripcion
+                        })
+                    }
+                );
+
+                const data =
+                    await response.json();
+
+                if (data.error) {
+
+                    mostrarToast(
+                        "❌ " + data.error,
+                        "error"
+                    );
+
+                    return;
+                }
+
+                mostrarToast(
+                    "✅ Compañía actualizada",
+                    "success"
+                );
+
+                $("#modalEditarCompania")
+                    .modal("hide");
+
+                setTimeout(() => {
+
+                    location.reload();
+
+                }, 800);
+
+            } catch (error) {
+
+                console.error(error);
+
+                mostrarToast(
+                    "❌ Error del sistema",
+                    "error"
+                );
+            }
+        }
+    </script>
+    <script>
+
+        async function toggleCompania(id, estadoActual) {
+
+            const accion = estadoActual
+                ? "desactivar"
+                : "activar";
+
+            Swal.fire({
+
+                icon: "warning",
+
+                title:
+                    `¿Desea ${accion} esta compañía?`,
+
+                text:
+                    "El estado de la compañía cambiará",
+
+                showCancelButton: true,
+
+                confirmButtonColor: "#198754",
+
+                cancelButtonColor: "#dc3545",
+
+                confirmButtonText:
+                    `Sí, ${accion}`,
+
+                cancelButtonText:
+                    "Cancelar"
+
+            }).then(async (result) => {
+
+                if (result.isConfirmed) {
+
+                    const response = await fetch(
+
+                        `/toggle-compania/${id}/`,
+
+                        {
+                            method: "POST"
+                        }
+                    );
+
+                    const data =
+                        await response.json();
+
+                    mostrarToast(
+
+                        "✅ " + data.mensaje,
+
+                        "success"
+                    );
+
+                    setTimeout(() => {
+
+                        location.reload();
+
+                    }, 700);
+                }
+            });
+        }
+
+    </script>
+    <script>
+
+        window.inicializarUsuarios = function () {
+
+            const dataElement =
+                document.getElementById("companias-data");
+
+            if (!dataElement) {
+                console.log("No existe companias-data");
+                return;
+            }
+
+            let companias = [];
+
+            try {
+
+                companias = JSON.parse(
+                    dataElement.textContent
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Error parseando compañías:",
+                    error
+                );
+
+                return;
+            }
+
+            const buscador =
+                document.getElementById(
+                    "buscarCompania"
+                );
+
+            const resultados =
+                document.getElementById(
+                    "resultadosCompanias"
+                );
+
+            const hidden =
+                document.getElementById(
+                    "companiaSeleccionada"
+                );
+
+            if (!buscador || !resultados) {
+
+                console.log("No existe buscador");
+                return;
+            }
+
+            buscador.addEventListener(
+                "input",
+                function () {
+
+                    const texto =
+                        this.value
+                            .toLowerCase()
+                            .trim();
+
+                    resultados.innerHTML = "";
+
+                    if (!texto) {
+
+                        resultados.style.display =
+                            "none";
+
+                        return;
+                    }
+
+                    const filtradas =
+                        companias.filter(c =>
+
+                            c.nombre
+                                .toLowerCase()
+                                .includes(texto)
+
+                            ||
+
+                            c.batallon
+                                .toLowerCase()
+                                .includes(texto)
+                        );
+
+                    if (filtradas.length === 0) {
+
+                        resultados.innerHTML = `
+                    <div class="item-batallon">
+                        No se encontraron compañías
+                    </div>
+                `;
+
+                        resultados.style.display =
+                            "block";
+
+                        return;
+                    }
+
+                    filtradas.forEach(c => {
+
+                        const item =
+                            document.createElement("div");
+
+                        item.className =
+                            "item-batallon";
+
+                        item.innerHTML = `
+                    <div>
+                        <strong>${c.nombre}</strong><br>
+                        <small>${c.batallon}</small>
+                    </div>
+                `;
+
+                        item.addEventListener(
+                            "click",
+                            function () {
+
+                                buscador.value =
+                                    c.nombre;
+
+                                hidden.value =
+                                    c.id;
+
+                                resultados.style.display =
+                                    "none";
+                            }
+                        );
+
+                        resultados.appendChild(item);
+
+                    });
+
+                    resultados.style.display =
+                        "block";
+                }
+            );
+        };
+
+>>>>>>> b46084c3640b080acc507b9463c40ff08cfc22ab
     </script>
 </body>
 

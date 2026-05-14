@@ -15,6 +15,22 @@ class Perfil(models.Model):
     unidad = models.CharField(max_length=100, blank=True, null=True)
     grado = models.CharField(max_length=50, blank=True, null=True)
     estado = models.BooleanField(default=True)
+    batallon = models.ForeignKey( 'Batallon', on_delete=models.SET_NULL, null=True, blank=True, related_name='personal')
+    compania = models.ForeignKey(
+
+    'Compania',
+
+    on_delete=models.SET_NULL,
+
+    null=True,
+
+    blank=True,
+
+    related_name="usuarios"
+)
+    activo = models.BooleanField(
+        default=True
+    )
 
     def __str__(self):
         return f"{self.user.email} ({self.rol})"
@@ -183,3 +199,211 @@ class Calificacion(models.Model):
 
     def __str__(self):
         return f"{self.estudiante.username} - {self.nota}"
+    
+class Batallon(models.Model):
+
+    nombre = models.CharField(
+        max_length=150,
+        unique=True
+    )
+
+    codigo = models.CharField(
+        max_length=20,
+        unique=True,
+        editable=False
+    )
+
+    ciudad = models.CharField(
+        max_length=100
+    )
+
+    descripcion = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    activo = models.BooleanField(
+        default=True
+    )
+
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    soldados = models.ManyToManyField(
+        User,
+        related_name="batallones_soldado",
+        blank=True
+    )
+
+    cuadros = models.ManyToManyField(
+        User,
+        related_name="batallones_cuadro",
+        blank=True
+    )
+
+    def total_soldados(self):
+
+        return self.soldados.count()
+
+    def total_cuadros(self):
+
+        return self.cuadros.count()
+
+    def save(self, *args, **kwargs):
+
+        if not self.codigo:
+
+            ultimo = Batallon.objects.order_by(
+                '-id'
+            ).first()
+
+            if ultimo:
+
+                ultimo_numero = int(
+                    ultimo.codigo.split('-')[1]
+                )
+
+                nuevo_numero = ultimo_numero + 1
+
+            else:
+
+                nuevo_numero = 1
+
+            self.codigo = (
+                f'BAT-{nuevo_numero:04d}'
+            )
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+
+        return self.nombre
+
+    nombre = models.CharField(
+        max_length=150,
+        unique=True
+    )
+
+    codigo = models.CharField(
+    max_length=20,
+    unique=True,
+    editable=False
+    )
+
+    ciudad = models.CharField(
+        max_length=100
+    )
+
+    descripcion = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    activo = models.BooleanField(
+        default=True
+    )
+
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    soldados = models.ManyToManyField(
+        User,
+        related_name="batallones_soldado",
+        blank=True
+    )
+
+    cuadros = models.ManyToManyField(
+        User,
+        related_name="batallones_cuadro",
+        blank=True
+    )
+
+    def total_soldados(self):
+
+        return self.soldados.count()
+
+    def total_cuadros(self):
+
+        return self.cuadros.count()
+
+    def __str__(self):
+
+        return self.nombre
+
+class Compania(models.Model):
+
+    batallon = models.ForeignKey(
+
+        Batallon,
+
+        on_delete=models.CASCADE,
+
+        related_name="companias"
+    )
+
+    nombre = models.CharField(
+        max_length=200
+    )
+
+    codigo = models.CharField(
+
+        max_length=20,
+
+        unique=True,
+
+        blank=True
+    )
+
+    descripcion = models.TextField(
+
+        blank=True,
+
+        null=True
+    )
+
+    activa = models.BooleanField(
+        default=True
+    )
+
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    # =====================================
+    # GENERAR CÓDIGO AUTOMÁTICO
+    # =====================================
+
+    def save(self, *args, **kwargs):
+
+        if not self.codigo:
+
+            ultimo = Compania.objects.order_by(
+                '-id'
+            ).first()
+
+            if ultimo:
+
+                ultimo_numero = int(
+                    ultimo.codigo.split('-')[1]
+                )
+
+                nuevo_numero = ultimo_numero + 1
+
+            else:
+
+                nuevo_numero = 1
+
+            self.codigo = (
+                f"CIA-{nuevo_numero:04d}"
+            )
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+
+        return (
+            f"{self.nombre} - "
+            f"{self.batallon.nombre}"
+        )

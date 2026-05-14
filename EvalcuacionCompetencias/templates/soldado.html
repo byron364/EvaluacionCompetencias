@@ -42,9 +42,8 @@
                     <i class="fa fa-bars"></i>
                 </button>
                 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+                <button id="menuToggle" class="menu-toggle"> <i class="fa fa-bars"></i> </button>
                 <div class="row">
-
-                    <!-- SIDEBAR -->
                     <div class="col-md-2 sidebar">
                         <div class="imgEscudo">
                             <a href="" data-url="/soldado-dashboard/"></a>
@@ -101,7 +100,8 @@
                         <div class="row mt-4">
 
                             <div class="col-md-3">
-                                <button class="btn btn-success w-100 nav-btn" data-url="/cursos/">Ver Cursos</button>
+                                <button class="btn btn-success w-100 nav-btn" data-url="/cursos/">Ver
+                                    Cursos</button>
                             </div>
 
                             <div class="col-md-3">
@@ -257,6 +257,16 @@
             activarMenu(location.pathname);
         }
 
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const menuToggle = document.getElementById("menuToggle");
+        const sidebar = document.querySelector(".sidebar");
+
+        menuToggle.addEventListener("click", function () {
+            sidebar.classList.toggle("active");
+        });
     });
 </script>
 

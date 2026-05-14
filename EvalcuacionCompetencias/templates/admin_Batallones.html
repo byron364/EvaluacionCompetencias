@@ -1,0 +1,208 @@
+<div id="contenido-parcial">
+
+    <!-- TITULO -->
+    <div id="tittle" class="mb-4">
+
+        <h2>
+            <i class="fa fa-building"></i>
+            Gestión de Batallones
+        </h2>
+
+    </div>
+
+    <!-- FORMULARIOS -->
+    <div class="row">
+
+        <!-- CREAR -->
+        <div class="col-md-5">
+
+            <div class="card-admin p-4">
+
+                <h3 class="text-center mb-4">
+
+                    Crear Batallón
+
+                </h3>
+
+                <div class="mb-3">
+
+                    <input type="text" id="nombreBatallon" class="form-control" placeholder="Nombre del Batallón">
+
+                </div>
+
+                <div class="mb-3">
+
+                    <input type="text" id="ciudadBatallon" class="form-control" placeholder="Ciudad">
+
+                </div>
+
+                <div class="mb-3">
+
+                    <textarea id="descripcionBatallon" class="form-control" rows="4" placeholder="Descripción">
+                    </textarea>
+
+                </div>
+
+                <button class="btn btn-success w-100" onclick="crearBatallon()">
+
+                    <i class="fa fa-plus-circle"></i>
+
+                    Crear Batallón
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- ASIGNACIÓN -->
+        <div class="col-md-7">
+
+            <div class="card-admin p-4 h-100">
+
+                <h2 class="text-center mb-4">
+
+                    <i class="fa fa-map-marker-alt"></i>
+                    Batallones en Colombia
+
+                </h2>
+
+                <div id="mapaBatallones" style="height: 500px;
+                    border-radius: 15px;">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TABLA -->
+    <div class="card-admin mt-4 p-4">
+
+        <h4 class="mb-4">
+
+            Listado de Batallones
+
+        </h4>
+
+        <div class="table-responsive">
+
+            <table id="tablaBatallones" class="table table-dark table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Código</th>
+                        <th>Batallón</th>
+                        <th>Ciudad</th>
+                        <th>Soldados</th>
+                        <th>Cuadros</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for batallon in batallones %}
+
+                    <tr>
+
+                        <td>
+                            {{ batallon.codigo }}
+                        </td>
+
+                        <td>
+                            {{ batallon.nombre }}
+                        </td>
+
+                        <td>
+                            {{ batallon.ciudad }}
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                {{ batallon.total_soldados }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-primary">
+
+                                {{ batallon.total_cuadros }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {% if batallon.activo %}
+
+                            <span class="badge bg-success">
+
+                                Activo
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-danger">
+
+                                Inactivo
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <button class="btn btn-warning btn-sm btn-editar-batallon" data-id="{{ batallon.id }}"
+                                data-nombre="{{ batallon.nombre }}" data-ciudad="{{ batallon.ciudad }}"
+                                data-descripcion="{{ batallon.descripcion }}">
+
+                                <i class="fa fa-edit"></i>
+
+                            </button>
+
+                            <button class="btn btn-danger btn-sm btn-cambiar-estado" data-id="{{ batallon.id }}"
+                                data-activo="{{ batallon.activo }}">
+
+                                {% if batallon.activo %}
+
+                                <i class="fa fa-trash"></i>
+
+                                {% else %}
+
+                                <i class="fa fa-check"></i>
+
+                                {% endif %}
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

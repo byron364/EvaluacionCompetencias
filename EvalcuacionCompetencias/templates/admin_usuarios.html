@@ -51,14 +51,37 @@
                 <h5>Crear Usuario Individual</h5>
 
                 <div class="mb-3">
-                    <select class="form-control" id="rol">
-                        <option value="soldado">Soldado</option>
-                        <option value="instructor">Instructor</option>
+                    <div class="buscador-batallon mb-3">
+
+                        <input type="text" id="buscarCompania" class="form-control buscador-input"
+                            placeholder="Buscar compañía...">
+
+                        <div id="resultadosCompanias" class="lista-companias">
+                        </div>
+
+                        <input type="hidden" id="companiaSeleccionada">
+
+                    </div>
+
+                    <select id="rol" class="form-control">
+
+                        <option value="soldado">
+                            Soldado
+                        </option>
+
+                        <option value="instructor">
+                            Instructor
+                        </option>
+
+                        <option value="administrador">
+                            Administrador
+                        </option>
+
                     </select>
                 </div>
-
-                <div class="mb-3">
-                    <input type="text" id="grado" class="form-control" placeholder="Ingrese el grado" >
+                <div id="contenedorGrado" class="mb-4 mt-2">
+                    <input type="text" id="grado" class="form-control input-grado"
+                        placeholder="Ejemplo: Capitán, Sargento, Coronel...">
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-2">
@@ -96,10 +119,15 @@
                 <h5>Cargar Usuarios desde Excel</h5>
 
                 <div class="mb-3">
-                    <select id="tipoUsuarioExcel" class="form-control">
-                        <option value="soldado">Soldados</option>
-                        <option value="instructor">Instructores</option>
-                    </select>
+                    <!-- BUSCADOR COMPANIA -->
+
+                    <div class="buscador-batallon mb-4">
+                        <input type="text" id="buscarBatallonExcel" class="form-control buscador-input"
+                            placeholder="Buscar batallón o ciudad...">
+                        <div id="resultadosBatallonesExcel" class="lista-batallones">
+                        </div>
+                        <input type="hidden" id="batallonExcelSeleccionado">
+                    </div>
                 </div>
 
                 <div class="border p-4 text-center rounded mb-3" style="border: 2px dashed #28a745;">
@@ -217,3 +245,19 @@
         </div>
     </div>
 </div>
+
+   <!-- COMPANIAS JSON -->
+<script id="companias-data" type="application/json">
+[
+{% for c in companias %}
+{
+    "id": "{{ c.id }}",
+    "nombre": "{{ c.nombre|escapejs }}",
+    "batallon": "{% if c.batallon %}{{ c.batallon.nombre|escapejs }}{% else %}Sin batallón{% endif %}"
+}
+{% if not forloop.last %},{% endif %}
+{% endfor %}
+]
+</script> 
+</div>
+
