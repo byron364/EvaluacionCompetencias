@@ -1,0 +1,221 @@
+<div id="contenido-parcial">
+
+    <div class="container-fluid">
+
+        <div class="d-flex
+                    justify-content-between
+                    align-items-center
+                    mb-4">
+
+            <h2 class="fw-bold">
+
+                <i class="fa fa-sitemap text-success"></i>
+
+                Gestión de Compañías
+
+            </h2>
+
+        </div>
+
+        <!-- FORMULARIO -->
+
+        <div class="card-admin mb-4">
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        Nombre compañía
+                    </label>
+
+                    <input type="text" id="nombreCompania" class="form-control">
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        Batallón
+                    </label>
+
+                    <select id="batallonCompania" class="form-control">
+                        <option value="" selected disabled>
+                            Seleccione un batallón...
+                        </option>
+
+                        {% for b in batallones %}
+
+                        <option value="{{ b.id }}">
+
+                            {{ b.nombre }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <div class="col-12 mb-3">
+
+                    <label class="form-label">
+                        Descripción
+                    </label>
+
+                    <textarea id="descripcionCompania" class="form-control"></textarea>
+
+                </div>
+
+                <div class="col-12">
+
+                    <button class="btn btn-success" onclick="crearCompania()">
+
+                        <i class="fa fa-save"></i>
+
+                        Crear compañía
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TABLA -->
+
+        <div class="card-admin">
+
+           <table id="tablaCompanias" class="table align-middle table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Código</th>
+
+                        <th>Compañía</th>
+
+                        <th>Batallón</th>
+
+                        <th>Soldados</th>
+
+                        <th>Cuadros</th>
+
+                        <th>Estado</th>
+
+                        <th>Acciones</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for c in companias %}
+
+                    <tr>
+
+                        <td>
+
+                            <span class="badge bg-dark">
+
+                                {{ c.codigo }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {{ c.nombre }}
+
+                        </td>
+
+                        <td>
+
+                            {{ c.batallon.nombre }}
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                {{ c.total_soldados }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-primary">
+
+                                {{ c.total_cuadros }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {% if c.activa %}
+
+                            <span class="badge bg-success">
+
+                                Activa
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-danger">
+
+                                Inactiva
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <!-- EDITAR -->
+
+                            <button class="btn btn-warning btn-sm" onclick="abrirModalEditarCompania(
+                                '{{ c.id }}',
+                                '{{ c.nombre|escapejs }}',
+                                `{{ c.descripcion|default:""|escapejs }}`
+                            )">
+                                <i class="fa fa-edit"></i>
+
+                            </button>
+
+                            <!-- ACTIVAR -->
+
+                            <button class="btn btn-info btn-sm" onclick="toggleCompania(
+                                '{{ c.id }}',
+                                {{ c.activa|yesno:" true,false" }} )">
+                                <i class="fa fa-power-off"></i>
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

@@ -61,23 +61,6 @@ body {
 }
 
 /* =========================
-   ANIMACIÓN FLOTANTE
-========================= */
-@keyframes float {
-    0% {
-        transform: translate(-50%, -50%) translateY(0px);
-    }
-
-    50% {
-        transform: translate(-50%, -52%) translateY(-10px);
-    }
-
-    100% {
-        transform: translate(-50%, -50%) translateY(0px);
-    }
-}
-
-/* =========================
    OVERLAY HUD
 ========================= */
 .overlay {
@@ -304,7 +287,7 @@ body {
     transition: all 0.3s ease;
 
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* HOVER */
@@ -315,25 +298,25 @@ body {
 /* 🟢 VERDE */
 .verde {
     background: linear-gradient(135deg, #198754, #0f5132);
-    box-shadow: 0 10px 30px rgba(0,255,150,0.3);
+    box-shadow: 0 10px 30px rgba(0, 255, 150, 0.3);
 }
 
 /* 🔵 AZUL */
 .azul {
     background: linear-gradient(135deg, #0d6efd, #084298);
-    box-shadow: 0 10px 30px rgba(0,150,255,0.3);
+    box-shadow: 0 10px 30px rgba(0, 150, 255, 0.3);
 }
 
 /* 🔴 ROJO */
 .rojo {
     background: linear-gradient(135deg, #dc3545, #7a1c24);
-    box-shadow: 0 10px 30px rgba(255,0,0,0.3);
+    box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
 }
 
 /* BARRA DE PROGRESO */
 .barra {
     height: 8px;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     overflow: hidden;
     margin-top: 10px;
@@ -344,4 +327,175 @@ body {
     height: 100%;
     background: linear-gradient(90deg, #00ffae, #00c3ff);
     transition: width 1s ease;
+}
+
+/* =========================================
+   BOTÓN HAMBURGUESA
+========================================= */
+
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 3000;
+    background: #198754;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+
+/* =========================================
+   MÓVIL REAL + SIDEBAR HAMBURGUESA
+========================================= */
+
+@media (max-width: 768px) {
+
+    /* botón hamburguesa visible */
+    .menu-toggle {
+        display: block;
+    }
+
+    /* sidebar oculto inicialmente */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 260px;
+        height: 100vh;
+        padding: 20px 15px;
+        z-index: 2500;
+        transition: 0.3s ease;
+        border-radius: 0;
+        overflow-y: auto;
+    }
+
+    /* sidebar abierto */
+    .sidebar.active {
+        left: 0;
+    }
+
+    /* restaurar textos */
+    .sidebar h4,
+    .sidebar p {
+        display: block;
+    }
+
+    .sidebar img {
+        width: 70px;
+        margin: 0 auto 15px;
+        display: block;
+    }
+
+    /* contenido ocupa toda pantalla */
+    .content {
+        margin-left: 0 !important;
+        width: 100%;
+        min-height: auto;
+        padding: 70px 15px 20px;
+    }
+
+    /* cards */
+    .card-admin {
+        width: 100%;
+        margin-bottom: 20px;
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    /* título */
+    #tittle {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    #tittle h2 {
+        font-size: 24px;
+    }
+
+    /* imagen de fondo */
+    .bg-img {
+        width: 90%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0.15;
+    }
+
+    /* tabla responsive */
+    .table-responsive {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    table {
+        min-width: 700px;
+    }
+
+    /* formularios */
+    input,
+    select,
+    button {
+        font-size: 14px !important;
+    }
+
+    /* toast */
+    .toast-custom {
+        max-width: 90%;
+        font-size: 14px;
+    }
+
+    #toast-container {
+        right: 10px;
+        left: 10px;
+        align-items: center;
+    }
+}
+
+
+/* =========================================
+   MÓVILES PEQUEÑOS
+========================================= */
+
+@media (max-width: 480px) {
+
+    .card-admin {
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .card-admin h2,
+    .card-admin h3 {
+        font-size: 24px;
+    }
+
+    .card-admin h5,
+    .card-admin h6 {
+        font-size: 15px;
+    }
+
+    #tittle h2 {
+        font-size: 20px;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+    }
+
+    .loader p {
+        font-size: 14px;
+    }
+
+    .menu-toggle {
+        top: 10px;
+        left: 10px;
+        padding: 8px 12px;
+        font-size: 18px;
+    }
 }
