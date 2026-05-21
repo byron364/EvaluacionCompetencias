@@ -64,16 +64,32 @@
                         <hr>
 
                         <ul class="nav flex-column sidebar-menu">
+                            {% if configuracion.menu_lateral.inicio %}
                             <li><a class="nav-link nav-link-spa active" data-url="/admin-dashboard-partial/">Inicio</a>
                             </li>
+                            {% endif %}
+                            {% if configuracion.menu_lateral.batallones %}
                             <li><a class="nav-link nav-link-spa" data-url="/batallones/">Batallones</a></li>
+                            {% endif %}
+                            {% if configuracion.menu_lateral.companias %}
                             <li><a class="nav-link nav-link-spa" data-url="/companias/">Compañias</a></li>
+                            {% endif %}
+                            {% if configuracion.menu_lateral.usuarios %}
                             <li><a class="nav-link nav-link-spa" data-url="/usuarios/">Usuarios</a></li>
+                            {% endif %}
+                            {% if configuracion.menu_lateral.evaluaciones %}
                             <li><a class="nav-link nav-link-spa" data-url="/cursos/">Evaluaciones</a></li>
+                            {% endif %}
+                            {% if configuracion.menu_lateral.inscripciones %}
                             <li><a class="nav-link nav-link-spa" data-url="/inscripciones/">Inscripciones</a></li>
+                            {% endif %}
+                            {% if configuracion.menu_lateral.test %}
                             <li><a class="nav-link nav-link-spa" data-url="/test/">Test</a></li>
+                            {% endif %}
                             <li><a class="nav-link nav-link-spa" data-url="/configuracion/">Configuración</a></li>
+                            {% if configuracion.menu_lateral.reportes %}
                             <li><a class="nav-link nav-link-spa" data-url="/reportes/">Reportes</a></li>
+                            {% endif %}
                             <li><a class="nav-link text-danger" href="/logout/">Cerrar sesión</a></li>
                         </ul>
                     </div>
@@ -133,13 +149,13 @@
                                 <div class="card-admin">
                                     <h5>Actividad reciente</h5>
                                     <ul class="list-group list-group-flush">
-                                        <li class="list-group-item bg-transparent text-white">
+                                        <li class="list-group-item bg-transparent">
                                             Usuario nuevo registrado
                                         </li>
-                                        <li class="list-group-item bg-transparent text-white">
+                                        <li class="list-group-item bg-transparent">
                                             Curso actualizado
                                         </li>
-                                        <li class="list-group-item bg-transparent text-white">
+                                        <li class="list-group-item bg-transparent">
                                             Evaluación completada
                                         </li>
                                     </ul>
@@ -372,7 +388,7 @@
                             });
                         }
 
-                        // Ocultar loader al terminar
+// Ocultar loader al terminar
                         setTimeout(() => { loader.classList.remove("active"); content.classList.remove("fade-out"); content.classList.add("fade-in"); }, 500);
 
                         if (guardar) {
@@ -1638,7 +1654,6 @@
 
     </script>
     <script>
-<<<<<<< HEAD
         document.addEventListener("click", function (e) {
             const botonVer = e.target.closest(".btn-ver-curso");
 
@@ -1705,7 +1720,6 @@
                     .catch(() => mostrarToast("Error asignando soldado", "error"));
             });
         });
-=======
 
         // ABRIR MODAL EDITAR
         $(document).on(
@@ -2609,7 +2623,36 @@
             );
         };
 
->>>>>>> b46084c3640b080acc507b9463c40ff08cfc22ab
+    </script>
+
+    <script>
+        function _getCsrf() {
+            const match = document.cookie.match(/(^|;)\s*csrftoken=([^;]+)/);
+            return match ? decodeURIComponent(match[2]) : '';
+        }
+
+        window.guardarConfigUsuario = function () {
+            const usuarioId = document.getElementById('configUsuarioId')?.value;
+            if (!usuarioId) { mostrarToast('No se encontró el usuario', 'danger'); return; }
+
+            const data = {};
+            document.querySelectorAll('#contenido-dinamico input[type="checkbox"]').forEach(cb => {
+                data[cb.name] = cb.checked;
+            });
+
+            fetch(`/configurar-usuario/${usuarioId}/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': _getCsrf() },
+                body: JSON.stringify(data),
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.error) { mostrarToast(res.error, 'danger'); return; }
+                mostrarToast(res.mensaje, 'success');
+                setTimeout(() => cargarVista('/usuarios/'), 700);
+            })
+            .catch(() => mostrarToast('Error de conexión', 'danger'));
+        };
     </script>
 </body>
 

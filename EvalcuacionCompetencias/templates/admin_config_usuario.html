@@ -1,0 +1,142 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+<div id="contenido-parcial">
+
+    <input type="hidden" id="configUsuarioId" value="{{ usuario_obj.id }}">
+
+    <div id="tittle" class="mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h2>
+            <i class="fa fa-sliders-h"></i>
+            Configurar Panel —
+            <span class="text-success">{{ usuario_obj.get_full_name|default:usuario_obj.username }}</span>
+        </h2>
+        <span class="badge {% if rol == 'soldado' %}bg-primary{% elif rol == 'instructor' %}bg-secondary{% else %}bg-danger{% endif %} fs-6">
+            {{ usuario_obj.perfil.get_rol_display }}
+        </span>
+    </div>
+
+    <div class="configuracion-container">
+
+        {% if perfil_asignado %}
+        <div class="alert-perfil-asignado">
+            <i class="fa fa-shield"></i>
+            <strong>Perfil asignado:</strong> {{ perfil_asignado.nombre }}
+            <span class="ms-2 text-muted small">— Los módulos con <i class="fa fa-lock"></i> no pueden ser habilitados.</span>
+        </div>
+        {% endif %}
+
+        <!-- Menú Lateral -->
+        <div class="config-section">
+            <h4><i class="fa fa-bars"></i> Menú Lateral</h4>
+            <p class="section-description">Selecciona las opciones que verá este usuario en su menú</p>
+            <div class="options-grid">
+                {% for opcion in menu_opciones %}
+                <div class="option-item {% if opcion.bloqueado %}option-bloqueada{% endif %}">
+                    <label class="switch {% if opcion.bloqueado %}switch-disabled{% endif %}">
+                        <input type="checkbox"
+                               name="menu_{{ opcion.key }}"
+                               {% if opcion.checked and not opcion.bloqueado %}checked{% endif %}
+                               {% if opcion.bloqueado %}disabled{% endif %}>
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="option-label">
+                        {{ opcion.label }}
+                        {% if opcion.bloqueado %}<i class="fa fa-lock ms-1 text-muted"></i>{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if dashboard_opciones %}
+        <!-- Dashboard -->
+        <div class="config-section">
+            <h4><i class="fa fa-tachometer"></i> Dashboard</h4>
+            <p class="section-description">Elementos visibles en el dashboard de este usuario</p>
+            <div class="options-grid">
+                {% for opcion in dashboard_opciones %}
+                <div class="option-item {% if opcion.bloqueado %}option-bloqueada{% endif %}">
+                    <label class="switch {% if opcion.bloqueado %}switch-disabled{% endif %}">
+                        <input type="checkbox"
+                               name="dashboard_{{ opcion.key }}"
+                               {% if opcion.checked and not opcion.bloqueado %}checked{% endif %}
+                               {% if opcion.bloqueado %}disabled{% endif %}>
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="option-label">
+                        {{ opcion.label }}
+                        {% if opcion.bloqueado %}<i class="fa fa-lock ms-1 text-muted"></i>{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if accesos_opciones %}
+        <!-- Accesos Rápidos -->
+        <div class="config-section">
+            <h4><i class="fa fa-bolt"></i> Accesos Rápidos</h4>
+            <p class="section-description">Botones de acceso rápido disponibles para este usuario</p>
+            <div class="options-grid">
+                {% for opcion in accesos_opciones %}
+                <div class="option-item {% if opcion.bloqueado %}option-bloqueada{% endif %}">
+                    <label class="switch {% if opcion.bloqueado %}switch-disabled{% endif %}">
+                        <input type="checkbox"
+                               name="accesos_{{ opcion.key }}"
+                               {% if opcion.checked and not opcion.bloqueado %}checked{% endif %}
+                               {% if opcion.bloqueado %}disabled{% endif %}>
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="option-label">
+                        {{ opcion.label }}
+                        {% if opcion.bloqueado %}<i class="fa fa-lock ms-1 text-muted"></i>{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Acciones -->
+        <div class="form-actions">
+            <button type="button" class="btn btn-primary" onclick="guardarConfigUsuario()">
+                <i class="fa fa-save"></i> Guardar Configuración
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="cargarVista('/usuarios/')">
+                <i class="fa fa-arrow-left"></i> Volver a Usuarios
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<style>
+.configuracion-container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+.alert-perfil-asignado {
+    background: #e8f4fd; border: 1px solid #2196F3;
+    border-left: 5px solid #2196F3; border-radius: 6px;
+    padding: 14px 18px; margin-bottom: 24px; color: #1565C0; font-size: .95em;
+}
+.config-section {
+    background: #f8f9fa; border: 1px solid #dee2e6;
+    border-radius: 8px; padding: 20px; margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.08);
+}
+.config-section h4 { color: #495057; margin-bottom: 8px; border-bottom: 2px solid #789441; padding-bottom: 5px; }
+.section-description { color: #6c757d; font-size: .9em; margin-bottom: 16px; }
+.options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.option-item { display: flex; align-items: center; padding: 10px 14px; background: #fff; border-radius: 6px; border: 1px solid #e9ecef; }
+.option-bloqueada { background: #f0f0f0; border-color: #d0d0d0; opacity: .7; }
+.option-label { margin-left: 12px; font-size: .95em; color: #334155; }
+.form-actions { display: flex; gap: 12px; margin-top: 10px; }
+.switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 26px; transition: .3s; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s; }
+input:checked + .slider { background: #789441; }
+input:checked + .slider:before { transform: translateX(22px); }
+.switch-disabled .slider { cursor: not-allowed; background: #adb5bd; }
+input:disabled + .slider { background: #adb5bd; }
+</style>

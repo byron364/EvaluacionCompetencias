@@ -407,3 +407,35 @@ class Compania(models.Model):
             f"{self.nombre} - "
             f"{self.batallon.nombre}"
         )
+
+
+class PerfilPanel(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+    configuracion = models.JSONField(default=dict)
+    creado_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='perfiles_creados'
+    )
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nombre
+
+
+class ConfiguracionUsuario(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='configuracion')
+    configuracion = models.JSONField(default=dict)
+    perfil_asignado = models.ForeignKey(
+        PerfilPanel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='usuarios_asignados'
+    )
+
+    def __str__(self):
+        return f"Configuración de {self.usuario.username}"

@@ -3,12 +3,14 @@
     <div class="CompromisoColombia d-flex justify-content-center">
         <img src="{% static 'img/CompromisoColombia.png' %}" width="40%" class="img-fluid">
     </div>
-    <div class="row g-4">
+
+    {% if configuracion.dashboard.estadisticas %}
+    <div class="row g-4 mt-4">
 
         <div class="col-md-3">
             <div class="card-admin">
                 <i class="fa fa-users fa-2x"></i>
-                <h5>USER</h5>
+                <h5>Usuarios</h5>
                 <h2 id="total-usuarios">0</h2>
             </div>
         </div>
@@ -38,33 +40,77 @@
         </div>
 
     </div>
+    {% endif %}
 
-    <div class="row mt-5">
-
-        <div class="col-md-8">
-            <div class="card-admin">
-                <h5>Rendimiento mensual</h5>
-                <canvas id="grafica"></canvas>
+    {% if configuracion.dashboard.accesos_rapidos %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card-admin p-4">
+                <h5 class="mb-3">Accesos rápidos</h5>
+                <div class="d-flex flex-wrap gap-3">
+                    {% if configuracion.accesos_rapidos.crear_usuario %}
+                    <button class="btn btn-primary nav-btn" data-url="/usuarios/">Usuarios</button>
+                    {% endif %}
+                    {% if configuracion.accesos_rapidos.crear_curso %}
+                    <button class="btn btn-primary nav-btn" data-url="/cursos/">Cursos</button>
+                    {% endif %}
+                    {% if configuracion.accesos_rapidos.exportar_reporte %}
+                    <button class="btn btn-primary nav-btn" data-url="/reportes/">Reportes</button>
+                    {% endif %}
+                    {% if configuracion.accesos_rapidos.cargar_excel %}
+                    <button class="btn btn-primary nav-btn" data-url="/cargar-usuarios-excel/">Cargar Excel</button>
+                    {% endif %}
+                    {% if configuracion.accesos_rapidos.descargar_plantilla %}
+                    <button class="btn btn-primary nav-btn" data-url="/descargar-plantilla-excel/">Descargar plantilla</button>
+                    {% endif %}
+                </div>
             </div>
         </div>
+    </div>
+    {% endif %}
 
-        <div class="col-md-4">
+    <div class="row mt-5">
+        {% if configuracion.dashboard.ultimas_actividades %}
+        <div class="col-md-8">
             <div class="card-admin">
                 <h5>Actividad reciente</h5>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item bg-transparent text-white">
+                    <li class="list-group-item bg-transparent">
                         Usuario nuevo registrado
                     </li>
-                    <li class="list-group-item bg-transparent text-white">
+                    <li class="list-group-item bg-transparent">
                         Curso actualizado
                     </li>
-                    <li class="list-group-item bg-transparent text-white">
+                    <li class="list-group-item bg-transparent">
                         Evaluación completada
                     </li>
                 </ul>
             </div>
         </div>
+        {% endif %}
 
+        {% if configuracion.dashboard.notificaciones|default:"True" or configuracion.dashboard.calendario %}
+        <div class="col-md-4">
+            {% if configuracion.dashboard.notificaciones %}
+            <div class="card-admin mb-4">
+                <h5>Notificaciones</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item bg-transparent">Sistema estable</li>
+                    <li class="list-group-item bg-transparent">Revisión de accesos completada</li>
+                </ul>
+            </div>
+            {% endif %}
+            {% if configuracion.dashboard.calendario %}
+            <div class="card-admin">
+                <h5>Calendario</h5>
+                <div class="text-center py-4">
+                    <p class="mb-1">15 May</p>
+                    <strong>Revisión de cursos</strong>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 </div>
 <!-- LOADER -->

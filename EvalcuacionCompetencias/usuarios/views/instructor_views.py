@@ -1,89 +1,52 @@
 from django.shortcuts import render, redirect
-
-
-def rol_requerido(rol_permitido):
-
-    def decorator(view_func):
-
-        def wrapper(request, *args, **kwargs):
-
-            if not request.user.is_authenticated:
-
-                return redirect('login')
-
-            if request.user.perfil.rol != rol_permitido:
-
-                return redirect('login')
-
-            return view_func(
-                request,
-                *args,
-                **kwargs
-            )
-
-        return wrapper
-
-    return decorator
+from ..decorators import rol_requerido, modulo_requerido
+from ..helpers import obtener_configuracion_usuario
 
 
 @rol_requerido('instructor')
 def instructor_dashboard(request):
-
     return render(
         request,
-        'instructor.html'
+        'instructor.html',
+        {'configuracion': obtener_configuracion_usuario(request.user)}
     )
 
 
 @rol_requerido('instructor')
 def instructor_inicio(request):
-
     return render(
         request,
-        'instructor_inicio.html'
+        'instructor_inicio.html',
+        {'configuracion': obtener_configuracion_usuario(request.user)}
     )
 
 
 @rol_requerido('instructor')
+@modulo_requerido('cursos')
 def instructor_cursos(request):
-
-    return render(
-        request,
-        'instructor_cursos.html'
-    )
+    return render(request, 'instructor_cursos.html')
 
 
 @rol_requerido('instructor')
+@modulo_requerido('evaluaciones')
 def instructor_evaluaciones(request):
-
-    return render(
-        request,
-        'instructor_evaluaciones.html'
-    )
+    return render(request, 'instructor_evaluaciones.html')
 
 
 @rol_requerido('instructor')
+@modulo_requerido('soldados')
 def instructor_soldados(request):
-
-    return render(
-        request,
-        'instructor_soldados.html'
-    )
+    return render(request, 'instructor_soldados.html')
 
 
 @rol_requerido('instructor')
+@modulo_requerido('reportes')
 def instructor_reportes(request):
-
-    return render(
-        request,
-        'instructor_reportes.html'
-    )
+    return render(request, 'instructor_reportes.html')
 
 
 @rol_requerido('soldado')
 def soldado_dashboard(request):
-
-    return render(
-        request,
-        'soldado.html'
-    )
+    return render(request, 'soldado.html', {
+        'configuracion': obtener_configuracion_usuario(request.user)
+    })

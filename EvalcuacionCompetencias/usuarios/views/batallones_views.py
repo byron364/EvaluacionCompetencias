@@ -3,12 +3,13 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
-from ..models import ( Batallon,
-    Compania)
+from ..models import Batallon, Compania
+from ..decorators import modulo_requerido
 
 import json
 
 
+@modulo_requerido('batallones')
 def admin_batallones(request):
 
     batallones = Batallon.objects.all()
@@ -174,6 +175,7 @@ def cambiar_estado_batallon(
 
         }, status=500)
     
+@modulo_requerido('companias')
 def admin_companias(request):
 
     batallones = Batallon.objects.filter(

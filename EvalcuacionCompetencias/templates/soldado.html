@@ -53,41 +53,46 @@
                         <p>Nombres del soldado</p>
                         <hr>
                         <ul class="nav flex-column sidebar-menu">
+                            {% if configuracion.menu_lateral.inicio %}
                             <li class="nav-item">
                                 <a class="nav-link nav-link-spa active" data-url="/inicio/">
                                     Inicio
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if configuracion.menu_lateral.cursos %}
                             <li class="nav-item">
                                 <a class="nav-link nav-link-spa" data-url="/cursos/">
                                     Mis Cursos
                                 </a>
                             </li>
-
+                            {% endif %}
+                            {% if configuracion.menu_lateral.evaluaciones %}
                             <li class="nav-item">
                                 <a class="nav-link nav-link-spa" data-url="/evaluaciones/">
                                     Evaluaciones
                                 </a>
                             </li>
-
+                            {% endif %}
+                            {% if configuracion.menu_lateral.resultados %}
                             <li class="nav-item">
                                 <a class="nav-link nav-link-spa" data-url="/resultados/">
                                     Resultados
                                 </a>
                             </li>
-
+                            {% endif %}
+                            {% if configuracion.menu_lateral.retroalimentacion %}
                             <li class="nav-item">
                                 <a class="nav-link nav-link-spa" data-url="/retro/">
                                     Retroalimentación
                                 </a>
                             </li>
-
+                            {% endif %}
                             <li class="nav-item">
                                 <a class="nav-link text-white" href="/logout/">
                                     Cerrar sesión
                                 </a>
                             </li>
-
                         </ul>
 
                     </div>
@@ -98,27 +103,30 @@
                         <img src="{% static 'img/escudo.png' %}" width="40%">
 
                         <div class="row mt-4">
-
+                            {% if configuracion.menu_lateral.cursos %}
                             <div class="col-md-3">
                                 <button class="btn btn-success w-100 nav-btn" data-url="/cursos/">Ver
                                     Cursos</button>
                             </div>
-
+                            {% endif %}
+                            {% if configuracion.menu_lateral.evaluaciones %}
                             <div class="col-md-3">
                                 <button class="btn btn-primary w-100 nav-btn" data-url="/evaluaciones/">Presentar
                                     Evaluación</button>
                             </div>
-
+                            {% endif %}
+                            {% if configuracion.menu_lateral.resultados %}
                             <div class="col-md-3">
                                 <button class="btn btn-warning w-100 nav-btn" data-url="/resultados/">Ver
                                     Resultados</button>
                             </div>
-
+                            {% endif %}
+                            {% if configuracion.menu_lateral.retroalimentacion %}
                             <div class="col-md-3">
                                 <button class="btn btn-info w-100 nav-btn" data-url="/retro/">Evaluar
                                     Instructor</button>
                             </div>
-
+                            {% endif %}
                         </div>
 
                     </div>

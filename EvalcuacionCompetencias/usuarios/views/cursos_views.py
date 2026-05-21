@@ -3,11 +3,13 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
-from ..models import Curso
+from ..models import Curso, Inscripcion
+from ..decorators import modulo_requerido
 
 import json
 
 
+@modulo_requerido('evaluaciones')
 def admin_cursos(request):
 
     instructores = User.objects.filter(
@@ -18,12 +20,17 @@ def admin_cursos(request):
         'instructor'
     ).all()
 
+    soldados = User.objects.filter(
+        perfil__rol="soldado"
+    ).select_related('perfil')
+
     return render(
         request,
         "admin_cursos.html",
         {
             "instructores": instructores,
-            "cursos": cursos
+            "cursos": cursos,
+            "soldados": soldados,
         }
     )
 @csrf_exempt
@@ -191,3 +198,30 @@ def listar_cursos(request):
     return JsonResponse({
         "data": data
     })
+
+
+def asignar_soldado_curso(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        curso = Curso.objects.get(id=data.get("curso_id"))
+        soldado = User.objects.get(id=data.get("soldado_id"), perfil__rol="soldado")
+
+        inscritos = Inscripcion.objects.filter(curso=curso).count()
+        if inscritos >= curso.cupo_maximo:
+            return JsonResponse({"error": "El curso ya alcanzó el cupo máximo"}, status=400)
+
+        _, creado = Inscripcion.objects.get_or_create(curso=curso, estudiante=soldado)
+
+        return JsonResponse({
+            "mensaje": "Soldado asignado correctamente" if creado else "El soldado ya estaba inscrito"
+        })
+
+    except Curso.DoesNotExist:
+        return JsonResponse({"error": "Curso no encontrado"}, status=404)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "Soldado no encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

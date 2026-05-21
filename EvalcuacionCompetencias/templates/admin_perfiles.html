@@ -1,0 +1,590 @@
+<div id="contenido-parcial">
+
+    <div id="tittle" class="mb-4">
+        <h2>
+            <i class="fa fa-id-card"></i>
+            Gestión de Perfiles de Panel
+        </h2>
+    </div>
+
+    <div class="card-admin p-4">
+
+        <div class="d-flex justify-content-end mb-4">
+            <button class="btn btn-success" onclick="abrirModalCrearPerfil()">
+                <i class="fa fa-plus-circle"></i> Crear Perfil
+            </button>
+        </div>
+
+        <!-- TABLA PERFILES -->
+        <div class="card-admin mt-2 p-3">
+            <h5>Perfiles de Configuración</h5>
+            <div class="table-responsive">
+                <table id="tablaPerfiles" class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Usuarios Asignados</th>
+                            <th>Creado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for perfil in perfiles %}
+                        <tr>
+                            <td><strong>{{ perfil.nombre }}</strong></td>
+                            <td>{{ perfil.descripcion|default:"—" }}</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ perfil.usuarios_asignados.count }} usuario(s)
+                                </span>
+                            </td>
+                            <td>{{ perfil.creado_en|date:"d/m/Y" }}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm"
+                                        onclick="abrirModalEditarPerfil({{ perfil.id }})"
+                                        title="Editar">
+                                    <i id="buttontable" class="fa fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm"
+                                        onclick="abrirModalAsignar({{ perfil.id }}, '{{ perfil.nombre|escapejs }}')"
+                                        title="Asignar a usuarios">
+                                    <i id="buttontable" class="fa fa-user-plus"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="eliminarPerfil({{ perfil.id }}, '{{ perfil.nombre|escapejs }}')"
+                                        title="Eliminar">
+                                    <i id="buttontable" class="fa fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td></td>
+                            <td class="text-center">No hay perfiles creados aún</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLA ASIGNACIONES ACTUALES -->
+        <div class="card-admin mt-4 p-3">
+            <h5>Asignaciones Actuales</h5>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                            <th>Perfil Asignado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.get_full_name|default:usuario.username }}</td>
+                            <td>
+                                <span class="badge {% if usuario.perfil.rol == 'admin' %}bg-danger{% elif usuario.perfil.rol == 'instructor' %}bg-secondary{% else %}bg-primary{% endif %}">
+                                    {{ usuario.perfil.get_rol_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if usuario.configuracion.perfil_asignado %}
+                                    <span class="badge bg-success">
+                                        {{ usuario.configuracion.perfil_asignado.nombre }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted small">Sin perfil asignado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-light"
+                                        onclick="abrirModalAsignarUsuario({{ usuario.id }}, '{{ usuario.get_full_name|default:usuario.username|escapejs }}')"
+                                        title="Cambiar perfil">
+                                    <i class="fa fa-exchange"></i> Cambiar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============================================================
+     MODAL: CREAR / EDITAR PERFIL
+============================================================ -->
+<div class="modal-overlay-perfiles d-none" id="modalPerfil">
+    <div class="modal-perfiles">
+        <div class="modal-perfiles-header">
+            <h5 id="tituloPerfil"><i class="fa fa-id-card"></i> Crear Perfil</h5>
+            <button class="btn-cerrar-modal" onclick="cerrarModalPerfil()">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-perfiles-body">
+
+            <input type="hidden" id="perfilId" value="">
+
+            <div class="mb-3">
+                <label class="form-label text-dark fw-bold">Nombre del perfil *</label>
+                <input type="text" id="perfilNombre" class="form-control"
+                       placeholder="Ej: Instructor Básico, Supervisor Logística…">
+            </div>
+            <div class="mb-3">
+                <label class="form-label text-dark fw-bold">Descripción</label>
+                <textarea id="perfilDescripcion" class="form-control" rows="2"
+                          placeholder="Descripción opcional del perfil"></textarea>
+            </div>
+
+            <hr>
+
+            <!-- SECCIÓN MENÚ LATERAL -->
+            <h6 class="seccion-titulo"><i class="fa fa-bars"></i> Menú Lateral</h6>
+            <div class="permisos-grid">
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_inicio" checked> Inicio
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_batallones" checked> Batallones
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_companias" checked> Compañías
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_usuarios" checked> Usuarios
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_evaluaciones" checked> Evaluaciones
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_inscripciones" checked> Inscripciones
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_test" checked> Tests
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_reportes" checked> Reportes
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_cursos" checked> Cursos
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_soldados" checked> Soldados
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_resultados" checked> Resultados
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="menu_retroalimentacion" checked> Retroalimentación
+                </label>
+            </div>
+
+            <hr>
+
+            <!-- SECCIÓN DASHBOARD -->
+            <h6 class="seccion-titulo"><i class="fa fa-tachometer"></i> Dashboard</h6>
+            <div class="permisos-grid">
+                <label class="permiso-item">
+                    <input type="checkbox" name="dashboard_estadisticas" checked> Estadísticas
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="dashboard_accesos_rapidos" checked> Accesos Rápidos
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="dashboard_ultimas_actividades" checked> Últimas Actividades
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="dashboard_notificaciones" checked> Notificaciones
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="dashboard_calendario" checked> Calendario
+                </label>
+            </div>
+
+            <hr>
+
+            <!-- SECCIÓN ACCESOS RÁPIDOS -->
+            <h6 class="seccion-titulo"><i class="fa fa-bolt"></i> Accesos Rápidos</h6>
+            <div class="permisos-grid">
+                <label class="permiso-item">
+                    <input type="checkbox" name="accesos_crear_usuario" checked> Crear Usuario
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="accesos_crear_curso" checked> Crear Curso
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="accesos_exportar_reporte" checked> Exportar Reporte
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="accesos_cargar_excel" checked> Cargar Excel
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="accesos_descargar_plantilla" checked> Descargar Plantilla
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="accesos_registrar_soldados" checked> Registrar Soldados
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="accesos_calificar" checked> Calificar
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="accesos_generar_reporte" checked> Generar Reporte
+                </label>
+                <label class="permiso-item">
+                    <input type="checkbox" name="accesos_ver_calendario" checked> Ver Calendario
+                </label>
+            </div>
+        </div>
+
+        <div class="modal-perfiles-footer">
+            <button class="btn btn-secondary" onclick="cerrarModalPerfil()">Cancelar</button>
+            <button class="btn btn-success" onclick="guardarPerfil()">
+                <i class="fa fa-save"></i> Guardar Perfil
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     MODAL: ASIGNAR PERFIL A USUARIO
+============================================================ -->
+<div class="modal-overlay-perfiles d-none" id="modalAsignar">
+    <div class="modal-perfiles modal-perfiles-sm">
+        <div class="modal-perfiles-header">
+            <h5><i class="fa fa-user-plus"></i> Asignar Perfil a Usuario</h5>
+            <button class="btn-cerrar-modal" onclick="cerrarModalAsignar()">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-perfiles-body">
+            <input type="hidden" id="asignarPerfilId" value="">
+            <input type="hidden" id="asignarUsuarioId" value="">
+
+            <div class="mb-3">
+                <label class="form-label text-dark fw-bold">Usuario</label>
+                <select id="asignarUsuarioSelect" class="form-select">
+                    <option value="">— Seleccionar usuario —</option>
+                    {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}">
+                        {{ usuario.get_full_name|default:usuario.username }}
+                        ({{ usuario.perfil.get_rol_display }})
+                        {% if usuario.configuracion.perfil_asignado %}
+                            — Actual: {{ usuario.configuracion.perfil_asignado.nombre }}
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-dark fw-bold">Perfil a asignar</label>
+                <select id="asignarPerfilSelect" class="form-select">
+                    <option value="">— Sin perfil (libre) —</option>
+                    {% for perfil in perfiles %}
+                    <option value="{{ perfil.id }}">{{ perfil.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="asignarInfo" class="alert-perfil-sm d-none"></div>
+        </div>
+        <div class="modal-perfiles-footer">
+            <button class="btn btn-secondary" onclick="cerrarModalAsignar()">Cancelar</button>
+            <button class="btn btn-primary" onclick="confirmarAsignacion()">
+                <i class="fa fa-check"></i> Asignar
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Overlay modal */
+.modal-overlay-perfiles {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay-perfiles.d-none { display: none !important; }
+
+.modal-perfiles {
+    background: #fff;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 750px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.modal-perfiles-sm { max-width: 480px; }
+
+.modal-perfiles-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 22px;
+    border-bottom: 2px solid #789441;
+    background: #f8f9fa;
+    border-radius: 10px 10px 0 0;
+}
+.modal-perfiles-header h5 { margin: 0; color: #334155; }
+.btn-cerrar-modal {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #6c757d;
+}
+.btn-cerrar-modal:hover { color: #dc3545; }
+
+.modal-perfiles-body {
+    padding: 20px 22px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-perfiles-footer {
+    padding: 14px 22px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: #f8f9fa;
+    border-radius: 0 0 10px 10px;
+}
+
+.seccion-titulo {
+    color: #334155;
+    font-weight: 700;
+    margin: 16px 0 10px 0;
+}
+
+.permisos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 8px;
+}
+
+.permiso-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0f4e8;
+    border: 1px solid #d4e0b8;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #334155;
+    transition: background 0.2s;
+}
+.permiso-item:hover { background: #e0eccc; }
+.permiso-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #789441; }
+
+.alert-perfil-sm {
+    background: #e8f4fd;
+    border: 1px solid #2196F3;
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: #1565C0;
+    font-size: 0.9em;
+}
+
+@media (max-width: 600px) {
+    .permisos-grid { grid-template-columns: 1fr 1fr; }
+    .modal-perfiles { width: 96%; }
+}
+</style>
+
+<!-- JS moved to admin.html (SPA innerHTML does not execute scripts)
+<script>
+// ============================================================
+// ESTADO
+// ============================================================
+let modoEdicion = false;
+
+// ============================================================
+// MODAL CREAR/EDITAR PERFIL
+// ============================================================
+function abrirModalCrearPerfil() {
+    modoEdicion = false;
+    document.getElementById('tituloPerfil').innerHTML = '<i class="fa fa-id-card"></i> Crear Perfil';
+    document.getElementById('perfilId').value = '';
+    document.getElementById('perfilNombre').value = '';
+    document.getElementById('perfilDescripcion').value = '';
+    // Marcar todos por defecto
+    document.querySelectorAll('#modalPerfil input[type="checkbox"]').forEach(cb => cb.checked = true);
+    document.getElementById('modalPerfil').classList.remove('d-none');
+}
+
+function abrirModalEditarPerfil(id) {
+    modoEdicion = true;
+    fetch(`/perfiles-panel/${id}/`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { mostrarToast(data.error, 'danger'); return; }
+            document.getElementById('tituloPerfil').innerHTML = '<i class="fa fa-edit"></i> Editar Perfil';
+            document.getElementById('perfilId').value = data.id;
+            document.getElementById('perfilNombre').value = data.nombre;
+            document.getElementById('perfilDescripcion').value = data.descripcion || '';
+
+            const cfg = data.configuracion || {};
+            // Menú lateral
+            const menu = cfg.menu_lateral || {};
+            const dash = cfg.dashboard || {};
+            const accesos = cfg.accesos_rapidos || {};
+
+            document.querySelectorAll('#modalPerfil input[type="checkbox"]').forEach(cb => {
+                const name = cb.name;
+                if (name.startsWith('menu_')) {
+                    const key = name.replace('menu_', '');
+                    cb.checked = menu[key] !== false;
+                } else if (name.startsWith('dashboard_')) {
+                    const key = name.replace('dashboard_', '');
+                    cb.checked = dash[key] !== false;
+                } else if (name.startsWith('accesos_')) {
+                    const key = name.replace('accesos_', '');
+                    cb.checked = accesos[key] !== false;
+                }
+            });
+            document.getElementById('modalPerfil').classList.remove('d-none');
+        })
+        .catch(() => mostrarToast('Error al cargar el perfil', 'danger'));
+}
+
+function cerrarModalPerfil() {
+    document.getElementById('modalPerfil').classList.add('d-none');
+}
+
+function guardarPerfil() {
+    const nombre = document.getElementById('perfilNombre').value.trim();
+    if (!nombre) { mostrarToast('El nombre del perfil es obligatorio', 'warning'); return; }
+
+    const data = {
+        nombre,
+        descripcion: document.getElementById('perfilDescripcion').value.trim(),
+    };
+
+    document.querySelectorAll('#modalPerfil input[type="checkbox"]').forEach(cb => {
+        data[cb.name] = cb.checked;
+    });
+
+    const id = document.getElementById('perfilId').value;
+    const url = modoEdicion ? `/perfiles-panel/${id}/editar/` : '/perfiles-panel/crear/';
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+        body: JSON.stringify(data),
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.error) { mostrarToast(res.error, 'danger'); return; }
+        mostrarToast(res.mensaje, 'success');
+        cerrarModalPerfil();
+        setTimeout(() => location.reload(), 800);
+    })
+    .catch(() => mostrarToast('Error de conexión', 'danger'));
+}
+
+// ============================================================
+// ELIMINAR PERFIL
+// ============================================================
+function eliminarPerfil(id, nombre) {
+    if (!confirm(`¿Eliminar el perfil "${nombre}"?\nLos usuarios asignados quedarán sin perfil.`)) return;
+
+    fetch(`/perfiles-panel/${id}/eliminar/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.error) { mostrarToast(res.error, 'danger'); return; }
+        mostrarToast(res.mensaje, 'success');
+        setTimeout(() => location.reload(), 800);
+    })
+    .catch(() => mostrarToast('Error de conexión', 'danger'));
+}
+
+// ============================================================
+// MODAL ASIGNAR — abierto desde la tabla de perfiles
+// ============================================================
+function abrirModalAsignar(perfilId, perfilNombre) {
+    document.getElementById('asignarPerfilId').value = perfilId;
+    document.getElementById('asignarUsuarioId').value = '';
+    const perfilSelect = document.getElementById('asignarPerfilSelect');
+    perfilSelect.value = perfilId;
+    document.getElementById('asignarUsuarioSelect').value = '';
+    document.getElementById('asignarInfo').classList.add('d-none');
+    document.getElementById('modalAsignar').classList.remove('d-none');
+}
+
+// ============================================================
+// MODAL ASIGNAR — abierto desde la tabla de usuarios
+// ============================================================
+function abrirModalAsignarUsuario(usuarioId, usuarioNombre) {
+    document.getElementById('asignarUsuarioSelect').value = usuarioId;
+    document.getElementById('asignarPerfilSelect').value = '';
+    document.getElementById('asignarInfo').textContent = `Cambiando perfil para: ${usuarioNombre}`;
+    document.getElementById('asignarInfo').classList.remove('d-none');
+    document.getElementById('modalAsignar').classList.remove('d-none');
+}
+
+function cerrarModalAsignar() {
+    document.getElementById('modalAsignar').classList.add('d-none');
+}
+
+function confirmarAsignacion() {
+    const usuarioId = document.getElementById('asignarUsuarioSelect').value;
+    const perfilId = document.getElementById('asignarPerfilSelect').value;
+
+    if (!usuarioId) { mostrarToast('Selecciona un usuario', 'warning'); return; }
+
+    fetch('/perfiles-panel/asignar/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+        body: JSON.stringify({ usuario_id: parseInt(usuarioId), perfil_id: perfilId ? parseInt(perfilId) : null }),
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.error) { mostrarToast(res.error, 'danger'); return; }
+        mostrarToast(res.mensaje, 'success');
+        cerrarModalAsignar();
+        setTimeout(() => location.reload(), 800);
+    })
+    .catch(() => mostrarToast('Error de conexión', 'danger'));
+}
+
+// ============================================================
+// UTILIDADES
+// ============================================================
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : '';
+}
+
+function mostrarToast(mensaje, tipo) {
+    const container = document.getElementById('toast-container');
+    if (!container) { alert(mensaje); return; }
+    const toast = document.createElement('div');
+    toast.className = `toast-custom toast-${tipo}`;
+    toast.innerHTML = `<i class="fa fa-${tipo === 'success' ? 'check-circle' : tipo === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i> ${mensaje}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+-->

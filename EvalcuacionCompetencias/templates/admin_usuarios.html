@@ -226,10 +226,15 @@
                                 data-grado="{{ perfil.grado }}" data-unidad="{{ perfil.unidad }}">
                                 <i id="buttontable" class="fa fa-edit"></i>
                             </button>
+                            {% if perfil.rol != 'admin' %}
+                            <button class="btn btn-info btn-sm" title="Configurar panel"
+                                onclick="cargarVista('/configurar-usuario/{{ perfil.user.id }}/')">
+                                <i class="fa fa-sliders-h"></i>
+                            </button>
+                            {% endif %}
                             <button class="btn btn-danger btn-sm btn-eliminar" data-id="{{ perfil.user.id }}">
                                 <i id="buttontable" class="fa fa-trash"></i>
                             </button>
-
                         </td>
                     </tr>
 

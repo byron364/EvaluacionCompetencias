@@ -144,6 +144,20 @@ canvas {
     color: #1e293b;
 }
 
+.btn-primary {
+    background-color: #789441;
+    border-color: #789441;
+    color: #ffffff;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: #6b8440;
+    border-color: #6b8440;
+    color: #ffffff;
+}
+
 #toast-container {
     position: fixed;
     top: 20px;

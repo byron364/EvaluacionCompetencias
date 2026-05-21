@@ -33,11 +33,22 @@
                 <hr class="border-secondary">
 
                 <ul class="nav flex-column sidebar-menu">
+                    {% if configuracion.menu_lateral.inicio %}
                     <li class="nav-item"><a class="nav-link nav-link-spa active" data-url="/instructor/inicio/">Panel principal</a></li>
+                    {% endif %}
+                    {% if configuracion.menu_lateral.cursos %}
                     <li class="nav-item"><a class="nav-link nav-link-spa" data-url="/instructor/cursos/">Mis cursos</a></li>
+                    {% endif %}
+                    {% if configuracion.menu_lateral.evaluaciones %}
                     <li class="nav-item"><a class="nav-link nav-link-spa" data-url="/instructor/evaluaciones/">Calificar</a></li>
+                    {% endif %}
+                    {% if configuracion.menu_lateral.soldados %}
                     <li class="nav-item"><a class="nav-link nav-link-spa" data-url="/instructor/soldados/">Ver soldados</a></li>
+                    {% endif %}
+                    {% if configuracion.menu_lateral.reportes %}
                     <li class="nav-item"><a class="nav-link nav-link-spa" data-url="/instructor/reportes/">Subir resultados</a></li>
+                    {% endif %}
+                    <li class="nav-item"><a class="nav-link nav-link-spa" data-url="/configuracion/">Configuración</a></li>
                     <li class="nav-item"><a class="nav-link logout-link" href="/logout/">Cerrar sesión</a></li>
                 </ul>
             </div>

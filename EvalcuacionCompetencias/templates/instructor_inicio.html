@@ -13,12 +13,15 @@
                 <span class="badge-soft badge-gold"><i class="fa fa-user-graduate me-1"></i> {{ soldados_asignados }} soldados asignados</span>
             </div>
             <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                {% if configuracion.dashboard.accesos_rapidos|default:"True" %}
                 <button class="btn btn-primary quick-action nav-btn me-2 mb-2" data-url="/instructor/evaluaciones/"><i class="fa fa-file-pen me-1"></i>Calificar ahora</button>
                 <button class="btn btn-outline-dark quick-action nav-btn mb-2" data-url="/instructor/reportes/"><i class="fa fa-chart-column me-1"></i>Subir resultados</button>
+                {% endif %}
             </div>
         </div>
     </div>
 
+    {% if configuracion.dashboard.estadisticas|default:"True" %}
     <div class="row g-4">
         <div class="col-md-6 col-xl-3">
             <div class="stat-card">
@@ -49,8 +52,10 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
-    <div class="row">
+    <div class="row mt-4">
+        {% if configuracion.dashboard.ultimas_actividades|default:"True" %}
         <div class="col-lg-7">
             <div class="info-card">
                 <div class="section-title">Actividades por revisar</div>
@@ -76,7 +81,9 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
 
+        {% if configuracion.dashboard.accesos_rapidos|default:"True" %}
         <div class="col-lg-5">
             <div class="info-card">
                 <div class="section-title">Accesos rápidos</div>
@@ -100,5 +107,32 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
+    </div>
+
+    <div class="row mt-4">
+        {% if configuracion.dashboard.notificaciones|default:"True" %}
+        <div class="col-lg-6">
+            <div class="info-card">
+                <div class="section-title">Notificaciones</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item bg-transparent">Sistema estable</li>
+                    <li class="list-group-item bg-transparent">Revisión de accesos completada</li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if configuracion.dashboard.calendario|default:"True" %}
+        <div class="col-lg-6">
+            <div class="info-card">
+                <div class="section-title">Calendario</div>
+                <div class="text-center py-4">
+                    <p class="mb-1">15 May</p>
+                    <strong>Revisión de cursos</strong>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>

@@ -76,7 +76,7 @@
                             </td>
 
                             <td>
-                                {{ curso.total_soldados }}
+                                {{ curso.inscripciones.count }}
                             </td>
 
                             <!-- ESTADO -->
@@ -102,7 +102,7 @@
                                 <button class="btn btn-info btn-sm btn-ver-curso" data-id="{{ curso.id }}"
                                     data-nombre="{{ curso.nombre }}" data-codigo="{{ curso.codigo }}"
                                     data-descripcion="{{ curso.descripcion|default:'Sin descripción' }}"
-                                    data-inscritos="{{ curso.total_soldados }}" data-cupo="{{ curso.cupo_maximo }}">
+                                    data-inscritos="{{ curso.inscripciones.count }}" data-cupo="{{ curso.cupo_maximo }}">
                                     <i id="buttontable" class="fa fa-eye">
                                     </i>
                                 </button>
@@ -137,11 +137,15 @@
                         {% empty %}
 
                         <tr>
-                            <td colspan="9" class="text-center">
-
-                                No hay cursos registrados
-
-                            </td>
+                            <td></td>
+                            <td class="text-center">No hay cursos registrados</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
 
                         {% endfor %}
