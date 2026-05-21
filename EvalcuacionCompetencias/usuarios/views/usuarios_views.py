@@ -1,3 +1,9 @@
+import json
+import base64
+import os
+import subprocess
+import pandas as pd
+
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -11,10 +17,7 @@ from ..models import *
 from ..models import Perfil
 from ..models import Batallon
 from ..models import Compania
-
-import pandas as pd
-import json
-import os
+from django.core.files.base import ContentFile
 
 
 def admin_usuarios(request):
@@ -61,105 +64,270 @@ def listar_usuarios(request):
 @csrf_exempt
 def crear_usuario(request):
 
-    if request.method == 'POST':
+    if request.method != 'POST':
 
-        try:
+        return JsonResponse({
+            'error': 'Método no permitido'
+        }, status=405)
 
-            data = json.loads(request.body)
+    try:
 
-            nombres = data.get('nombres')
-            apellidos = data.get('apellidos')
-            email = data.get('email')
-            documento = data.get('documento')
-            unidad = data.get('unidad')
-            grado = data.get('grado')
-            rol = data.get('rol')
-            compania_id = data.get("compania")
+        # =========================
+        # LEER DATA
+        # =========================
 
-            compania = None
+        data = json.loads(request.body)
 
-            if compania_id:
-                compania = Compania.objects.filter(
-                    id=compania_id
-                ).first()
+        nombres = data.get('nombres')
+        apellidos = data.get('apellidos')
+        email = data.get('email')
+        documento = data.get('documento')
+        grado = data.get('grado')
+        rol = data.get('rol')
+        compania_id = data.get("compania")
 
-            campos_obligatorios = [
-                nombres,
-                apellidos,
-                email,
-                documento,
-                unidad,
-                rol,
-                compania_id
-            ]
-            if rol != "soldado":
-                campos_obligatorios.append(grado)
-                if not all(campos_obligatorios):
-                    return JsonResponse({
-                        'error': 'Todos los campos son obligatorios'
-                        }, status=400)
+        # =========================
+        # VALIDAR COMPAÑÍA
+        # =========================
 
-            if rol == "soldado":
-                if not email.endswith(
-                    "@buzonejercito.mil.co"
-                ):return JsonResponse({
-                "error": "El soldado debe usar correo @buzonejercito.mil.co"
-                }, status=400)
-            else:
-                if not email.endswith(
-                    "@ejercito.mil.co"
-                    ):return JsonResponse({
-                        "error": "Debe usar correo institucional @ejercito.mil.co"
-                        }, status=400)
+        compania = None
 
-            if User.objects.filter(
-                username__iexact=email
-            ).exists():
+        if compania_id:
 
-                return JsonResponse({
-                    'error':
-                        'El usuario ya existe'
-                }, status=400)
+            compania = Compania.objects.filter(
+                id=compania_id
+            ).first()
 
-            if Perfil.objects.filter(
-                documento__iexact=documento
-            ).exists():
+        # =========================
+        # VALIDAR CAMPOS
+        # =========================
 
-                return JsonResponse({
-                    'error':
-                        'Documento ya registrado'
-                }, status=400)
+        campos_obligatorios = [
 
-            user = User.objects.create(
+            nombres,
+            apellidos,
+            email,
+            documento,
+            rol,
+            compania_id
 
-                username=email,
-                email=email,
-                first_name=nombres,
-                last_name=apellidos,
-                password=make_password(documento)
+        ]
+
+        if rol != "soldado":
+
+            campos_obligatorios.append(
+                grado
             )
 
-            Perfil.objects.create(
+        if not all(campos_obligatorios):
 
-                user=user,
-                rol=rol,
-                documento=documento,
-                unidad=unidad,
-                grado=grado,
-                compania=compania,
+            return JsonResponse({
+
+                'error':
+                    'Todos los campos son obligatorios'
+
+            }, status=400)
+
+        # =========================
+        # VALIDAR CORREO
+        # =========================
+
+        if rol == "soldado":
+
+            if not email.endswith(
+                "@buzonejercito.mil.co"
+            ):
+
+                return JsonResponse({
+
+                    "error":
+                        "El soldado debe usar correo @buzonejercito.mil.co"
+
+                }, status=400)
+
+        else:
+
+            if not email.endswith(
+                "@ejercito.mil.co"
+            ):
+
+                return JsonResponse({
+
+                    "error":
+                        "Debe usar correo institucional @ejercito.mil.co"
+
+                }, status=400)
+
+        # =========================
+        # VALIDAR USER
+        # =========================
+
+        if User.objects.filter(
+            username__iexact=email
+        ).exists():
+
+            return JsonResponse({
+
+                'error':
+                    'El usuario ya existe'
+
+            }, status=400)
+
+        # =========================
+        # VALIDAR DOCUMENTO
+        # =========================
+
+        if Perfil.objects.filter(
+            documento__iexact=documento
+        ).exists():
+
+            return JsonResponse({
+
+                'error':
+                    'Documento ya registrado'
+
+            }, status=400)
+
+        # =========================
+        # VALIDAR HUELLA TEMPORAL
+        # =========================
+
+        ruta_temp = rf"C:\Huellero\temp\temp_huella_{documento}.json"
+
+        if not os.path.exists(ruta_temp):
+
+            return JsonResponse({
+
+                'error':
+                    'Debe registrar la huella antes de crear el usuario'
+
+            }, status=400)
+
+        # =========================
+        # CREAR USUARIO
+        # =========================
+
+        user = User.objects.create(
+
+            username=email,
+            email=email,
+
+            first_name=nombres,
+            last_name=apellidos,
+
+            password=make_password(
+                documento
+            )
+        )
+
+        # =========================
+        # CREAR PERFIL
+        # =========================
+
+        perfil = Perfil.objects.create(
+
+            user=user,
+
+            rol=rol,
+
+            documento=documento,
+
+            grado=grado,
+
+            compania=compania,
+
+        )
+
+        # =========================
+        # LEER HUELLA TEMPORAL
+        # =========================
+
+        with open(
+            ruta_temp,
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            datos_huella = json.load(f)
+
+        # =========================
+        # TEMPLATE
+        # =========================
+
+        perfil.huella = datos_huella.get(
+            "huella"
+        )
+
+        # =========================
+        # IMAGEN BASE64
+        # =========================
+
+        imagen_base64 = datos_huella.get(
+            "imagen"
+        )
+
+        # =========================
+        # GUARDAR IMAGEN
+        # =========================
+
+        if imagen_base64:
+
+            formato, imgstr = (
+
+                imagen_base64.split(';base64,')
+
+                if ';base64,' in imagen_base64
+
+                else ('', imagen_base64)
+
             )
 
-            return JsonResponse({
-                'mensaje':
-                    'Usuario creado correctamente'
-            })
+            image_data = ContentFile(
 
-        except Exception as e:
+                base64.b64decode(
+                    imgstr
+                ),
 
-            return JsonResponse({
-                'error': str(e)
-            }, status=500)
+                name=f"huella_{documento}.png"
 
+            )
+
+            perfil.imagen_huella = image_data
+
+        # =========================
+        # GUARDAR PERFIL
+        # =========================
+
+        perfil.save()
+
+        # =========================
+        # ELIMINAR JSON TEMPORAL
+        # =========================
+
+        if os.path.exists(ruta_temp):
+
+            os.remove(ruta_temp)
+
+        # =========================
+        # RESPUESTA
+        # =========================
+
+        return JsonResponse({
+
+            'success': True,
+
+            'mensaje':
+                'Usuario creado correctamente con huella biométrica'
+
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+
+            'error': str(e)
+
+        }, status=500)
 
 @csrf_exempt
 def eliminar_usuario(request, user_id):
@@ -225,42 +393,37 @@ def cargar_usuarios_excel(request):
     if request.method != "POST":
 
         return JsonResponse({
-
-            "error":
-                "Método no permitido"
-
+            "error": "Método no permitido"
         }, status=405)
 
     archivo = request.FILES.get("archivo")
 
-    batallon_id = request.POST.get(
-        "batallon"
+    compania_id = request.POST.get(
+        "compania"
     )
 
-    batallon = None
-
-    if batallon_id:
-
-        batallon = Batallon.objects.filter(
-            id=batallon_id
-        ).first()
-
-    if not batallon:
+    if not compania_id:
 
         return JsonResponse({
-
-            "error":
-                "Debe seleccionar un batallón"
-
+            "error": "Debe seleccionar una compañía"
         }, status=400)
+
+    compania = Compania.objects.filter(
+        id=compania_id
+    ).first()
+
+    if not compania:
+
+        return JsonResponse({
+            "error": "Compañía no encontrada"
+        }, status=400)
+
+    batallon = compania.batallon
 
     if not archivo:
 
         return JsonResponse({
-
-            "error":
-                "No se recibió ningún archivo"
-
+            "error": "No se recibió ningún archivo"
         }, status=400)
 
     try:
@@ -286,40 +449,34 @@ def cargar_usuarios_excel(request):
 
             email = str(
                 row.get("email", "")
-                ).strip().lower()
+            ).strip().lower()
+
             email = email.replace(
                 " ",
                 ""
-                )
+            )
 
             documento = str(
                 row.get("documento", "")
-                ).replace(".0", "").strip()
+            ).replace(".0", "").strip()
+
             documento = documento.replace(
                 " ",
                 ""
-                )
+            )
 
             grado = str(
                 row.get("grado", "")
             ).strip()
 
-            unidad = str(
-                row.get("unidad", "")
-            ).strip()
-
-            if grado.lower() == "soldado":
-
-                rol = "soldado"
-
-            else:
-
-                rol = "instructor"
+            # =====================================
+            # VALIDAR CAMPOS
+            # =====================================
 
             if not nombres:
 
                 errores.append(
-                    f"Fila {index+2}: nombres vacíos"
+                    f"Fila {index+9}: nombres vacíos"
                 )
 
                 continue
@@ -348,29 +505,33 @@ def cargar_usuarios_excel(request):
 
                 continue
 
-            if rol == "soldado":
+            # =====================================
+            # VALIDAR CORREOS Y ROL
+            # =====================================
 
-                if not email.endswith(
-                    "@buzonejercito.mil.co"
-                ):
+            if email.endswith(
+                "@buzonejercito.mil.co"
+            ):
 
-                    errores.append(
-                        f"Fila {index+9}: correo inválido para soldado"
-                    )
+                rol = "soldado"
 
-                    continue
+            elif email.endswith(
+                "@ejercito.mil.co"
+            ):
+
+                rol = "instructor"
 
             else:
 
-                if not email.endswith(
-                    "@ejercito.mil.co"
-                ):
+                errores.append(
+                    f"Fila {index+9}: correo no permitido"
+                )
 
-                    errores.append(
-                        f"Fila {index+9}: correo institucional inválido"
-                    )
+                continue
 
-                    continue
+            # =====================================
+            # VALIDAR DUPLICADOS
+            # =====================================
 
             if User.objects.filter(
                 username=email
@@ -391,6 +552,10 @@ def cargar_usuarios_excel(request):
                 )
 
                 continue
+
+            # =====================================
+            # CREAR USUARIO
+            # =====================================
 
             user = User.objects.create(
 
@@ -421,7 +586,7 @@ def cargar_usuarios_excel(request):
 
                 grado=grado,
 
-                unidad=unidad,
+                compania=compania,
 
                 batallon=batallon
             )
@@ -439,13 +604,16 @@ def cargar_usuarios_excel(request):
 
     except Exception as e:
 
+        import traceback
+
+        traceback.print_exc()
+
         return JsonResponse({
 
-            "error":
-                str(e)
+            "error": str(e)
 
         }, status=500)
-    
+       
 @csrf_exempt
 def descargar_plantilla_excel(request):
     wb = Workbook()
@@ -488,8 +656,7 @@ def descargar_plantilla_excel(request):
         "apellidos",
         "email",
         "documento",
-        "grado",
-        "unidad"
+        "grado"
     ]
 
     for i, titulo in enumerate(encabezados, start=1):
@@ -501,16 +668,14 @@ def descargar_plantilla_excel(request):
         "Perez",
         "juan@ejercito.mil.co",
         "12345678",
-        "Capitán",
-        "Batallon Norte"
+        "Capitán"
     ]
 
     ws["A9"] = "Juan"
     ws["B9"] = "Perez"
     ws["C9"] = "juan@buzonejercito.mil.co"
     ws["D9"] = "12345678"
-    ws["E9"] = "Soldado"
-    ws["F9"] = "Batallon Norte"
+    ws["E9"] = "Capitán"
 
     for i, valor in enumerate(ejemplo, start=1):
         ws.cell(row=9, column=i, value=valor)
@@ -560,8 +725,7 @@ def descargar_plantilla_excel(request):
         "B": 22,
         "C": 35,
         "D": 20,
-        "E": 28,
-        "F": 28
+        "E": 28
     }
 
     for col, width in widths.items():
@@ -569,7 +733,7 @@ def descargar_plantilla_excel(request):
 
 
     for fila in range(10, 501):
-        for col in ["A", "B", "C", "D", "E", "F"]:
+        for col in ["A", "B", "C", "D", "E"]:
             ws[f"{col}{fila}"] = ""
 
     ws.protection.sheet = True
@@ -577,7 +741,7 @@ def descargar_plantilla_excel(request):
 
     # desbloquear celdas editables
     for fila in range(9, 501):
-        for col in ["A", "B", "C", "D", "E", "F"]:
+        for col in ["A", "B", "C", "D", "E"]:
             ws[f"{col}{fila}"].protection = (
                 ws[f"{col}{fila}"].protection.copy(locked=False)
             )
@@ -595,3 +759,109 @@ def descargar_plantilla_excel(request):
     return response
 
 
+@csrf_exempt
+def guardar_huella(request):
+
+    if request.method == "POST":
+
+        data = json.loads(
+            request.body
+        )
+
+        documento = data.get(
+            "documento"
+        )
+
+        huella = data.get(
+            "huella"
+        )
+
+        imagen = data.get(
+            "imagen"
+        )
+
+        try:
+
+            perfil = Perfil.objects.get(
+                documento=documento
+            )
+
+            # GUARDAR TEMPLATE
+            perfil.huella = huella
+
+            # GUARDAR IMAGEN
+            image_data = ContentFile(
+                base64.b64decode(imagen),
+                name=f"huella_{perfil.documento}.png"
+            )
+
+            perfil.imagen_huella = image_data
+
+            perfil.save()
+
+            return JsonResponse({
+                "success": True
+            })
+
+        except Perfil.DoesNotExist:
+
+            return JsonResponse({
+                "success": False,
+                "error": "Usuario no encontrado"
+            })
+
+    return JsonResponse({
+        "success": False
+    })
+
+def abrir_huellero(request, documento):
+
+    ruta_exe = r"C:\Ejercito\EvalcuacionCompetencias\EvalcuacionCompetencias\Huellero\HuelleroMilitarRegistro.exe"
+
+    subprocess.Popen([
+        ruta_exe,
+        documento
+    ])
+
+    return JsonResponse({
+        "success": True
+    })
+
+def validar_huella_temp(request, documento):
+
+    ruta_temp = rf"C:\Huellero\temp\temp_huella_{documento}.json"
+
+    if not os.path.exists(ruta_temp):
+
+        return JsonResponse({
+            "success": False
+        })
+
+    try:
+
+        with open(
+            ruta_temp,
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            datos = json.load(f)
+
+        return JsonResponse({
+
+            "success": True,
+
+            "imagen":
+                datos.get("imagen")
+
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+
+            "success": False,
+
+            "error": str(e)
+
+        }, status=500)

@@ -1,6 +1,15 @@
 from django.urls import path
 from . import views
-                                     
+from .views.resolver_test_views import (
+    finalizar_test,
+    obtener_test
+)
+from .views.crear_test_views import (
+    admin_test,
+    crear_test,
+    cambiar_estado_test,
+    detalle_test
+)                                  
 urlpatterns = [
     # 🔐 Autenticación
     path('', views.login_view, name='login'),
@@ -18,7 +27,7 @@ urlpatterns = [
     path('soldado-dashboard/', views.soldado_dashboard, name='soldado_dashboard'),
     path('soldado/', views.soldado_dashboard),  
     path('usuarios/', views.admin_usuarios, name='usuarios'),
-    path('cursos/', views.admin_cursos, name='cursos'),
+    path('evaluaciones/', views.admin_evaluaciones, name='evaluaciones'),
     path('reportes/', views.admin_reportes, name='reportes'),
     path('admin-dashboard-partial/', views.admin_dashboard_partial),
     path('crear-usuario/', views.crear_usuario, name='crear_usuario'),
@@ -60,25 +69,25 @@ urlpatterns = [
         views.editar_usuario,
         name="editar_usuario"),
 
-    path( 
-        "crear-curso/", 
-        views.crear_curso, 
-        name="crear_curso" ),
-
     path(
-        'listar-cursos/',
-          views.listar_cursos,
-            name='listar_cursos' ),
+    'crear-evaluacion/',
+    views.crear_evaluacion,
+    name='crear_evaluacion'
+    ),
+    path(
+        'listar-evaluaciones/',
+          views.listar_evaluaciones,
+            name='listar_evaluaciones' ),
     
     path(
-    'editar-curso/<int:curso_id>/',
-    views.editar_curso,
-    name='editar_curso' ),
+    'editar-evaluacion/<int:evaluacion_id>/',
+    views.editar_evaluacion,
+    name='editar_evaluacion' ),
 
     path(
-    'eliminar-curso/<int:curso_id>/',
-    views.eliminar_curso,
-    name='eliminar_curso' ),
+    'eliminar-evaluacion/<int:evaluacion_id>/',
+    views.eliminar_evaluacion,
+    name='eliminar_evaluacion' ),
 
     path(
     "crear-batallon/",
@@ -122,4 +131,91 @@ urlpatterns = [
     views.eliminar_compania,
     name="eliminar_compania"
     ),
+
+    path(
+    "guardar-huella/",
+    views.guardar_huella,
+    name="guardar_huella"
+    ),
+    path(
+    "abrir-huellero/<str:documento>/",
+    views.abrir_huellero,
+    name="abrir_huellero"
+    ),
+    path(
+    'validar-huella-temp/<str:documento>/',
+    views.validar_huella_temp
+    ),
+    path(
+    "biometrico/",
+    views.biometrico,
+    name="biometrico"
+    ),
+
+    path(
+    "registrar-huella-usuario/<str:documento>/",
+    views.registrar_huella_usuario,
+    name="registrar_huella_usuario"
+    ),
+
+    path(
+    "buscar-companias/",
+    views.buscar_companias,
+    name="buscar_companias"
+    ),
+
+    path(
+    "activar-evaluacion/<int:evaluacion_id>/",
+    views.activar_evaluacion,
+    name="activar_evaluacion"
+    ),
+
+    path(
+    "detalle-evaluacion/<int:evaluacion_id>/",
+    views.detalle_evaluacion,
+    name="detalle_evaluacion"
+    ),
+
+    path(
+    "editar-evaluacion/<int:evaluacion_id>/",
+    views.editar_evaluacion,
+    name="editar_evaluacion"
+    ),
+
+    path(
+    "crear-test/",
+    views.crear_test,
+    name="crear_test"
+    ),
+
+    path(
+    "admin-test/",
+    views.admin_test,
+    name="admin_test"
+    ),
+
+    path(
+    "finalizar-test/",
+    views.finalizar_test,
+    name="finalizar_test"
+    ),
+
+    path(
+    "obtener-test/<int:test_id>/",
+    obtener_test,
+    name="obtener_test"
+    ),
+
+    path(
+    "activar-test/<int:test_id>/",
+    cambiar_estado_test,
+    name="activar_test"
+    ),
+
+    path(
+    "detalle-test/<int:test_id>/",
+    detalle_test,
+    name="detalle_test"
+    ),
+
 ]

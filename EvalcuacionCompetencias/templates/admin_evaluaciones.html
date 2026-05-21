@@ -1,0 +1,118 @@
+<div id="contenido-parcial">
+
+    <div id="tittle" class="mb-4">
+        <h2>
+            <i class="fa fa-book"></i>
+            Gestión de Cursos
+        </h2>
+    </div>
+
+    <div class="card-admin p-4">
+
+        <div class="d-flex justify-content-end mb-4">
+            <button class="btn btn-success mb-4" data-bs-toggle="modal" data-bs-target="#modalEvaluacion">
+
+                ➕ Nueva Evaluación
+
+            </button>
+        </div>
+
+        <!-- TABLA CURSOS -->
+        <div class="card-admin mt-4 p-3">
+
+            <h5>Listado de Cursos</h5>
+
+            <div class="table-responsive">
+
+                <table id="tablaCursos" class="table table-dark table-hover">
+
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Título</th>
+                            <th>Instructor</th>
+                            <th>Compañía</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for e in evaluaciones %}
+
+                        <tr>
+
+                            <td>{{ e.codigo }}</td>
+
+                            <td>{{ e.titulo }}</td>
+
+                            <td>
+                                {{ e.instructor.first_name }}
+                            </td>
+
+                            <td>{{ e.compania.nombre }}</td>
+
+                            <td>{{ e.fecha }}</td>
+
+                            <td>
+
+                                {% if e.activa %}
+
+                                Activa
+
+                                {% else %}
+
+                                Inactiva
+
+                                {% endif %}
+
+                            </td>
+                            <td>
+
+                                <!-- EDITAR -->
+
+                                <button class="btn btn-warning btn-sm" onclick="editarEvaluacion('{{ e.id }}')"
+                                    title="Editar">
+
+                                    <i class="fa fa-edit"></i>
+
+                                </button>
+
+                                <!-- ACTIVAR / INACTIVAR -->
+
+                                <button class="btn btn-secondary btn-sm"
+                                    onclick="cambiarEstadoEvaluacion('{{ e.id }}')"
+                                    title="Activar / Inactivar">
+
+                                    <i class="fa fa-power-off"></i>
+
+                                </button>
+
+                                <!-- OBSERVAR -->
+
+                                <button class="btn btn-info btn-sm" onclick="verEvaluacion('{{ e.id }}')"
+                                    title="Ver">
+
+                                    <i class="fa fa-eye"></i>
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,11 +1,201 @@
 <div id="contenido-parcial">
 
-    <div id="tittle">
+    <!-- TÍTULO -->
+
+    <div id="tittle" class="mb-4">
 
         <h2>
-            <i class="fa fa-vial"></i>
-            Test del Sistema
+
+            <i class="fa fa-pencil-alt text-success"></i>
+
+            Gestión de Tests
+
         </h2>
+
+    </div>
+
+    <!-- BOTÓN -->
+
+    <div class="d-flex justify-content-end mb-4">
+
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalTest">
+
+            ➕ Nuevo Test
+
+        </button>
+
+    </div>
+
+    <!-- TABLA -->
+
+    <div class="card-admin p-4">
+
+        <div class="table-responsive">
+
+            <table class="table table-dark table-hover" id="tablaTests">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Código
+                        </th>
+
+                        <th>
+                            Título
+                        </th>
+
+                        <th>
+                            Compañía
+                        </th>
+
+                        <th>
+                            Inicio
+                        </th>
+
+                        <th>
+                            Fin
+                        </th>
+
+                        <th>
+                            Tiempo
+                        </th>
+
+                        <th>
+                            Intentos
+                        </th>
+
+                        <th>
+                            Estado
+                        </th>
+
+                        <th>
+                            Acciones
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for test in tests %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ test.codigo }}
+
+                        </td>
+
+                        <td>
+
+                            {{ test.titulo }}
+
+                        </td>
+
+                        <td>
+
+                            {{ test.compania.nombre }}
+
+                        </td>
+
+                        <td>
+
+                            {{ test.fecha_inicio }}
+
+                        </td>
+
+                        <td>
+
+                            {{ test.fecha_fin }}
+
+                        </td>
+
+                        <td>
+
+                            {{ test.tiempo_limite }}
+                            min
+
+                        </td>
+
+                        <td>
+
+                            {{ test.max_intentos }}
+
+                        </td>
+
+                        <td>
+
+                            {% if test.activa %}
+
+                            <span class="badge bg-success">
+
+                                Activo
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-danger">
+
+                                Inactivo
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- ACCIONES -->
+
+                        <td>
+
+                            <!-- EDITAR -->
+
+                            <button class="btn btn-warning btn-sm" onclick="editarTest('{{ test.id }}')">
+
+                                <i class="fa fa-edit"></i>
+
+                            </button>
+
+                            <!-- VER -->
+
+                            <button class="btn btn-info btn-sm" onclick="verTest('{{ test.id }}')">
+
+                                <i class="fa fa-eye"></i>
+
+                            </button>
+
+                            <!-- ACTIVAR -->
+
+                            <button class="btn btn-secondary btn-sm" onclick="cambiarEstadoTest('{{ test.id }}')">
+
+                                <i class="fa fa-power-off"></i>
+
+                            </button>
+
+                            <!-- RESOLVER -->
+
+                            <button class="btn btn-primary btn-sm" onclick="resolverTest('{{ test.id }}')">
+
+                                <i class="fa fa-play"></i>
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
 
     </div>
 

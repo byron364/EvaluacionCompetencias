@@ -64,8 +64,8 @@
                             <li><a class="nav-link nav-link-spa" data-url="/batallones/">Batallones</a></li>
                             <li><a class="nav-link nav-link-spa" data-url="/companias/">Compañias</a></li>
                             <li><a class="nav-link nav-link-spa" data-url="/usuarios/">Usuarios</a></li>
-                            <li><a class="nav-link nav-link-spa" data-url="/cursos/">Evaluaciones</a></li>
-                            <li><a class="nav-link nav-link-spa" data-url="/inscripciones/">Inscripciones</a></li>
+                            <li><a class="nav-link nav-link-spa" data-url="/biometrico/">Gestión Biométrica</a></li>
+                            <li><a class="nav-link nav-link-spa" data-url="/evaluaciones/">Evaluaciones</a></li>
                             <li><a class="nav-link nav-link-spa" data-url="/test/">Test</a></li>
                             <li><a class="nav-link nav-link-spa" data-url="/configuracion/">Configuración</a></li>
                             <li><a class="nav-link nav-link-spa" data-url="/reportes/">Reportes</a></li>
@@ -160,919 +160,19 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
+    <script src="{% static 'js/spa.js' %}"></script>
+    <script src="{% static 'js/ui.js' %}"></script>
+    <script src="{% static 'js/usuarios.js' %}"></script>
+    <script src="{% static 'js/biometria.js' %}"></script>
+    <script src="{% static 'js/datatables.js' %}"></script>
+    <script src="{% static 'js/dashboard.js' %}"></script>
+    <script src="{% static 'js/excel.js' %}"></script>
+    <script src="{% static 'js/companias.js' %}"></script>
+    <script src="{% static 'js/cursos.js' %}"></script>
+    <script src="{% static 'js/evaluaciones.js' %}"></script>
+    <script src="{% static 'js/tests.js' %}"></script>
+    <script src="{% static 'js/batallones.js' %}"></script>
 
-            const content = document.getElementById("contenido-dinamico");
-            const loader = document.getElementById("loader");
-            const HOME_URL = "/admin-dashboard-partial/";
-
-            function cargarVista(url, guardar = true) {
-
-
-                loader.classList.add("active");
-
-                content.classList.add("fade-out");
-                fetch(url)
-                    .then(res => res.text())
-                    .then(data => {
-
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(data, "text/html");
-                        const nuevo = doc.getElementById("contenido-parcial");
-
-                        if (nuevo) {
-                            content.innerHTML = nuevo.innerHTML;
-
-                            if (url.includes("/usuarios/")) {
-
-                                inicializarUsuarios();
-
-                            }
-
-                            // MAPA BATALLONES
-                            if (document.getElementById("mapaBatallones")) {
-
-                                setTimeout(() => {
-
-                                    // evitar duplicar mapa
-                                    const mapaContainer =
-                                        L.DomUtil.get('mapaBatallones');
-
-                                    if (mapaContainer != null) {
-
-                                        mapaContainer._leaflet_id = null;
-
-                                    }
-
-                                    const mapa = L.map(
-                                        'mapaBatallones'
-                                    ).setView(
-                                        [4.5709, -74.2973],
-                                        5
-                                    );
-
-                                    L.tileLayer(
-                                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                        {
-                                            attribution: '&copy; OpenStreetMap'
-                                        }
-                                    ).addTo(mapa);
-
-                                    // BOGOTÁ
-                                    L.marker([4.7110, -74.0721])
-                                        .addTo(mapa)
-                                        .bindPopup(`
-                <b>Batallón Bogotá</b><br>
-                Bogotá
-            `);
-
-                                    // MEDELLÍN
-                                    L.marker([6.2442, -75.5812])
-                                        .addTo(mapa)
-                                        .bindPopup(`
-                <b>Batallón Medellín</b><br>
-                Medellín
-            `);
-
-                                    // CALI
-                                    L.marker([3.4516, -76.5320])
-                                        .addTo(mapa)
-                                        .bindPopup(`
-                <b>Batallón Cali</b><br>
-                Cali
-            `);
-
-                                }, 300);
-                            }
-                            // Si estamos en usuarios, actualizar cards automáticamente 
-                            if (url.includes("/usuarios/")) {
-                                actualizarTarjetas();
-                            }
-
-                            // TABLA BATALLONES
-                            if ($("#tablaBatallones").length) {
-
-                                $("#tablaBatallones").DataTable({
-
-                                    pageLength: 5,
-
-                                    lengthChange: false,
-
-                                    ordering: true,
-
-                                    searching: true,
-
-                                    info: true,
-
-                                    destroy: true,
-
-                                    responsive: true,
-
-                                    language: {
-
-                                        search: "Buscar batallón:",
-
-                                        zeroRecords:
-                                            "No se encontraron batallones",
-
-                                        info:
-                                            "Mostrando _START_ a _END_ de _TOTAL_ batallones",
-
-                                        infoEmpty:
-                                            "No hay batallones disponibles",
-
-                                        paginate: {
-
-                                            previous: "Anterior",
-
-                                            next: "Siguiente"
-                                        }
-                                    }
-                                });
-                            }
-
-                            // Inicializar DataTable si existe la tabla
-                            if ($("#tablaUsuarios").length) {
-                                $("#tablaUsuarios").DataTable({
-                                    pageLength: 5,
-                                    lengthChange: false,
-                                    ordering: true,
-                                    searching: true,
-                                    info: true,
-                                    destroy: true,
-
-                                    language: {
-                                        search: "Buscar usuario:",
-                                        zeroRecords: "No se encontraron usuarios",
-                                        info: "Mostrando _START_ a _END_ de _TOTAL_ usuarios",
-                                        infoEmpty: "No hay usuarios disponibles",
-                                        paginate: {
-                                            previous: "Anterior",
-                                            next: "Siguiente"
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                        // TABLA CURSOS
-                        if ($("#tablaCursos").length) {
-
-                            $("#tablaCursos").DataTable({
-                                pageLength: 5,
-                                lengthChange: false,
-                                ordering: true,
-                                searching: true,
-                                info: true,
-                                destroy: true,
-
-                                language: {
-                                    search: "Buscar curso:",
-                                    zeroRecords: "No se encontraron cursos",
-                                    info: "Mostrando _START_ a _END_ de _TOTAL_ cursos",
-                                    infoEmpty: "No hay cursos disponibles",
-                                    paginate: {
-                                        previous: "Anterior",
-                                        next: "Siguiente"
-                                    }
-                                }
-                            });
-                        }
-
-                        // TABLA COMPAÑÍAS
-                        if ($("#tablaCompanias").length) {
-
-                            $("#tablaCompanias").DataTable({
-                                pageLength: 5,
-                                lengthChange: false,
-                                ordering: true,
-                                searching: true,
-                                info: true,
-                                destroy: true,
-
-                                language: {
-                                    search: "Buscar compañía:",
-                                    zeroRecords: "No se encontraron compañías",
-                                    info: "Mostrando _START_ a _END_ de _TOTAL_ compañías",
-                                    infoEmpty: "No hay compañías disponibles",
-                                    paginate: {
-                                        previous: "Anterior",
-                                        next: "Siguiente"
-                                    }
-                                }
-                            });
-                        }
-
-                        // Ocultar loader al terminar
-                        setTimeout(() => { loader.classList.remove("active"); content.classList.remove("fade-out"); content.classList.add("fade-in"); }, 500);
-
-                        if (guardar) {
-                            sessionStorage.setItem("ultimaVista", url);
-
-                            history.replaceState(
-                                { url: url },
-                                "",
-                                "/admin-dashboard/"
-                            );
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Error cargando vista:", error);
-
-                        // Ocultar loader también si falla
-                        setTimeout(() => { loader.classList.remove("active"); content.classList.remove("fade-out"); }, 500);
-                    });
-            }
-
-            // Eventos menú lateral SPA
-            document.querySelectorAll(".nav-link-spa").forEach(link => {
-                link.addEventListener("click", function (e) {
-                    e.preventDefault();
-
-                    // quitar active de todos
-                    document.querySelectorAll(".nav-link-spa").forEach(item => {
-                        item.classList.remove("active");
-                    });
-
-                    // activar solo el actual
-                    this.classList.add("active");
-
-                    cargarVista(this.dataset.url);
-                });
-            });
-
-
-            // Restaurar última vista abierta
-            const ultimaVista = sessionStorage.getItem("ultimaVista");
-
-            if (ultimaVista) {
-
-                // activar menú correcto
-                document.querySelectorAll(".nav-link-spa").forEach(link => {
-                    link.classList.remove("active");
-
-                    if (link.dataset.url === ultimaVista) {
-                        link.classList.add("active");
-                    }
-                });
-
-                // cargar última vista SIN cambiar URL
-                cargarVista(ultimaVista, false);
-
-            } else {
-
-                cargarVista(HOME_URL, false);
-            }
-
-        });
-    </script>
-
-    <script>
-        document.addEventListener("click", function (e) {
-            if (e.target.closest("#btnCrearUsuario")) {
-                crearUsuario();
-            }
-        });
-    </script>
-
-    <script>
-        window.crearUsuario = function () {
-
-            const data = {
-                nombres: document.getElementById("nombres")?.value.trim(),
-                apellidos: document.getElementById("apellidos")?.value.trim(),
-                email: document.getElementById("email")?.value.trim(),
-                documento: document.getElementById("documento")?.value.trim(),
-                unidad: document.getElementById("unidad")?.value.trim(),
-                grado: document.getElementById("grado")?.value.trim(),
-                rol: document.getElementById("rol")?.value,
-                compania: document.getElementById("companiaSeleccionada")?.value,
-            };
-
-            if (!data.nombres || !data.apellidos || !data.email || !data.documento || !data.unidad || !data.grado || !data.compania) {
-                mostrarToast("⚠️ Completa los campos obligatorios", "warning");
-                return;
-            }
-
-            if (data.rol === "soldado") {
-
-                if (
-                    !data.email.endsWith(
-                        "@buzonejercito.mil.co"
-                    )
-                ) {
-
-                    mostrarToast(
-                        "⚠️ El soldado debe usar @buzonejercito.mil.co",
-                        "warning"
-                    );
-
-                    return;
-                }
-
-            } else {
-
-                if (
-                    !data.email.endsWith(
-                        "@ejercito.mil.co"
-                    )
-                ) {
-
-                    mostrarToast(
-                        "⚠️ Debe usar @ejercito.mil.co",
-                        "warning"
-                    );
-
-                    return;
-                }
-            }
-
-            fetch("/crear-usuario/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            })
-                .then(res => res.json())
-                .then(res => {
-
-                    if (res.error) {
-                        mostrarToast("❌ " + res.error, "error");
-                    } else {
-                        mostrarToast("✅ Usuario creado correctamente", "success");
-
-                        document.getElementById("nombres").value = "";
-                        document.getElementById("apellidos").value = "";
-                        document.getElementById("email").value = "";
-                        document.getElementById("documento").value = "";
-                        document.getElementById("grado").value = "";
-                        document.getElementById("unidad").value = "";
-                        document.getElementById("buscarCompania").value = "";
-                        document.getElementById("companiaSeleccionada").value = "";
-                        document.getElementById("rol").value = "soldado";
-
-                        // OCULTAR RESULTADOS
-
-                        const resultados =
-                            document.getElementById(
-                                "resultadosCompanias"
-                            );
-
-                        if (resultados) {
-
-                            resultados.style.display =
-                                "none";
-
-                            resultados.innerHTML = "";
-                        }
-
-                        // RESETEAR INPUT GRADO
-
-                        const contenedorGrado =
-                            document.getElementById(
-                                "contenedorGrado"
-                            );
-
-                        if (contenedorGrado) {
-
-                            contenedorGrado.style.display =
-                                "none";
-                        }
-                    }
-                })
-                .catch(() => {
-                    mostrarToast("❌ Error en el servidor", "error");
-                });
-        };
-    </script>
-    <script>
-        window.mostrarToast = function (mensaje, tipo = "success") {
-
-            const container = document.getElementById("toast-container");
-
-            const toast = document.createElement("div");
-            toast.className = `toast-custom toast-${tipo}`;
-
-            const texto = document.createElement("span");
-            texto.textContent = mensaje;
-
-            toast.appendChild(texto);
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        };
-    </script>
-
-    <script>
-        window.subirExcel = function () {
-
-            const archivo = document.getElementById("archivoExcel").files[0];
-            const batallon = document.getElementById("batallonExcelSeleccionado").value;
-
-            if (!archivo) {
-                mostrarToast("Seleccione un archivo Excel", "warning");
-                return;
-            }
-
-            let formData = new FormData();
-            formData.append("archivo", archivo);
-            formData.append("batallon", batallon);
-
-            fetch("/cargar-usuarios-excel/", {
-                method: "POST",
-                body: formData
-            })
-                .then(res => res.json())
-                .then(res => {
-
-                    console.log(res);
-
-                    if (res.error) {
-
-                        mostrarToast(
-                            res.error,
-                            "error"
-                        );
-
-                        return;
-                    }
-
-                    mostrarToast(
-                        res.mensaje,
-                        "success"
-                    );
-
-                    actualizarTarjetas();
-
-                    // MOSTRAR ERRORES DEL EXCEL
-
-                    if (
-
-                        res.errores &&
-
-                        res.errores.length > 0
-
-                    ) {
-
-                        Swal.fire({
-
-                            icon: "warning",
-
-                            title: "Usuarios omitidos",
-
-                            html: `
-
-                <div style="
-                    text-align:left;
-                    max-height:300px;
-                    overflow:auto;
-                    font-size:14px;
-                ">
-
-                    ${res.errores.map(
-                                e => `• ${e}`
-                            ).join("<br>")}
-
-                </div>
-
-            `,
-
-                            width: 700
-                        });
-                    }
-                });
-        };
-    </script>
-
-    <script>
-        function actualizarTarjetas() {
-            fetch("/obtener-estadisticas/")
-                .then(res => res.json())
-                .then(data => {
-                    const soldados =
-                        document.getElementById("total-soldados");
-
-                    if (soldados) {
-
-                        soldados.textContent =
-                            data.total_soldados;
-                    }
-
-                    const instructores =
-                        document.getElementById("total-instructores");
-
-                    if (instructores) {
-
-                        instructores.textContent =
-                            data.total_instructores;
-                    }
-
-                    const activos =
-                        document.getElementById("total-activos");
-
-                    if (activos) {
-
-                        activos.textContent =
-                            data.total_activos;
-                    }
-                    const cursos = document.getElementById("total-cursos");
-                    if (cursos) {
-                        cursos.textContent = data.total_cursos;
-                    }
-
-                    const evaluaciones = document.getElementById("total-evaluaciones");
-                    if (evaluaciones) {
-                        evaluaciones.textContent = data.total_evaluaciones;
-                    }
-
-                    const aprobados =
-                        document.getElementById("porcentaje-aprobados");
-
-                    if (aprobados) {
-
-                        aprobados.textContent =
-                            data.porcentaje_aprobados + "%";
-                    }
-                });
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            actualizarTarjetas();
-        });
-    </script>
-    <script>
-        document.addEventListener("click", function (e) {
-            const boton = e.target.closest(".btn-eliminar");
-
-            if (!boton) return;
-
-            const userId = boton.dataset.id;
-
-            Swal.fire({
-                title: "¿Eliminar usuario?",
-                text: "Esta acción no se puede deshacer",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#198754",
-                cancelButtonColor: "#dc3545",
-                confirmButtonText: "Sí, eliminar",
-                cancelButtonText: "Cancelar"
-            }).then((result) => {
-
-                if (result.isConfirmed) {
-
-                    fetch(`/eliminar-usuario/${userId}/`, {
-                        method: "POST"
-                    })
-                        .then(res => res.json())
-                        .then(res => {
-                            if (res.error) {
-                                mostrarToast(res.error, "error");
-                            } else {
-                                boton.closest("tr").remove();
-
-                                actualizarTarjetas();
-
-                                Swal.fire({
-                                    title: "Eliminado",
-                                    text: "Usuario eliminado correctamente",
-                                    icon: "success",
-                                    confirmButtonColor: "#198754"
-                                });
-                            }
-                        });
-
-                }
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener("click", function (e) {
-            const boton = e.target.closest(".btn-editar");
-
-            if (!boton) return;
-
-            const userId = boton.dataset.id;
-            const nombre = boton.dataset.nombre;
-            const apellido = boton.dataset.apellido;
-            const email = boton.dataset.email;
-            const rol = boton.dataset.rol;
-            const activo = boton.dataset.activo === "True";
-
-            Swal.fire({
-                title: "Editar Usuario",
-                html: `
-            <input id="swal-nombre" class="swal2-input" placeholder="Nombre" value="${nombre}">
-            <input id="swal-apellido" class="swal2-input" placeholder="Apellido" value="${apellido}">
-            <input id="swal-email" class="swal2-input" placeholder="Correo" value="${email}">
-            <select id="swal-rol" class="swal2-input">
-                <option value="soldado" ${rol === "soldado" ? "selected" : ""}>Soldado</option>
-                <option value="instructor" ${rol === "instructor" ? "selected" : ""}>Instructor</option>
-                <option value="admin" ${rol === "admin" ? "selected" : ""}>Admin</option>
-            </select>
-            <select id="swal-activo" class="swal2-input">
-                <option value="true" ${activo ? "selected" : ""}>Activo</option>
-                <option value="false" ${!activo ? "selected" : ""}>Inactivo</option>
-            </select>
-        `,
-                confirmButtonText: "Guardar cambios",
-                showCancelButton: true,
-                cancelButtonText: "Cancelar",
-                confirmButtonColor: "#198754",
-                preConfirm: () => {
-                    return {
-                        nombre: document.getElementById("swal-nombre").value,
-                        apellido: document.getElementById("swal-apellido").value,
-                        email: document.getElementById("swal-email").value,
-                        rol: document.getElementById("swal-rol").value,
-                        activo: document.getElementById("swal-activo").value === "true"
-                    };
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`/editar-usuario/${userId}/`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(result.value)
-                    })
-                        .then(res => res.json())
-                        .then(res => {
-                            Swal.fire({
-                                title: "Actualizado",
-                                text: res.mensaje,
-                                icon: "success",
-                                confirmButtonColor: "#198754"
-                            }).then(() => {
-                                location.reload();
-                            });
-                        });
-                }
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const menuToggle = document.getElementById("menuToggle");
-            const sidebar = document.querySelector(".sidebar");
-
-            menuToggle.addEventListener("click", function () {
-                sidebar.classList.toggle("active");
-            });
-        });
-    </script>
-    <script>
-        function abrirModalCurso() {
-            const modalElement = document.getElementById("modalCrearCurso");
-
-            if (!modalElement) {
-                console.error("Modal no encontrado");
-                return;
-            }
-
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        }
-    </script>
-    <script>
-        function generarCodigoVisual() {
-
-            const input =
-                document.getElementById(
-                    'codigoBatallon'
-                );
-
-            // SI NO EXISTE EL INPUT
-            // NO HACER NADA
-
-            if (!input) return;
-
-            const filas = document.querySelectorAll(
-                '#tablaBatallones tbody tr'
-            );
-
-            let numero = filas.length + 1;
-
-            let codigo =
-                `BAT-${String(numero).padStart(4, '0')}`;
-
-            input.value = codigo;
-        }
-
-        window.onload = function () {
-
-            const input =
-                document.getElementById(
-                    "codigoBatallon"
-                );
-
-            if (input) {
-
-                generarCodigoVisual();
-
-            }
-
-        };
-
-    </script>
-    <script>
-
-        async function crearBatallon() {
-
-            const nombre =
-
-                document.getElementById(
-                    "nombreBatallon"
-                ).value;
-
-            const ciudad =
-
-                document.getElementById(
-                    "ciudadBatallon"
-                ).value;
-
-            const descripcion =
-
-                document.getElementById(
-                    "descripcionBatallon"
-                ).value;
-
-            if (!nombre.trim()) {
-
-                mostrarToast(
-                    "⚠️ Debe ingresar el nombre del batallón",
-                    "warning"
-                );
-
-                return;
-            }
-
-            try {
-
-                const response = await fetch(
-
-                    "/crear-batallon/",
-
-                    {
-
-                        method: "POST",
-
-                        headers: {
-
-                            "Content-Type":
-                                "application/json"
-
-                        },
-
-                        body: JSON.stringify({
-
-                            nombre,
-                            ciudad,
-                            descripcion
-
-                        })
-                    }
-                );
-
-                const data = await response.json();
-
-                if (data.error) {
-
-                    mostrarToast(
-                        "❌ " + data.error,
-                        "error"
-                    );
-
-                    return;
-                }
-
-                mostrarToast(
-                    "✅ " + data.mensaje,
-                    "success"
-                );
-
-                setTimeout(() => {
-
-                    location.reload();
-
-                }, 1200);
-
-            } catch (error) {
-
-                mostrarToast(
-                    "❌ Error del sistema",
-                    "error"
-                );
-
-                console.error(error);
-
-            }
-
-        }
-
-
-        function generarCodigoVisual() {
-
-            const filas = document.querySelectorAll(
-                '#tablaBatallones tbody tr'
-            );
-
-            let numero = filas.length + 1;
-
-            let codigo =
-
-                `BAT-${String(numero).padStart(4, '0')}`;
-
-            document.getElementById(
-                'codigoBatallon'
-            ).value = codigo;
-
-        }
-
-
-        $(document).ready(function () {
-
-            $('#tablaBatallones').DataTable({
-
-                responsive: true,
-
-                language: {
-
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
-                }
-
-            });
-
-            generarCodigoVisual();
-
-        });
-        $(document).ready(function () {
-
-            $('#tablaCompanias').DataTable({
-
-                responsive: true,
-
-                language: {
-
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
-                }
-
-            });
-
-        });
-
-    </script>
-
-    <!-- MODAL CREAR CURSO -->
-    <div class="modal fade" id="modalCrearCurso" tabindex="-1" aria-labelledby="modalCrearCursoLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content"> <!-- HEADER -->
-                <div class="modal-header" style="background: #198754; color: white;">
-                    <h4 class="modal-title" id="modalCrearCursoLabel"> <i class="fa fa-book-open"></i> Crear Curso </h4>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div> <!-- BODY -->
-                <div class="modal-body">
-                    <div class="row g-3"> <!-- Código -->
-                        <div class="col-md-4"> <label>Código *</label> <input type="text" id="codigoCurso"
-                                class="form-control" placeholder="Ej: CUR-001"> </div> <!-- Nombre -->
-                        <div class="col-md-4"> <label>Nombre del Curso *</label> <input type="text" id="nombreCurso"
-                                class="form-control" placeholder="Nombre del curso"> </div> <!-- Instructor -->
-                        <div class="col-md-4">
-                            <label>Instructor *</label>
-                            <select id="instructorCurso" class="form-control">
-                                <option value="">
-                                    Seleccione instructor
-                                </option>
-                                {% for instructor in instructores %}
-                                <option value="{{ instructor.id }}">
-                                    {{ instructor.first_name }} {{ instructor.last_name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div> <!-- Descripción -->
-                        <div class="col-md-12"> <label>Descripción</label> <textarea id="descripcionCurso"
-                                class="form-control" rows="4" placeholder="Descripción general del curso"></textarea>
-                        </div>
-                        <!-- Fecha Inicio -->
-                        <div class="col-md-4"> <label>Fecha inicio *</label> <input type="date" id="fechaInicioCurso"
-                                class="form-control"> </div> <!-- Fecha Fin -->
-                        <div class="col-md-4"> <label>Fecha fin *</label> <input type="date" id="fechaFinCurso"
-                                class="form-control"> </div> <!-- Cupo -->
-                        <div class="col-md-4"> <label>Cupo máximo *</label> <input type="number" id="cupoCurso"
-                                class="form-control" placeholder="Ej: 30"> </div>
-                    </div>
-                </div> <!-- FOOTER -->
-                <div class="modal-footer"> <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button> <button type="button" class="btn btn-success" onclick="crearCurso()"> <i
-                            class="fa fa-save"></i> Guardar Curso </button> </div>
-            </div>
-        </div>
-    </div>
     <!-- MODAL EDITAR CURSO -->
     <div class="modal fade" id="modalEditarCurso" tabindex="-1">
 
@@ -1177,6 +277,7 @@
         </div>
 
     </div>
+
     <!-- MODAL EDITAR BATALLÓN -->
     <div class="modal fade" id="modalEditarBatallon" tabindex="-1">
 
@@ -1338,384 +439,189 @@
         </div>
 
     </div>
+    <!-- MODAL NUEVA EVALUACIÓN -->
+
+    <div class="modal fade" id="modalEvaluacion" tabindex="-1">
+
+        <div class="modal-dialog modal-lg">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-dark text-white">
+
+                    <h5 class="modal-title">
+
+                        📋 Nueva Evaluación
+
+                    </h5>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <div class="row g-3">
+
+                        <!-- TÍTULO -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Título
+
+                            </label>
+
+                            <input type="text" class="form-control" id="tituloEvaluacion">
+
+                        </div>
+
+                        <!-- FECHA -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Fecha
+
+                            </label>
+
+                            <input type="date" class="form-control" id="fechaEvaluacion">
+
+                        </div>
+
+                        <!-- INSTRUCTOR -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Instructor
+
+                            </label>
+
+                            <select class="form-select" id="instructorEvaluacion">
+
+                                <option value="">
+
+                                    Seleccione
+
+                                </option>
+
+                                {% for instructor in instructores %}
+
+                                <option value="{{ instructor.id }}">
+
+                                    {{ instructor.first_name }}
+                                    {{ instructor.last_name }}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                        <!-- COMPAÑÍA -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Compañía
+
+                            </label>
+
+                            <!-- INPUT BUSCADOR -->
+
+                            <input type="text" class="form-control" id="buscadorCompania"
+                                placeholder="Buscar compañía..." autocomplete="off">
+
+                            <!-- RESULTADOS -->
+
+                            <div id="listaCompanias" class="list-group mt-1"></div>
+
+                            <!-- ID OCULTO -->
+
+                            <input type="hidden" id="companiaEvaluacion">
+
+                        </div>
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <div class="col-12">
+
+                            <label class="form-label">
+
+                                Descripción
+
+                            </label>
+
+                            <textarea class="form-control" rows="4" id="descripcionEvaluacion"></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="btn btn-success" id="btnGuardarEvaluacion">
+
+                        💾 Guardar
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
     <script>
-        window.crearCurso = function () {
 
-            const data = {
-                codigo: document.getElementById("codigoCurso").value.trim(),
-                nombre: document.getElementById("nombreCurso").value.trim(),
-                descripcion: document.getElementById("descripcionCurso").value.trim(),
-                instructor: document.getElementById("instructorCurso").value,
-                fecha_inicio: document.getElementById("fechaInicioCurso").value,
-                fecha_fin: document.getElementById("fechaFinCurso").value,
-                cupo_maximo: document.getElementById("cupoCurso").value
-            };
+        let companias = [];
 
-            if (!data.codigo || !data.nombre) {
-                mostrarToast("Complete los campos obligatorios", "warning");
-                return;
-            }
 
-            fetch("/crear-curso/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.error) {
-                        mostrarToast(res.error, "error");
-                    } else {
-                        mostrarToast(res.mensaje, "success");
+        // =====================================
+        // CARGAR COMPAÑIAS
+        // =====================================
 
-                        const modal = bootstrap.Modal.getInstance(
-                            document.getElementById("modalCrearCurso")
-                        );
-
-                        if (modal) {
-                            modal.hide();
-                        }
-
-                        location.reload();
-                    }
-                })
-                .catch(() => {
-                    mostrarToast("Error del servidor", "error");
-                });
-        };
-    </script>
-    <script>
-
-        document.addEventListener("click", function (e) {
-
-            const boton = e.target.closest(".btn-editar-curso");
-
-            if (!boton) return;
-
-            document.getElementById("editarCursoId").value =
-                boton.dataset.id;
-
-            document.getElementById("editarCodigoCurso").value =
-                boton.dataset.codigo;
-
-            document.getElementById("editarNombreCurso").value =
-                boton.dataset.nombre;
-
-            document.getElementById("editarDescripcionCurso").value =
-                boton.dataset.descripcion;
-
-            document.getElementById("editarInstructorCurso").value =
-                boton.dataset.instructor;
-
-            document.getElementById("editarFechaInicioCurso").value =
-                boton.dataset.fecha_inicio;
-
-            document.getElementById("editarFechaFinCurso").value =
-                boton.dataset.fecha_fin;
-
-            document.getElementById("editarCupoCurso").value =
-                boton.dataset.cupo;
-
-            const modal = new bootstrap.Modal(
-                document.getElementById("modalEditarCurso")
-            );
-
-            modal.show();
-
-        });
-
-    </script>
-    <script>
-
-        window.guardarEdicionCurso = function () {
-
-            const cursoId =
-                document.getElementById("editarCursoId").value;
-
-            const data = {
-
-                codigo:
-                    document.getElementById("editarCodigoCurso").value,
-
-                nombre:
-                    document.getElementById("editarNombreCurso").value,
-
-                descripcion:
-                    document.getElementById("editarDescripcionCurso").value,
-
-                instructor:
-                    document.getElementById("editarInstructorCurso").value,
-
-                fecha_inicio:
-                    document.getElementById("editarFechaInicioCurso").value,
-
-                fecha_fin:
-                    document.getElementById("editarFechaFinCurso").value,
-
-                cupo_maximo:
-                    document.getElementById("editarCupoCurso").value
-            };
-
-            fetch(`/editar-curso/${cursoId}/`, {
-
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(data)
-
-            })
-                .then(res => res.json())
-                .then(res => {
-
-                    if (res.error) {
-
-                        mostrarToast(res.error, "error");
-
-                    } else {
-
-                        mostrarToast(
-                            "Curso actualizado correctamente",
-                            "success"
-                        );
-
-                        location.reload();
-                    }
-
-                });
-
-        }
-
-    </script>
-    <script>
-
-        document.addEventListener("click", async function (e) {
-
-            const boton = e.target.closest(".btn-eliminar-curso");
-
-            if (!boton) return;
-
-            e.preventDefault();
-
-            const cursoId = boton.dataset.id;
-
-            const result = await Swal.fire({
-
-                title: "¿Eliminar curso?",
-
-                text: "Esta acción no se puede deshacer",
-
-                icon: "warning",
-
-                showCancelButton: true,
-
-                confirmButtonColor: "#198754",
-
-                cancelButtonColor: "#dc3545",
-
-                confirmButtonText: "Sí, eliminar",
-
-                cancelButtonText: "Cancelar"
-
-            });
-
-            if (!result.isConfirmed) return;
+        async function cargarCompanias() {
 
             try {
 
                 const response = await fetch(
-
-                    `/eliminar-curso/${cursoId}/`,
-
-                    {
-                        method: "POST",
-                        headers: {
-                            "X-Requested-With": "XMLHttpRequest"
-                        }
-                    }
+                    "/buscar-companias/"
                 );
 
                 const data = await response.json();
 
-                if (data.error) {
+                companias = data.companias;
 
-                    mostrarToast(data.error, "error");
-                    return;
-                }
-
-                // ELIMINAR FILA VISUALMENTE
-                const fila = boton.closest("tr");
-
-                // SI EXISTE DATATABLE
-                if ($.fn.DataTable.isDataTable("#tablaCursos")) {
-
-                    const tabla =
-                        $("#tablaCursos").DataTable();
-
-                    tabla
-                        .row(fila)
-                        .remove()
-                        .draw(false);
-
-                } else {
-
-                    fila.remove();
-
-                }
-
-                Swal.fire({
-
-                    title: "Eliminado",
-
-                    text: "Curso eliminado correctamente",
-
-                    icon: "success",
-
-                    confirmButtonColor: "#198754"
-
-                });
+                console.log(
+                    "COMPAÑIAS:",
+                    companias
+                );
 
             } catch (error) {
-
-                console.error(error);
-
-                mostrarToast(
-                    "Error eliminando curso",
-                    "error"
-                );
-            }
-
-        });
-
-    </script>
-    <script>
-
-        // ABRIR MODAL EDITAR
-        $(document).on(
-            "click",
-            ".btn-editar-batallon",
-            function () {
-
-                const id =
-                    $(this).data("id");
-
-                const nombre =
-                    $(this).data("nombre");
-
-                const ciudad =
-                    $(this).data("ciudad");
-
-                const descripcion =
-                    $(this).data("descripcion");
-
-                $("#editarBatallonId").val(id);
-
-                $("#editarNombreBatallon")
-                    .val(nombre);
-
-                $("#editarCiudadBatallon")
-                    .val(ciudad);
-
-                $("#editarDescripcionBatallon")
-                    .val(descripcion);
-
-                $("#modalEditarBatallon")
-                    .modal("show");
-
-            }
-        );
-
-    </script>
-    <script>
-
-        async function guardarEdicionBatallon() {
-
-            const id =
-                document.getElementById(
-                    "editarBatallonId"
-                ).value;
-
-            const nombre =
-                document.getElementById(
-                    "editarNombreBatallon"
-                ).value;
-
-            const ciudad =
-                document.getElementById(
-                    "editarCiudadBatallon"
-                ).value;
-
-            const descripcion =
-                document.getElementById(
-                    "editarDescripcionBatallon"
-                ).value;
-
-            try {
-
-                const response = await fetch(
-
-                    `/editar-batallon/${id}/`,
-
-                    {
-
-                        method: "PUT",
-
-                        headers: {
-
-                            "Content-Type":
-                                "application/json"
-
-                        },
-
-                        body: JSON.stringify({
-
-                            nombre,
-                            ciudad,
-                            descripcion
-
-                        })
-
-                    }
-
-                );
-
-                const data =
-                    await response.json();
-
-                if (data.error) {
-
-                    mostrarToast(
-                        "❌ " + data.error,
-                        "error"
-                    );
-
-                    return;
-                }
-
-                mostrarToast(
-                    "✅ Batallón actualizado",
-                    "success"
-                );
-
-                $("#modalEditarBatallon")
-                    .modal("hide");
-
-                setTimeout(() => {
-
-                    location.reload();
-
-                }, 1000);
-
-            } catch (error) {
-
-                mostrarToast(
-                    "❌ Error del sistema",
-                    "error"
-                );
 
                 console.error(error);
 
@@ -1723,780 +629,871 @@
 
         }
 
-    </script>
-    <script>
 
-        $(document).on(
-            "click",
-            ".btn-cambiar-estado",
-            async function () {
+        // =====================================
+        // BUSCAR COMPAÑIAS
+        // =====================================
 
-                const id =
-                    $(this).data("id");
+        document.getElementById(
+            "buscadorCompania"
+        ).addEventListener(
+            "input",
+            function () {
 
-                const activo =
-                    $(this).data("activo");
+                const texto = this.value.toLowerCase();
 
-                let accion =
-                    activo ? "desactivar" : "activar";
+                const lista = document.getElementById(
+                    "listaCompanias"
+                );
 
-                const resultado = await Swal.fire({
+                lista.innerHTML = "";
 
-                    title:
-                        `¿Desea ${accion} este batallón?`,
+                if (texto.length < 1) return;
 
-                    text:
-                        "El estado del batallón cambiará",
+                const filtradas = companias.filter(c =>
 
-                    icon: "warning",
+                    c.nombre.toLowerCase()
+                        .includes(texto)
 
-                    showCancelButton: true,
+                );
 
-                    confirmButtonColor: "#198754",
+                filtradas.forEach(compania => {
 
-                    cancelButtonColor: "#dc3545",
+                    const item = document.createElement(
+                        "button"
+                    );
 
-                    confirmButtonText:
-                        `Sí, ${accion}`,
+                    item.type = "button";
 
-                    cancelButtonText:
-                        "Cancelar"
+                    item.className =
+                        "list-group-item list-group-item-action";
+
+                    item.innerHTML = `
+                ${compania.nombre}
+                <small class="text-muted">
+                    (${compania.codigo})
+                </small>
+            `;
+
+                    item.onclick = () => {
+
+                        document.getElementById(
+                            "buscadorCompania"
+                        ).value = compania.nombre;
+
+                        document.getElementById(
+                            "companiaEvaluacion"
+                        ).value = compania.id;
+
+                        lista.innerHTML = "";
+
+                        console.log(
+                            "COMPAÑIA SELECCIONADA:",
+                            compania
+                        );
+
+                    };
+
+                    lista.appendChild(item);
 
                 });
 
-                if (!resultado.isConfirmed) {
+            }
+        );
 
-                    return;
 
-                }
+        // =====================================
+        // INICIAR
+        // =====================================
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            cargarCompanias
+        );
+
+    </script>
+    <script>
+
+        document.getElementById(
+            "btnGuardarEvaluacion"
+        ).addEventListener(
+            "click",
+            async function () {
+
+                // =====================================
+                // DATOS DEL FORMULARIO
+                // =====================================
+
+                const datos = {
+
+                    titulo:
+                        document.getElementById(
+                            "tituloEvaluacion"
+                        ).value,
+
+                    fecha:
+                        document.getElementById(
+                            "fechaEvaluacion"
+                        ).value,
+
+                    instructor:
+                        document.getElementById(
+                            "instructorEvaluacion"
+                        ).value,
+
+                    compania:
+                        document.getElementById(
+                            "companiaEvaluacion"
+                        ).value,
+
+                    descripcion:
+                        document.getElementById(
+                            "descripcionEvaluacion"
+                        ).value
+
+                };
+
+                console.log(
+                    "DATOS:",
+                    datos
+                );
 
                 try {
 
+                    // =====================================
+                    // ENVIAR A DJANGO
+                    // =====================================
+
                     const response = await fetch(
-
-                        `/cambiar-estado-batallon/${id}/`,
-
+                        "/crear-evaluacion/",
                         {
 
-                            method: "PUT",
+                            method: "POST",
 
                             headers: {
 
                                 "Content-Type":
-                                    "application/json"
+                                    "application/json",
 
-                            }
+                                "X-CSRFToken":
+                                    getCookie("csrftoken")
+
+                            },
+
+                            body: JSON.stringify(
+                                datos
+                            )
 
                         }
-
                     );
 
-                    const data =
+                    const resultado =
                         await response.json();
 
-                    if (data.error) {
+                    console.log(
+                        "RESPUESTA:",
+                        resultado
+                    );
+
+                    // =====================================
+                    // RESPUESTA
+                    // =====================================
+
+                    if (resultado.success) {
 
                         mostrarToast(
-                            "❌ " + data.error,
-                            "error"
+
+                            "✅ Evaluación creada correctamente",
+
+                            "success"
+
                         );
 
-                        return;
+                        // =====================================
+                        // RECARGAR
+                        // =====================================
+
+                        setTimeout(() => {
+
+                            location.reload();
+
+                        }, 1500);
+
+                    } else {
+
+                        mostrarToast(
+
+                            resultado.error,
+
+                            "error"
+
+                        );
 
                     }
 
-                    mostrarToast(
-                        "✅ " + data.mensaje,
-                        "success"
-                    );
-
-                    setTimeout(() => {
-
-                        location.reload();
-
-                    }, 1000);
-
                 } catch (error) {
 
-                    mostrarToast(
-                        "❌ Error del sistema",
-                        "error"
-                    );
-
                     console.error(error);
+
+                    mostrarToast(
+
+                        "Error al guardar evaluación",
+
+                        "error"
+
+                    );
 
                 }
 
             }
         );
 
-    </script>
 
-    <script>
-        function inicializarUsuarios() {
+        // =====================================
+        // CSRF TOKEN
+        // =====================================
 
-            // =========================
-            // BUSCADOR COMPAÑÍAS
-            // =========================
+        function getCookie(name) {
 
-            const dataCompanias =
-                document.getElementById(
-                    "companias-data"
-                );
-
-            if (!dataCompanias) return;
-
-            const companias = JSON.parse(
-                dataElement.innerHTML
-            );
-
-            const inputBuscar =
-                document.getElementById(
-                    "buscarCompania"
-                );
-
-            const resultados =
-                document.getElementById(
-                    "resultadosCompanias"
-                );
-
-            const hiddenCompania =
-                document.getElementById(
-                    "companiaSeleccionada"
-                );
-
-            if (!inputBuscar || !resultados) return;
-
-            inputBuscar.addEventListener(
-                "input",
-                function () {
-
-                    const texto =
-                        this.value.toLowerCase().trim();
-
-                    resultados.innerHTML = "";
-
-                    if (texto.length < 1) {
-
-                        resultados.style.display = "none";
-
-                        return;
-                    }
-
-                    const filtrados =
-                        companias.filter(c =>
-
-                            c.nombre.toLowerCase()
-                                .includes(texto)
-
-                            ||
-
-                            c.batallon.toLowerCase()
-                                .includes(texto)
-                        );
-
-                    filtrados.forEach(c => {
-
-                        const item =
-                            document.createElement("div");
-
-                        item.className =
-                            "item-batallon";
-
-                        item.innerHTML = `
-
-                <strong>
-                    ${c.nombre}
-                </strong>
-
-                <small>
-                    ${c.batallon}
-                </small>
-            `;
-
-                        item.onclick = () => {
-
-                            inputBuscar.value =
-                                `${c.nombre} - ${c.batallon}`;
-
-                            hiddenCompania.value =
-                                c.id;
-
-                            resultados.style.display =
-                                "none";
-                        };
-
-                        resultados.appendChild(item);
-                    });
-
-                    resultados.style.display =
-                        "block";
-                }
-            );
-
-            const rol = document.getElementById("rol");
-
-            const contenedorGrado =
-                document.getElementById("contenedorGrado");
-
-            if (rol && contenedorGrado) {
-
-                function validarRol() {
-
-                    if (rol.value === "soldado") {
-
-                        contenedorGrado.style.display = "none";
-
-                    } else {
-
-                        contenedorGrado.style.display = "block";
-
-                    }
-                }
-
-                validarRol();
-
-                rol.addEventListener(
-                    "change",
-                    validarRol
-                );
-            }
-
-            // =========================
-            // BUSCADOR BATALLONES
-            // =========================
-
-
-            // CERRAR LISTA SI HACE CLICK AFUERA
-
-            document.addEventListener(
-                "click",
-                function (e) {
-
-                    if (!e.target.closest(".buscador-batallon")) {
-
-                        resultados.style.display = "none";
-                    }
-                }
-            );
-
-            const buscadorExcel =
-                document.getElementById(
-                    "buscarBatallonExcel"
-                );
-
-            const resultadosExcel =
-                document.getElementById(
-                    "resultadosBatallonesExcel"
-                );
-
-            const hiddenExcel =
-                document.getElementById(
-                    "batallonExcelSeleccionado"
-                );
+            let cookieValue = null;
 
             if (
-
-                buscadorExcel &&
-
-                resultadosExcel &&
-
-                hiddenExcel
-
+                document.cookie &&
+                document.cookie !== ''
             ) {
 
-                buscadorExcel.addEventListener(
-                    "input",
-                    function () {
+                const cookies =
+                    document.cookie.split(';');
 
-                        const texto =
-                            this.value.toLowerCase().trim();
+                for (
+                    let i = 0;
+                    i < cookies.length;
+                    i++
+                ) {
 
-                        resultadosExcel.innerHTML = "";
+                    const cookie =
+                        cookies[i].trim();
 
-                        if (texto.length < 1) {
+                    if (
 
-                            resultadosExcel.style.display =
-                                "none";
+                        cookie.substring(
+                            0,
+                            name.length + 1
 
-                            return;
-                        }
+                        ) === (name + '=')
 
-                        const filtrados =
-                            companias.filter(c =>
+                    ) {
 
-                                c.nombre.toLowerCase()
-                                    .includes(texto)
+                        cookieValue =
 
-                                ||
+                            decodeURIComponent(
 
-                                c.batallon.toLowerCase()
-                                    .includes(texto)
+                                cookie.substring(
+                                    name.length + 1
+                                )
+
                             );
 
-                        filtrados.forEach(c => {
+                        break;
 
-                            const item =
-                                document.createElement("div");
-
-                            item.className =
-                                "item-batallon";
-
-                            item.innerHTML = `
-        <strong>${c.nombre}</strong>
-        <small>${c.batallon}</small>
-    `;
-
-                            item.onclick = () => {
-
-                                buscadorExcel.value =
-                                    `${c.nombre} - ${c.batallon}`;
-
-                                hiddenExcel.value =
-                                    c.id;
-
-                                resultadosExcel.style.display =
-                                    "none";
-                            };
-
-                            resultadosExcel.appendChild(item);
-                        });
-                        resultadosExcel.style.display =
-                            "block";
                     }
-                );
-            }
-        }
 
-    </script>
-    <script>
-
-        async function crearCompania() {
-
-            const nombre =
-
-                document.getElementById(
-                    "nombreCompania"
-                ).value.trim();
-
-            const descripcion =
-
-                document.getElementById(
-                    "descripcionCompania"
-                ).value.trim();
-
-            const batallon =
-
-                document.getElementById(
-                    "batallonCompania"
-                ).value;
-
-            // =========================
-            // VALIDAR
-            // =========================
-
-            if (!nombre) {
-
-                mostrarToast(
-
-                    "⚠️ Ingrese el nombre",
-
-                    "warning"
-                );
-
-                return;
-            }
-
-            if (!batallon) {
-
-                mostrarToast(
-
-                    "⚠️ Seleccione un batallón",
-
-                    "warning"
-                );
-
-                return;
-            }
-
-            try {
-
-                const response = await fetch(
-
-                    "/crear-compania/",
-
-                    {
-
-                        method: "POST",
-
-                        headers: {
-
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body: JSON.stringify({
-
-                            nombre,
-                            descripcion,
-                            batallon
-                        })
-                    }
-                );
-
-                const data =
-                    await response.json();
-
-                if (data.error) {
-
-                    mostrarToast(
-
-                        "❌ " + data.error,
-
-                        "error"
-                    );
-
-                    return;
                 }
 
-                mostrarToast(
-
-                    "✅ " + data.mensaje,
-
-                    "success"
-                );
-
-                setTimeout(() => {
-
-                    location.reload();
-
-                }, 1000);
-
-            } catch (error) {
-
-                mostrarToast(
-
-                    "❌ Error del servidor",
-
-                    "error"
-                );
             }
+
+            return cookieValue;
+
         }
 
     </script>
-    <script>
+    <!-- MODAL EDITAR EVALUACIÓN -->
 
-        function abrirModalEditarCompania(
+    <div class="modal fade" id="modalEditarEvaluacion" tabindex="-1">
 
-            id,
-            nombre,
-            descripcion
+        <div class="modal-dialog modal-lg">
 
-        ) {
+            <div class="modal-content">
 
-            document.getElementById(
-                "editarCompaniaId"
-            ).value = id;
+                <!-- HEADER -->
 
-            document.getElementById(
-                "editarNombreCompania"
-            ).value = nombre;
+                <div class="modal-header bg-warning">
 
-            document.getElementById(
-                "editarDescripcionCompania"
-            ).value = descripcion;
+                    <h5 class="modal-title">
 
-            const modal = new bootstrap.Modal(
+                        ✏️ Editar Evaluación
 
-                document.getElementById(
-                    "modalEditarCompania"
-                )
-            );
+                    </h5>
 
-            modal.show();
-        }
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 
-        async function guardarEdicionCompania() {
+                </div>
 
-            const id =
-                document.getElementById(
-                    "editarCompaniaId"
-                ).value;
+                <!-- BODY -->
 
-            const nombre =
-                document.getElementById(
-                    "editarNombreCompania"
-                ).value;
+                <div class="modal-body">
 
-            const descripcion =
-                document.getElementById(
-                    "editarDescripcionCompania"
-                ).value;
+                    <!-- ID OCULTO -->
 
-            try {
+                    <input type="hidden" id="editarEvaluacionId">
 
-                const response = await fetch(
+                    <div class="row g-3">
 
-                    `/editar-compania/${id}/`,
+                        <!-- TITULO -->
 
-                    {
+                        <div class="col-md-6">
 
-                        method: "POST",
+                            <label class="form-label">
+                                Título
+                            </label>
 
-                        headers: {
+                            <input type="text" class="form-control" id="editarTituloEvaluacion">
 
-                            "Content-Type":
-                                "application/json"
-                        },
+                        </div>
 
-                        body: JSON.stringify({
+                        <!-- FECHA -->
 
-                            nombre,
-                            descripcion
-                        })
-                    }
-                );
+                        <div class="col-md-6">
 
-                const data =
-                    await response.json();
+                            <label class="form-label">
+                                Fecha
+                            </label>
 
-                if (data.error) {
+                            <input type="date" class="form-control" id="editarFechaEvaluacion">
 
-                    mostrarToast(
-                        "❌ " + data.error,
-                        "error"
-                    );
+                        </div>
 
-                    return;
-                }
+                        <!-- INSTRUCTOR -->
 
-                mostrarToast(
-                    "✅ Compañía actualizada",
-                    "success"
-                );
+                        <div class="col-md-6">
 
-                $("#modalEditarCompania")
-                    .modal("hide");
+                            <label class="form-label">
+                                Instructor
+                            </label>
 
-                setTimeout(() => {
+                            <select class="form-select" id="editarInstructorEvaluacion">
 
-                    location.reload();
+                                {% for instructor in instructores %}
 
-                }, 800);
+                                <option value="{{ instructor.id }}">
 
-            } catch (error) {
+                                    {{ instructor.first_name }}
+                                    {{ instructor.last_name }}
 
-                console.error(error);
+                                </option>
 
-                mostrarToast(
-                    "❌ Error del sistema",
-                    "error"
-                );
-            }
-        }
-    </script>
-    <script>
+                                {% endfor %}
 
-        async function toggleCompania(id, estadoActual) {
+                            </select>
 
-            const accion = estadoActual
-                ? "desactivar"
-                : "activar";
+                        </div>
+                        <!-- COMPAÑÍA -->
 
-            Swal.fire({
+                        <div class="col-md-6">
 
-                icon: "warning",
+                            <label class="form-label">
+                                Compañía
+                            </label>
 
-                title:
-                    `¿Desea ${accion} esta compañía?`,
+                            <select class="form-select" id="editarCompaniaEvaluacion">
 
-                text:
-                    "El estado de la compañía cambiará",
+                                {% for compania in companias %}
 
-                showCancelButton: true,
+                                <option value="{{ compania.id }}">
 
-                confirmButtonColor: "#198754",
+                                    {{ compania.nombre }}
 
-                cancelButtonColor: "#dc3545",
+                                </option>
 
-                confirmButtonText:
-                    `Sí, ${accion}`,
+                                {% endfor %}
 
-                cancelButtonText:
-                    "Cancelar"
+                            </select>
 
-            }).then(async (result) => {
+                        </div>
 
-                if (result.isConfirmed) {
+                        <!-- DESCRIPCIÓN -->
 
-                    const response = await fetch(
+                        <div class="col-12">
 
-                        `/toggle-compania/${id}/`,
+                            <label class="form-label">
+                                Descripción
+                            </label>
 
-                        {
-                            method: "POST"
-                        }
-                    );
+                            <textarea class="form-control" rows="4" id="editarDescripcionEvaluacion"></textarea>
 
-                    const data =
-                        await response.json();
+                        </div>
 
-                    mostrarToast(
-
-                        "✅ " + data.mensaje,
-
-                        "success"
-                    );
-
-                    setTimeout(() => {
-
-                        location.reload();
-
-                    }, 700);
-                }
-            });
-        }
-
-    </script>
-    <script>
-
-        window.inicializarUsuarios = function () {
-
-            const dataElement =
-                document.getElementById("companias-data");
-
-            if (!dataElement) {
-                console.log("No existe companias-data");
-                return;
-            }
-
-            let companias = [];
-
-            try {
-
-                companias = JSON.parse(
-                    dataElement.textContent
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Error parseando compañías:",
-                    error
-                );
-
-                return;
-            }
-
-            const buscador =
-                document.getElementById(
-                    "buscarCompania"
-                );
-
-            const resultados =
-                document.getElementById(
-                    "resultadosCompanias"
-                );
-
-            const hidden =
-                document.getElementById(
-                    "companiaSeleccionada"
-                );
-
-            if (!buscador || !resultados) {
-
-                console.log("No existe buscador");
-                return;
-            }
-
-            buscador.addEventListener(
-                "input",
-                function () {
-
-                    const texto =
-                        this.value
-                            .toLowerCase()
-                            .trim();
-
-                    resultados.innerHTML = "";
-
-                    if (!texto) {
-
-                        resultados.style.display =
-                            "none";
-
-                        return;
-                    }
-
-                    const filtradas =
-                        companias.filter(c =>
-
-                            c.nombre
-                                .toLowerCase()
-                                .includes(texto)
-
-                            ||
-
-                            c.batallon
-                                .toLowerCase()
-                                .includes(texto)
-                        );
-
-                    if (filtradas.length === 0) {
-
-                        resultados.innerHTML = `
-                    <div class="item-batallon">
-                        No se encontraron compañías
                     </div>
-                `;
 
-                        resultados.style.display =
-                            "block";
+                </div>
 
-                        return;
-                    }
+                <!-- FOOTER -->
 
-                    filtradas.forEach(c => {
+                <div class="modal-footer">
 
-                        const item =
-                            document.createElement("div");
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
 
-                        item.className =
-                            "item-batallon";
+                        Cancelar
 
-                        item.innerHTML = `
-                    <div>
-                        <strong>${c.nombre}</strong><br>
-                        <small>${c.batallon}</small>
+                    </button>
+
+                    <button class="btn btn-warning" onclick="guardarEdicionEvaluacion()">
+
+                        💾 Guardar Cambios
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- MODAL VER EVALUACIÓN -->
+
+    <div class="modal fade" id="modalVerEvaluacion" tabindex="-1">
+
+        <div class="modal-dialog modal-xl">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-info text-white">
+
+                    <h4 class="modal-title" id="tituloVerEvaluacion">
+
+                        📋 Evaluación
+
+                    </h4>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <div class="row mb-4">
+
+                        <!-- COMPAÑÍA -->
+
+                        <div class="col-md-4">
+
+                            <h6 class="text-muted">
+                                Compañía
+                            </h6>
+
+                            <p id="verCompania"></p>
+
+                        </div>
+
+                        <!-- INSTRUCTOR -->
+
+                        <div class="col-md-4">
+
+                            <h6 class="text-muted">
+                                Instructor
+                            </h6>
+
+                            <p id="verInstructor"></p>
+
+                        </div>
+
+                        <!-- FECHA -->
+
+                        <div class="col-md-4">
+
+                            <h6 class="text-muted">
+                                Fecha
+                            </h6>
+
+                            <p id="verFecha"></p>
+
+                        </div>
+
                     </div>
-                `;
 
-                        item.addEventListener(
-                            "click",
-                            function () {
+                    <!-- PARTICIPANTES -->
 
-                                buscador.value =
-                                    c.nombre;
+                    <div class="mb-3">
 
-                                hidden.value =
-                                    c.id;
+                        <h5>
 
-                                resultados.style.display =
-                                    "none";
-                            }
-                        );
+                            👥 Participantes:
+                            <span id="totalParticipantes">
+                                0
+                            </span>
 
-                        resultados.appendChild(item);
+                        </h5>
 
-                    });
+                    </div>
 
-                    resultados.style.display =
-                        "block";
-                }
-            );
-        };
+                    <!-- TABLA -->
 
-    </script>
+                    <div class="table-responsive">
+
+                        <table class="table table-bordered table-hover">
+
+                            <thead class="table-dark">
+
+                                <tr>
+
+                                    <th>
+                                        Apellidos
+                                    </th>
+
+                                    <th>
+                                        Nombres
+                                    </th>
+
+                                    <th>
+                                        Documento
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tablaParticipantesEvaluacion">
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL CREAR TEST -->
+    <div class="modal fade" id="modalTest" tabindex="-1">
+
+        <div class="modal-dialog modal-xl">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-dark text-white">
+
+                    <h4 class="modal-title">
+
+                        📝 Nuevo Test
+
+                    </h4>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <div class="row g-3">
+
+                        <!-- TITULO -->
+
+                        <div class="col-md-6">
+
+                            <label>
+                                Título
+                            </label>
+
+                            <input type="text" class="form-control" id="tituloTest">
+
+                        </div>
+
+                        <!-- INSTRUCTOR -->
+
+                        <div class="col-md-6">
+
+                            <label>
+                                Instructor
+                            </label>
+
+                            <select class="form-select" id="instructorTest">
+
+                                <option value=""> Cargando instructores... </option>
+                                {% for instructor in instructores %}
+
+                                <option value="{{ instructor.id }}">
+
+                                    {{ instructor.first_name }}
+                                    {{ instructor.last_name }}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                        <!-- COMPAÑÍA -->
+
+                        <div class="col-md-6">
+
+                            <label>
+                                Compañía
+                            </label>
+
+                            <!-- INPUT BUSCADOR -->
+
+                            <input type="text" class="form-control" id="buscadorCompaniaTest"
+                                placeholder="Buscar compañía..." autocomplete="off">
+
+                            <!-- RESULTADOS -->
+
+                            <div id="listaCompaniasTest" class="list-group mt-1"></div>
+
+                            <!-- ID OCULTO -->
+
+                            <input type="hidden" id="companiaTest">
+
+                        </div>
+
+                        <!-- FECHA INICIO -->
+
+                        <div class="col-md-3">
+
+                            <label>
+                                Fecha Inicio
+                            </label>
+
+                            <input type="datetime-local" class="form-control" id="fechaInicioTest">
+
+                        </div>
+
+                        <!-- FECHA FIN -->
+
+                        <div class="col-md-3">
+
+                            <label>
+                                Fecha Fin
+                            </label>
+
+                            <input type="datetime-local" class="form-control" id="fechaFinTest">
+
+                        </div>
+
+                        <!-- INTENTOS -->
+
+                        <div class="col-md-3">
+
+                            <label>
+                                Intentos
+                            </label>
+
+                            <input type="number" class="form-control" id="intentosTest" value="1">
+
+                        </div>
+
+                        <!-- TIEMPO -->
+
+                        <div class="col-md-3">
+
+                            <label>
+                                Tiempo (min)
+                            </label>
+
+                            <input type="number" class="form-control" id="tiempoTest" value="30">
+
+                        </div>
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <div class="col-12">
+
+                            <label>
+                                Descripción
+                            </label>
+
+                            <textarea class="form-control" rows="3" id="descripcionTest"></textarea>
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <!-- PREGUNTAS -->
+
+                    <div id="contenedorPreguntas"></div>
+
+                    <!-- BOTÓN -->
+
+                    <button class="btn btn-primary mt-3" onclick="agregarPregunta()">
+
+                        ➕ Agregar Pregunta
+
+                    </button>
+
+                </div>
+
+                <!-- FOOTER -->
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="btn btn-success" onclick="guardarTest()">
+
+                        💾 Guardar Test
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- MODAL RESOLVER TEST -->
+
+    <div class="modal fade" id="modalResolverTest" tabindex="-1">
+
+        <div class="modal-dialog modal-xl">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-primary text-white">
+
+                    <h4 class="modal-title" id="tituloResolverTest">
+
+                        Resolver Test
+
+                    </h4>
+
+                    <div class="badge bg-danger p-2" id="temporizadorTest">
+
+                        00:00
+
+                    </div>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <div id="contenedorResolverTest"></div>
+
+                </div>
+
+                <!-- FOOTER -->
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-success" onclick="enviarTest()">
+
+                        ✅ Finalizar Test
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- MODAL VER TEST -->
+
+    <div class="modal fade" id="modalVerTest" tabindex="-1">
+
+        <div class="modal-dialog modal-xl">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-info text-white">
+
+                    <h4 class="modal-title" id="tituloVerTest">
+
+                        Detalle Test
+
+                    </h4>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <!-- INFO -->
+
+                    <div id="infoTest" class="mb-4"></div>
+
+                    <!-- TABLA -->
+
+                    <div class="table-responsive">
+
+                        <table class="table table-dark table-hover">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Apellidos
+                                    </th>
+
+                                    <th>
+                                        Nombres
+                                    </th>
+
+                                    <th>
+                                        Documento
+                                    </th>
+
+                                    <th>
+                                        Intentos
+                                    </th>
+
+                                    <th>
+                                        Nota
+                                    </th>
+
+                                    <th>
+                                        Estado
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tablaSoldadosTest"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 </body>
 
 </html>

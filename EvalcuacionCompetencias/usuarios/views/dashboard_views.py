@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
-from ..models import Perfil, Curso
+from ..models import Perfil, Evaluacion
 
 
 def rol_requerido(rol_permitido):
@@ -70,7 +70,7 @@ def obtener_estadisticas(request):
         is_active=True
     ).count()
 
-    total_cursos = Curso.objects.count()
+    total_evaluaciones = Evaluacion.objects.count()
 
     total_evaluaciones = 0
 
@@ -88,9 +88,6 @@ def obtener_estadisticas(request):
         "total_activos":
             total_activos,
 
-        "total_cursos":
-            total_cursos,
-
         "total_evaluaciones":
             total_evaluaciones,
 
@@ -103,7 +100,7 @@ def obtener_estadisticas(request):
     total_soldados = Perfil.objects.filter(rol="soldado").count()
     total_instructores = Perfil.objects.filter(rol="instructor").count()
     total_activos = User.objects.filter(is_active=True).count()
-    total_cursos = Curso.objects.count()
+    total_evaluaciones = Evaluacion.objects.count()
 
     total_evaluaciones = 0
 
@@ -129,7 +126,6 @@ def obtener_estadisticas(request):
         "total_soldados": total_soldados,
         "total_instructores": total_instructores,
         "total_activos": total_activos,
-        "total_cursos": total_cursos,
         "total_evaluaciones": total_evaluaciones,
         "porcentaje_aprobados": porcentaje_aprobados
     })

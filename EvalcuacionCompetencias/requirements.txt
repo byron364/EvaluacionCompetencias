@@ -1,37 +1,17 @@
-=== librerias proyecto ejercito 
-1. verificamos la verison de python instalada en nuestro equipo
-	python --version
-	o en alungunos caso funciona con 
-	python3 --version
-   Si no aparece, debes instalarlo desde la página oficial de python.org o usando un gestor de paquetes (ejemplo: sudo apt install python3 en Linux).
-2.Dentro de tu proyecto, abre el terminal en VS Code y ejecuta
-	python -m venv venv
-  Esto creará una carpeta llamada venv con tu entorno aislado.
-3. Activar el entorno virtual
-   Dependiendo del sistema operativo:
-	a. Windows (PowerShell):
-	   venv\Scripts\Activate
-	b. Linux/MacOS:
-	   source venv/bin/activate
-4. Instalar dependencias
-	a. pip install django
-	b. pip install pymysql (Conexion base de datos)
-	c. pip install cryptography (Contraseña)
-	d. pip install openpyxl pandas (Archivos Excel)
-	e. pip install Pillow (anexar imágenes a documento Excel)
-	
-	
-===requirements.txt
+
 django
 pymysql
 cryptography
 openpyxl
 pandas
 Pillow
-===requirements.txt
 Django==5.0.4
 PyMySQL==1.1.1
 cryptography==42.0.5
 openpyxl==3.1.2
 pandas==2.2.2
 Pillow==10.3.0
+wheel setuptools
+cffi
+pythonnet==3.0.3
+pyzkfp

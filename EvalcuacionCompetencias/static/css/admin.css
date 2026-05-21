@@ -310,11 +310,11 @@ body {
     cursor: pointer;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
-.buscador-batallon {
+.buscador-batallon, .buscadorCompania {
     position: relative;
 }
 
-.lista-companias {
+.lista-companias, .listaCompanias {
 
     position: absolute;
 
@@ -341,7 +341,7 @@ body {
     display: none;
 }
 
-.lista-companias .item-batallon {
+.lista-companias, .listaCompanias .item-batallon {
 
     padding: 12px 15px;
 
@@ -356,7 +356,7 @@ body {
     align-items: center;
 }
 
-.lista-companias .item-batallon {
+.lista-companias, .listaCompanias .item-batallon {
 
     padding: 12px 15px;
 
@@ -367,7 +367,7 @@ body {
     border-bottom: 1px solid #f1f5f9;
 }
 
-.lista-companias .item-batallon:hover {
+.lista-companias, .listaCompanias .item-batallon:hover {
 
     background: #f8fafc;
 }
