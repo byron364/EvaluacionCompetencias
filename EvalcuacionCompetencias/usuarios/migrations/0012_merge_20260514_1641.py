@@ -7,7 +7,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('usuarios', '0006_alter_archivocurso_id_alter_asistencia_id_and_more'),
-        ('usuarios', '0011_perfil_activo_alter_perfil_compania'),
     ]
 
     operations = [

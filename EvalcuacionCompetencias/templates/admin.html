@@ -76,14 +76,8 @@
                             {% endif %}
                             {% if configuracion.menu_lateral.usuarios %}
                             <li><a class="nav-link nav-link-spa" data-url="/usuarios/">Usuarios</a></li>
-                            {% endif %}
-                            {% if configuracion.menu_lateral.evaluaciones %}
                             <li><a class="nav-link nav-link-spa" data-url="/cursos/">Evaluaciones</a></li>
-                            {% endif %}
-                            {% if configuracion.menu_lateral.inscripciones %}
                             <li><a class="nav-link nav-link-spa" data-url="/inscripciones/">Inscripciones</a></li>
-                            {% endif %}
-                            {% if configuracion.menu_lateral.test %}
                             <li><a class="nav-link nav-link-spa" data-url="/test/">Test</a></li>
                             {% endif %}
                             <li><a class="nav-link nav-link-spa" data-url="/configuracion/">Configuración</a></li>
@@ -194,11 +188,7 @@
                 loader.classList.add("active");
 
                 content.classList.add("fade-out");
-                fetch(url, {
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
-                })
+                fetch(url)
                     .then(res => res.text())
                     .then(data => {
 
@@ -388,7 +378,7 @@
                             });
                         }
 
-// Ocultar loader al terminar
+                        // Ocultar loader al terminar
                         setTimeout(() => { loader.classList.remove("active"); content.classList.remove("fade-out"); content.classList.add("fade-in"); }, 500);
 
                         if (guardar) {
@@ -408,8 +398,6 @@
                         setTimeout(() => { loader.classList.remove("active"); content.classList.remove("fade-out"); }, 500);
                     });
             }
-
-            window.cargarVista = cargarVista;
 
             // Eventos menú lateral SPA
             document.querySelectorAll(".nav-link-spa").forEach(link => {
@@ -465,20 +453,12 @@
     <script>
         window.crearUsuario = function () {
 
-            const batallon = document.getElementById("batallon")?.value.trim() || "";
-            const compania = document.getElementById("compania")?.value.trim() || "";
-            const unidad = [batallon, compania].filter(Boolean).join(" - ");
-
-            if (document.getElementById("unidad")) {
-                document.getElementById("unidad").value = unidad;
-            }
-
             const data = {
                 nombres: document.getElementById("nombres")?.value.trim(),
                 apellidos: document.getElementById("apellidos")?.value.trim(),
                 email: document.getElementById("email")?.value.trim(),
                 documento: document.getElementById("documento")?.value.trim(),
-                unidad: unidad,
+                unidad: document.getElementById("unidad")?.value.trim(),
                 grado: document.getElementById("grado")?.value.trim(),
                 rol: document.getElementById("rol")?.value,
                 compania: document.getElementById("companiaSeleccionada")?.value,
@@ -541,8 +521,6 @@
                         document.getElementById("documento").value = "";
                         document.getElementById("grado").value = "";
                         document.getElementById("unidad").value = "";
-                        document.getElementById("batallon").value = "";
-                        document.getElementById("compania").value = "";
                         document.getElementById("buscarCompania").value = "";
                         document.getElementById("companiaSeleccionada").value = "";
                         document.getElementById("rol").value = "soldado";
@@ -797,9 +775,6 @@
             const email = boton.dataset.email;
             const rol = boton.dataset.rol;
             const activo = boton.dataset.activo === "True";
-            const documento = boton.dataset.documento || "";
-            const grado = boton.dataset.grado || "";
-            const unidad = boton.dataset.unidad || "";
 
             Swal.fire({
                 title: "Editar Usuario",
@@ -807,9 +782,6 @@
             <input id="swal-nombre" class="swal2-input" placeholder="Nombre" value="${nombre}">
             <input id="swal-apellido" class="swal2-input" placeholder="Apellido" value="${apellido}">
             <input id="swal-email" class="swal2-input" placeholder="Correo" value="${email}">
-            <input id="swal-documento" class="swal2-input" placeholder="Documento" value="${documento}">
-            <input id="swal-grado" class="swal2-input" placeholder="Grado" value="${grado}">
-            <input id="swal-unidad" class="swal2-input" placeholder="Unidad / Batallón - Compañía" value="${unidad}">
             <select id="swal-rol" class="swal2-input">
                 <option value="soldado" ${rol === "soldado" ? "selected" : ""}>Soldado</option>
                 <option value="instructor" ${rol === "instructor" ? "selected" : ""}>Instructor</option>
@@ -829,9 +801,6 @@
                         nombre: document.getElementById("swal-nombre").value,
                         apellido: document.getElementById("swal-apellido").value,
                         email: document.getElementById("swal-email").value,
-                        documento: document.getElementById("swal-documento").value,
-                        grado: document.getElementById("swal-grado").value,
-                        unidad: document.getElementById("swal-unidad").value,
                         rol: document.getElementById("swal-rol").value,
                         activo: document.getElementById("swal-activo").value === "true"
                     };
@@ -864,24 +833,9 @@
         document.addEventListener("DOMContentLoaded", function () {
             const menuToggle = document.getElementById("menuToggle");
             const sidebar = document.querySelector(".sidebar");
-            const backdrop = document.getElementById("sidebarBackdrop");
-
-            function cerrarMenuMovil() {
-                sidebar.classList.remove("active");
-                backdrop.classList.remove("active");
-                menuToggle.setAttribute("aria-expanded", "false");
-            }
 
             menuToggle.addEventListener("click", function () {
                 sidebar.classList.toggle("active");
-                backdrop.classList.toggle("active", sidebar.classList.contains("active"));
-                menuToggle.setAttribute("aria-expanded", sidebar.classList.contains("active"));
-            });
-
-            backdrop.addEventListener("click", cerrarMenuMovil);
-
-            document.querySelectorAll(".sidebar .nav-link").forEach(link => {
-                link.addEventListener("click", cerrarMenuMovil);
             });
         });
     </script>
@@ -1238,6 +1192,7 @@
         </div>
 
     </div>
+
     <!-- MODAL EDITAR BATALLÓN -->
     <div class="modal fade" id="modalEditarBatallon" tabindex="-1">
 
@@ -1399,246 +1354,187 @@
         </div>
 
     </div>
+    <!-- MODAL NUEVA EVALUACIÓN -->
+
+    <div class="modal fade" id="modalEvaluacion" tabindex="-1">
+
+        <div class="modal-dialog modal-lg">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-dark text-white">
+
+                    <h5 class="modal-title">
+
+                        📋 Nueva Evaluación
+
+                    </h5>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <div class="row g-3">
+
+                        <!-- TÍTULO -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Título
+
+                            </label>
+
+                            <input type="text" class="form-control" id="tituloEvaluacion">
+
+                        </div>
+
+                        <!-- FECHA -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Fecha
+
+                            </label>
+
+                            <input type="date" class="form-control" id="fechaEvaluacion">
+
+                        </div>
+
+                        <!-- INSTRUCTOR -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Instructor
+
+                            </label>
+
+                            <select class="form-select" id="instructorEvaluacion">
+
+                                <option value="">
+
+                                    Seleccione
+
+                                </option>
+
+                                {% for instructor in instructores %}
+
+                                <option value="{{ instructor.id }}">
+
+                                    {{ instructor.first_name }}
+                                    {{ instructor.last_name }}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                        <!-- COMPAÑÍA -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+
+                                Compañía
+
+                            </label>
+
+                            <!-- INPUT BUSCADOR -->
+
+                            <input type="text" class="form-control" id="buscadorCompania"
+                                placeholder="Buscar compañía..." autocomplete="off">
+
+                            <!-- RESULTADOS -->
+
+                            <div id="listaCompanias" class="list-group mt-1"></div>
+
+                            <!-- ID OCULTO -->
+
+                            <input type="hidden" id="companiaEvaluacion">
+
+                        </div>
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <div class="col-12">
+
+                            <label class="form-label">
+
+                                Descripción
+
+                            </label>
+
+                            <textarea class="form-control" rows="4" id="descripcionEvaluacion"></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="btn btn-success" id="btnGuardarEvaluacion">
+
+                        💾 Guardar
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
     <script>
-        window.crearCurso = function () {
 
-            const data = {
-                codigo: document.getElementById("codigoCurso").value.trim(),
-                nombre: document.getElementById("nombreCurso").value.trim(),
-                descripcion: document.getElementById("descripcionCurso").value.trim(),
-                instructor: document.getElementById("instructorCurso").value,
-                fecha_inicio: document.getElementById("fechaInicioCurso").value,
-                fecha_fin: document.getElementById("fechaFinCurso").value,
-                cupo_maximo: document.getElementById("cupoCurso").value
-            };
+        let companias = [];
 
-            if (!data.codigo || !data.nombre) {
-                mostrarToast("Complete los campos obligatorios", "warning");
-                return;
-            }
 
-            fetch("/crear-curso/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.error) {
-                        mostrarToast(res.error, "error");
-                    } else {
-                        mostrarToast(res.mensaje, "success");
+        // =====================================
+        // CARGAR COMPAÑIAS
+        // =====================================
 
-                        const modal = bootstrap.Modal.getInstance(
-                            document.getElementById("modalCrearCurso")
-                        );
-
-                        if (modal) {
-                            modal.hide();
-                        }
-
-                        location.reload();
-                    }
-                })
-                .catch(() => {
-                    mostrarToast("Error del servidor", "error");
-                });
-        };
-    </script>
-    <script>
-
-        document.addEventListener("click", function (e) {
-
-            const boton = e.target.closest(".btn-editar-curso");
-
-            if (!boton) return;
-
-            document.getElementById("editarCursoId").value =
-                boton.dataset.id;
-
-            document.getElementById("editarCodigoCurso").value =
-                boton.dataset.codigo;
-
-            document.getElementById("editarNombreCurso").value =
-                boton.dataset.nombre;
-
-            document.getElementById("editarDescripcionCurso").value =
-                boton.dataset.descripcion;
-
-            document.getElementById("editarInstructorCurso").value =
-                boton.dataset.instructor;
-
-            document.getElementById("editarFechaInicioCurso").value =
-                boton.dataset.fecha_inicio;
-
-            document.getElementById("editarFechaFinCurso").value =
-                boton.dataset.fecha_fin;
-
-            document.getElementById("editarCupoCurso").value =
-                boton.dataset.cupo;
-
-            const modal = new bootstrap.Modal(
-                document.getElementById("modalEditarCurso")
-            );
-
-            modal.show();
-
-        });
-
-    </script>
-    <script>
-
-        window.guardarEdicionCurso = function () {
-
-            const cursoId =
-                document.getElementById("editarCursoId").value;
-
-            const data = {
-
-                codigo:
-                    document.getElementById("editarCodigoCurso").value,
-
-                nombre:
-                    document.getElementById("editarNombreCurso").value,
-
-                descripcion:
-                    document.getElementById("editarDescripcionCurso").value,
-
-                instructor:
-                    document.getElementById("editarInstructorCurso").value,
-
-                fecha_inicio:
-                    document.getElementById("editarFechaInicioCurso").value,
-
-                fecha_fin:
-                    document.getElementById("editarFechaFinCurso").value,
-
-                cupo_maximo:
-                    document.getElementById("editarCupoCurso").value
-            };
-
-            fetch(`/editar-curso/${cursoId}/`, {
-
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(data)
-
-            })
-                .then(res => res.json())
-                .then(res => {
-
-                    if (res.error) {
-
-                        mostrarToast(res.error, "error");
-
-                    } else {
-
-                        mostrarToast(
-                            "Curso actualizado correctamente",
-                            "success"
-                        );
-
-                        location.reload();
-                    }
-
-                });
-
-        }
-
-    </script>
-    <script>
-
-        document.addEventListener("click", async function (e) {
-
-            const boton = e.target.closest(".btn-eliminar-curso");
-
-            if (!boton) return;
-
-            e.preventDefault();
-
-            const cursoId = boton.dataset.id;
-
-            const result = await Swal.fire({
-
-                title: "¿Eliminar curso?",
-
-                text: "Esta acción no se puede deshacer",
-
-                icon: "warning",
-
-                showCancelButton: true,
-
-                confirmButtonColor: "#198754",
-
-                cancelButtonColor: "#dc3545",
-
-                confirmButtonText: "Sí, eliminar",
-
-                cancelButtonText: "Cancelar"
-
-            });
-
-            if (!result.isConfirmed) return;
+        async function cargarCompanias() {
 
             try {
 
                 const response = await fetch(
-
-                    `/eliminar-curso/${cursoId}/`,
-
-                    {
-                        method: "POST",
-                        headers: {
-                            "X-Requested-With": "XMLHttpRequest"
-                        }
-                    }
+                    "/buscar-companias/"
                 );
 
                 const data = await response.json();
 
-                if (data.error) {
+                companias = data.companias;
 
-                    mostrarToast(data.error, "error");
-                    return;
-                }
-
-                // ELIMINAR FILA VISUALMENTE
-                const fila = boton.closest("tr");
-
-                // SI EXISTE DATATABLE
-                if ($.fn.DataTable.isDataTable("#tablaCursos")) {
-
-                    const tabla =
-                        $("#tablaCursos").DataTable();
-
-                    tabla
-                        .row(fila)
-                        .remove()
-                        .draw(false);
-
-                } else {
-
-                    fila.remove();
-
-                }
-
-                Swal.fire({
-
-                    title: "Eliminado",
-
-                    text: "Curso eliminado correctamente",
-
-                    icon: "success",
-
-                    confirmButtonColor: "#198754"
-
-                });
+                console.log(
+                    "COMPAÑIAS:",
+                    companias
+                );
 
             } catch (error) {
 
@@ -1654,72 +1550,6 @@
 
     </script>
     <script>
-        document.addEventListener("click", function (e) {
-            const botonVer = e.target.closest(".btn-ver-curso");
-
-            if (botonVer) {
-                Swal.fire({
-                    title: botonVer.dataset.nombre,
-                    html: `
-                        <p><strong>Código:</strong> ${botonVer.dataset.codigo}</p>
-                        <p><strong>Descripción:</strong> ${botonVer.dataset.descripcion}</p>
-                        <p><strong>Cupo:</strong> ${botonVer.dataset.inscritos}/${botonVer.dataset.cupo}</p>
-                    `,
-                    icon: "info",
-                    confirmButtonColor: "#198754"
-                });
-                return;
-            }
-
-            const botonAsignar = e.target.closest(".btn-asignar-curso");
-
-            if (!botonAsignar) return;
-
-            const opciones = document.getElementById("soldadosDisponibles")?.innerHTML || "";
-
-            Swal.fire({
-                title: `Asignar soldado`,
-                html: `
-                    <p class="mb-2">${botonAsignar.dataset.nombre}</p>
-                    <select id="swal-soldado" class="swal2-input">
-                        <option value="">Seleccione soldado</option>
-                        ${opciones}
-                    </select>
-                `,
-                confirmButtonText: "Asignar",
-                showCancelButton: true,
-                cancelButtonText: "Cancelar",
-                confirmButtonColor: "#198754",
-                preConfirm: () => {
-                    const soldadoId = document.getElementById("swal-soldado").value;
-                    if (!soldadoId) {
-                        Swal.showValidationMessage("Seleccione un soldado");
-                    }
-                    return soldadoId;
-                }
-            }).then((result) => {
-                if (!result.isConfirmed) return;
-
-                fetch("/asignar-soldado-curso/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        curso_id: botonAsignar.dataset.id,
-                        soldado_id: result.value
-                    })
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.error) {
-                            mostrarToast(data.error, "error");
-                        } else {
-                            mostrarToast(data.mensaje, "success");
-                            cargarVista("/cursos/", false);
-                        }
-                    })
-                    .catch(() => mostrarToast("Error asignando soldado", "error"));
-            });
-        });
 
         // ABRIR MODAL EDITAR
         $(document).on(
@@ -1727,883 +1557,826 @@
             ".btn-editar-batallon",
             function () {
 
-                const id =
-                    $(this).data("id");
+                const texto = this.value.toLowerCase();
 
-                const nombre =
-                    $(this).data("nombre");
+                const lista = document.getElementById(
+                    "listaCompanias"
+                );
 
-                const ciudad =
-                    $(this).data("ciudad");
+                lista.innerHTML = "";
 
-                const descripcion =
-                    $(this).data("descripcion");
+                if (texto.length < 1) return;
 
-                $("#editarBatallonId").val(id);
+                const filtradas = companias.filter(c =>
 
-                $("#editarNombreBatallon")
-                    .val(nombre);
+                    c.nombre.toLowerCase()
+                        .includes(texto)
 
-                $("#editarCiudadBatallon")
-                    .val(ciudad);
+                );
 
-                $("#editarDescripcionBatallon")
-                    .val(descripcion);
+                filtradas.forEach(compania => {
 
-                $("#modalEditarBatallon")
-                    .modal("show");
+                    const item = document.createElement(
+                        "button"
+                    );
+
+                    item.type = "button";
+
+                    item.className =
+                        "list-group-item list-group-item-action";
+
+                    item.innerHTML = `
+                ${compania.nombre}
+                <small class="text-muted">
+                    (${compania.codigo})
+                </small>
+            `;
+
+                    item.onclick = () => {
+
+                        document.getElementById(
+                            "buscadorCompania"
+                        ).value = compania.nombre;
+
+                        document.getElementById(
+                            "companiaEvaluacion"
+                        ).value = compania.id;
+
+                        lista.innerHTML = "";
+
+                        console.log(
+                            "COMPAÑIA SELECCIONADA:",
+                            compania
+                        );
+
+                    };
+
+                    lista.appendChild(item);
+
+                });
 
             }
+        );
+
+
+        // =====================================
+        // INICIAR
+        // =====================================
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            cargarCompanias
         );
 
     </script>
     <script>
 
-        async function guardarEdicionBatallon() {
-
-            const id =
-                document.getElementById(
-                    "editarBatallonId"
-                ).value;
-
-            const nombre =
-                document.getElementById(
-                    "editarNombreBatallon"
-                ).value;
-
-            const ciudad =
-                document.getElementById(
-                    "editarCiudadBatallon"
-                ).value;
-
-            const descripcion =
-                document.getElementById(
-                    "editarDescripcionBatallon"
-                ).value;
-
-            try {
-
-                const response = await fetch(
-
-                    `/editar-batallon/${id}/`,
-
-                    {
-
-                        method: "PUT",
-
-                        headers: {
-
-                            "Content-Type":
-                                "application/json"
-
-                        },
-
-                        body: JSON.stringify({
-
-                            nombre,
-                            ciudad,
-                            descripcion
-
-                        })
-
-                    }
-
-                );
-
-                const data =
-                    await response.json();
-
-                if (data.error) {
-
-                    mostrarToast(
-                        "❌ " + data.error,
-                        "error"
-                    );
-
-                    return;
-                }
-
-                mostrarToast(
-                    "✅ Batallón actualizado",
-                    "success"
-                );
-
-                $("#modalEditarBatallon")
-                    .modal("hide");
-
-                setTimeout(() => {
-
-                    location.reload();
-
-                }, 1000);
-
-            } catch (error) {
-
-                mostrarToast(
-                    "❌ Error del sistema",
-                    "error"
-                );
-
-                console.error(error);
-
-            }
-
-        }
-
-    </script>
-    <script>
-
-        $(document).on(
+        document.getElementById(
+            "btnGuardarEvaluacion"
+        ).addEventListener(
             "click",
-            ".btn-cambiar-estado",
             async function () {
 
-                const id =
-                    $(this).data("id");
+                // =====================================
+                // DATOS DEL FORMULARIO
+                // =====================================
 
-                const activo =
-                    $(this).data("activo");
+                const datos = {
 
-                let accion =
-                    activo ? "desactivar" : "activar";
+                    titulo:
+                        document.getElementById(
+                            "tituloEvaluacion"
+                        ).value,
 
-                const resultado = await Swal.fire({
+                    fecha:
+                        document.getElementById(
+                            "fechaEvaluacion"
+                        ).value,
 
-                    title:
-                        `¿Desea ${accion} este batallón?`,
+                    instructor:
+                        document.getElementById(
+                            "instructorEvaluacion"
+                        ).value,
 
-                    text:
-                        "El estado del batallón cambiará",
+                    compania:
+                        document.getElementById(
+                            "companiaEvaluacion"
+                        ).value,
 
-                    icon: "warning",
+                    descripcion:
+                        document.getElementById(
+                            "descripcionEvaluacion"
+                        ).value
 
-                    showCancelButton: true,
+                };
 
-                    confirmButtonColor: "#198754",
-
-                    cancelButtonColor: "#dc3545",
-
-                    confirmButtonText:
-                        `Sí, ${accion}`,
-
-                    cancelButtonText:
-                        "Cancelar"
-
-                });
-
-                if (!resultado.isConfirmed) {
-
-                    return;
-
-                }
+                console.log(
+                    "DATOS:",
+                    datos
+                );
 
                 try {
 
+                    // =====================================
+                    // ENVIAR A DJANGO
+                    // =====================================
+
                     const response = await fetch(
-
-                        `/cambiar-estado-batallon/${id}/`,
-
+                        "/crear-evaluacion/",
                         {
 
-                            method: "PUT",
+                            method: "POST",
 
                             headers: {
 
                                 "Content-Type":
-                                    "application/json"
+                                    "application/json",
 
-                            }
+                                "X-CSRFToken":
+                                    getCookie("csrftoken")
+
+                            },
+
+                            body: JSON.stringify(
+                                datos
+                            )
 
                         }
-
                     );
 
-                    const data =
+                    const resultado =
                         await response.json();
 
-                    if (data.error) {
+                    console.log(
+                        "RESPUESTA:",
+                        resultado
+                    );
+
+                    // =====================================
+                    // RESPUESTA
+                    // =====================================
+
+                    if (resultado.success) {
 
                         mostrarToast(
-                            "❌ " + data.error,
-                            "error"
+
+                            "✅ Evaluación creada correctamente",
+
+                            "success"
+
                         );
 
-                        return;
+                        // =====================================
+                        // RECARGAR
+                        // =====================================
+
+                        setTimeout(() => {
+
+                            location.reload();
+
+                        }, 1500);
+
+                    } else {
+
+                        mostrarToast(
+
+                            resultado.error,
+
+                            "error"
+
+                        );
 
                     }
 
-                    mostrarToast(
-                        "✅ " + data.mensaje,
-                        "success"
-                    );
-
-                    setTimeout(() => {
-
-                        location.reload();
-
-                    }, 1000);
-
                 } catch (error) {
 
-                    mostrarToast(
-                        "❌ Error del sistema",
-                        "error"
-                    );
-
                     console.error(error);
+
+                    mostrarToast(
+
+                        "Error al guardar evaluación",
+
+                        "error"
+
+                    );
 
                 }
 
             }
         );
 
-    </script>
 
-    <script>
-        function inicializarUsuarios() {
+        // =====================================
+        // CSRF TOKEN
+        // =====================================
 
-            // =========================
-            // BUSCADOR COMPAÑÍAS
-            // =========================
+        function getCookie(name) {
 
-            const dataCompanias =
-                document.getElementById(
-                    "companias-data"
-                );
-
-            if (!dataCompanias) return;
-
-            const companias = JSON.parse(
-                dataElement.innerHTML
-            );
-
-            const inputBuscar =
-                document.getElementById(
-                    "buscarCompania"
-                );
-
-            const resultados =
-                document.getElementById(
-                    "resultadosCompanias"
-                );
-
-            const hiddenCompania =
-                document.getElementById(
-                    "companiaSeleccionada"
-                );
-
-            if (!inputBuscar || !resultados) return;
-
-            inputBuscar.addEventListener(
-                "input",
-                function () {
-
-                    const texto =
-                        this.value.toLowerCase().trim();
-
-                    resultados.innerHTML = "";
-
-                    if (texto.length < 1) {
-
-                        resultados.style.display = "none";
-
-                        return;
-                    }
-
-                    const filtrados =
-                        companias.filter(c =>
-
-                            c.nombre.toLowerCase()
-                                .includes(texto)
-
-                            ||
-
-                            c.batallon.toLowerCase()
-                                .includes(texto)
-                        );
-
-                    filtrados.forEach(c => {
-
-                        const item =
-                            document.createElement("div");
-
-                        item.className =
-                            "item-batallon";
-
-                        item.innerHTML = `
-
-                <strong>
-                    ${c.nombre}
-                </strong>
-
-                <small>
-                    ${c.batallon}
-                </small>
-            `;
-
-                        item.onclick = () => {
-
-                            inputBuscar.value =
-                                `${c.nombre} - ${c.batallon}`;
-
-                            hiddenCompania.value =
-                                c.id;
-
-                            resultados.style.display =
-                                "none";
-                        };
-
-                        resultados.appendChild(item);
-                    });
-
-                    resultados.style.display =
-                        "block";
-                }
-            );
-
-            const rol = document.getElementById("rol");
-
-            const contenedorGrado =
-                document.getElementById("contenedorGrado");
-
-            if (rol && contenedorGrado) {
-
-                function validarRol() {
-
-                    if (rol.value === "soldado") {
-
-                        contenedorGrado.style.display = "none";
-
-                    } else {
-
-                        contenedorGrado.style.display = "block";
-
-                    }
-                }
-
-                validarRol();
-
-                rol.addEventListener(
-                    "change",
-                    validarRol
-                );
-            }
-
-            // =========================
-            // BUSCADOR BATALLONES
-            // =========================
-
-
-            // CERRAR LISTA SI HACE CLICK AFUERA
-
-            document.addEventListener(
-                "click",
-                function (e) {
-
-                    if (!e.target.closest(".buscador-batallon")) {
-
-                        resultados.style.display = "none";
-                    }
-                }
-            );
-
-            const buscadorExcel =
-                document.getElementById(
-                    "buscarBatallonExcel"
-                );
-
-            const resultadosExcel =
-                document.getElementById(
-                    "resultadosBatallonesExcel"
-                );
-
-            const hiddenExcel =
-                document.getElementById(
-                    "batallonExcelSeleccionado"
-                );
+            let cookieValue = null;
 
             if (
-
-                buscadorExcel &&
-
-                resultadosExcel &&
-
-                hiddenExcel
-
+                document.cookie &&
+                document.cookie !== ''
             ) {
 
-                buscadorExcel.addEventListener(
-                    "input",
-                    function () {
+                const cookies =
+                    document.cookie.split(';');
 
-                        const texto =
-                            this.value.toLowerCase().trim();
+                for (
+                    let i = 0;
+                    i < cookies.length;
+                    i++
+                ) {
 
-                        resultadosExcel.innerHTML = "";
+                    const cookie =
+                        cookies[i].trim();
 
-                        if (texto.length < 1) {
+                    if (
 
-                            resultadosExcel.style.display =
-                                "none";
+                        cookie.substring(
+                            0,
+                            name.length + 1
 
-                            return;
-                        }
+                        ) === (name + '=')
 
-                        const filtrados =
-                            companias.filter(c =>
+                    ) {
 
-                                c.nombre.toLowerCase()
-                                    .includes(texto)
+                        cookieValue =
 
-                                ||
+                            decodeURIComponent(
 
-                                c.batallon.toLowerCase()
-                                    .includes(texto)
+                                cookie.substring(
+                                    name.length + 1
+                                )
+
                             );
 
-                        filtrados.forEach(c => {
+                        break;
 
-                            const item =
-                                document.createElement("div");
-
-                            item.className =
-                                "item-batallon";
-
-                            item.innerHTML = `
-        <strong>${c.nombre}</strong>
-        <small>${c.batallon}</small>
-    `;
-
-                            item.onclick = () => {
-
-                                buscadorExcel.value =
-                                    `${c.nombre} - ${c.batallon}`;
-
-                                hiddenExcel.value =
-                                    c.id;
-
-                                resultadosExcel.style.display =
-                                    "none";
-                            };
-
-                            resultadosExcel.appendChild(item);
-                        });
-                        resultadosExcel.style.display =
-                            "block";
                     }
-                );
-            }
-        }
 
-    </script>
-    <script>
-
-        async function crearCompania() {
-
-            const nombre =
-
-                document.getElementById(
-                    "nombreCompania"
-                ).value.trim();
-
-            const descripcion =
-
-                document.getElementById(
-                    "descripcionCompania"
-                ).value.trim();
-
-            const batallon =
-
-                document.getElementById(
-                    "batallonCompania"
-                ).value;
-
-            // =========================
-            // VALIDAR
-            // =========================
-
-            if (!nombre) {
-
-                mostrarToast(
-
-                    "⚠️ Ingrese el nombre",
-
-                    "warning"
-                );
-
-                return;
-            }
-
-            if (!batallon) {
-
-                mostrarToast(
-
-                    "⚠️ Seleccione un batallón",
-
-                    "warning"
-                );
-
-                return;
-            }
-
-            try {
-
-                const response = await fetch(
-
-                    "/crear-compania/",
-
-                    {
-
-                        method: "POST",
-
-                        headers: {
-
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body: JSON.stringify({
-
-                            nombre,
-                            descripcion,
-                            batallon
-                        })
-                    }
-                );
-
-                const data =
-                    await response.json();
-
-                if (data.error) {
-
-                    mostrarToast(
-
-                        "❌ " + data.error,
-
-                        "error"
-                    );
-
-                    return;
                 }
 
-                mostrarToast(
-
-                    "✅ " + data.mensaje,
-
-                    "success"
-                );
-
-                setTimeout(() => {
-
-                    location.reload();
-
-                }, 1000);
-
-            } catch (error) {
-
-                mostrarToast(
-
-                    "❌ Error del servidor",
-
-                    "error"
-                );
             }
+
+            return cookieValue;
+
         }
 
     </script>
-    <script>
+    <!-- MODAL EDITAR EVALUACIÓN -->
 
-        function abrirModalEditarCompania(
+    <div class="modal fade" id="modalEditarEvaluacion" tabindex="-1">
 
-            id,
-            nombre,
-            descripcion
+        <div class="modal-dialog modal-lg">
 
-        ) {
+            <div class="modal-content">
 
-            document.getElementById(
-                "editarCompaniaId"
-            ).value = id;
+                <!-- HEADER -->
 
-            document.getElementById(
-                "editarNombreCompania"
-            ).value = nombre;
+                <div class="modal-header bg-warning">
 
-            document.getElementById(
-                "editarDescripcionCompania"
-            ).value = descripcion;
+                    <h5 class="modal-title">
 
-            const modal = new bootstrap.Modal(
+                        ✏️ Editar Evaluación
 
-                document.getElementById(
-                    "modalEditarCompania"
-                )
-            );
+                    </h5>
 
-            modal.show();
-        }
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 
-        async function guardarEdicionCompania() {
+                </div>
 
-            const id =
-                document.getElementById(
-                    "editarCompaniaId"
-                ).value;
+                <!-- BODY -->
 
-            const nombre =
-                document.getElementById(
-                    "editarNombreCompania"
-                ).value;
+                <div class="modal-body">
 
-            const descripcion =
-                document.getElementById(
-                    "editarDescripcionCompania"
-                ).value;
+                    <!-- ID OCULTO -->
 
-            try {
+                    <input type="hidden" id="editarEvaluacionId">
 
-                const response = await fetch(
+                    <div class="row g-3">
 
-                    `/editar-compania/${id}/`,
+                        <!-- TITULO -->
 
-                    {
+                        <div class="col-md-6">
 
-                        method: "POST",
+                            <label class="form-label">
+                                Título
+                            </label>
 
-                        headers: {
+                            <input type="text" class="form-control" id="editarTituloEvaluacion">
 
-                            "Content-Type":
-                                "application/json"
-                        },
+                        </div>
 
-                        body: JSON.stringify({
+                        <!-- FECHA -->
 
-                            nombre,
-                            descripcion
-                        })
-                    }
-                );
+                        <div class="col-md-6">
 
-                const data =
-                    await response.json();
+                            <label class="form-label">
+                                Fecha
+                            </label>
 
-                if (data.error) {
+                            <input type="date" class="form-control" id="editarFechaEvaluacion">
 
-                    mostrarToast(
-                        "❌ " + data.error,
-                        "error"
-                    );
+                        </div>
 
-                    return;
-                }
+                        <!-- INSTRUCTOR -->
 
-                mostrarToast(
-                    "✅ Compañía actualizada",
-                    "success"
-                );
+                        <div class="col-md-6">
 
-                $("#modalEditarCompania")
-                    .modal("hide");
+                            <label class="form-label">
+                                Instructor
+                            </label>
 
-                setTimeout(() => {
+                            <select class="form-select" id="editarInstructorEvaluacion">
 
-                    location.reload();
+                                {% for instructor in instructores %}
 
-                }, 800);
+                                <option value="{{ instructor.id }}">
 
-            } catch (error) {
+                                    {{ instructor.first_name }}
+                                    {{ instructor.last_name }}
 
-                console.error(error);
+                                </option>
 
-                mostrarToast(
-                    "❌ Error del sistema",
-                    "error"
-                );
-            }
-        }
-    </script>
-    <script>
+                                {% endfor %}
 
-        async function toggleCompania(id, estadoActual) {
+                            </select>
 
-            const accion = estadoActual
-                ? "desactivar"
-                : "activar";
+                        </div>
+                        <!-- COMPAÑÍA -->
 
-            Swal.fire({
+                        <div class="col-md-6">
 
-                icon: "warning",
+                            <label class="form-label">
+                                Compañía
+                            </label>
 
-                title:
-                    `¿Desea ${accion} esta compañía?`,
+                            <select class="form-select" id="editarCompaniaEvaluacion">
 
-                text:
-                    "El estado de la compañía cambiará",
+                                {% for compania in companias %}
 
-                showCancelButton: true,
+                                <option value="{{ compania.id }}">
 
-                confirmButtonColor: "#198754",
+                                    {{ compania.nombre }}
 
-                cancelButtonColor: "#dc3545",
+                                </option>
 
-                confirmButtonText:
-                    `Sí, ${accion}`,
+                                {% endfor %}
 
-                cancelButtonText:
-                    "Cancelar"
+                            </select>
 
-            }).then(async (result) => {
+                        </div>
 
-                if (result.isConfirmed) {
+                        <!-- DESCRIPCIÓN -->
 
-                    const response = await fetch(
+                        <div class="col-12">
 
-                        `/toggle-compania/${id}/`,
+                            <label class="form-label">
+                                Descripción
+                            </label>
 
-                        {
-                            method: "POST"
-                        }
-                    );
+                            <textarea class="form-control" rows="4" id="editarDescripcionEvaluacion"></textarea>
 
-                    const data =
-                        await response.json();
+                        </div>
 
-                    mostrarToast(
-
-                        "✅ " + data.mensaje,
-
-                        "success"
-                    );
-
-                    setTimeout(() => {
-
-                        location.reload();
-
-                    }, 700);
-                }
-            });
-        }
-
-    </script>
-    <script>
-
-        window.inicializarUsuarios = function () {
-
-            const dataElement =
-                document.getElementById("companias-data");
-
-            if (!dataElement) {
-                console.log("No existe companias-data");
-                return;
-            }
-
-            let companias = [];
-
-            try {
-
-                companias = JSON.parse(
-                    dataElement.textContent
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Error parseando compañías:",
-                    error
-                );
-
-                return;
-            }
-
-            const buscador =
-                document.getElementById(
-                    "buscarCompania"
-                );
-
-            const resultados =
-                document.getElementById(
-                    "resultadosCompanias"
-                );
-
-            const hidden =
-                document.getElementById(
-                    "companiaSeleccionada"
-                );
-
-            if (!buscador || !resultados) {
-
-                console.log("No existe buscador");
-                return;
-            }
-
-            buscador.addEventListener(
-                "input",
-                function () {
-
-                    const texto =
-                        this.value
-                            .toLowerCase()
-                            .trim();
-
-                    resultados.innerHTML = "";
-
-                    if (!texto) {
-
-                        resultados.style.display =
-                            "none";
-
-                        return;
-                    }
-
-                    const filtradas =
-                        companias.filter(c =>
-
-                            c.nombre
-                                .toLowerCase()
-                                .includes(texto)
-
-                            ||
-
-                            c.batallon
-                                .toLowerCase()
-                                .includes(texto)
-                        );
-
-                    if (filtradas.length === 0) {
-
-                        resultados.innerHTML = `
-                    <div class="item-batallon">
-                        No se encontraron compañías
                     </div>
-                `;
 
-                        resultados.style.display =
-                            "block";
+                </div>
 
-                        return;
-                    }
+                <!-- FOOTER -->
 
-                    filtradas.forEach(c => {
+                <div class="modal-footer">
 
-                        const item =
-                            document.createElement("div");
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
 
-                        item.className =
-                            "item-batallon";
+                        Cancelar
 
-                        item.innerHTML = `
-                    <div>
-                        <strong>${c.nombre}</strong><br>
-                        <small>${c.batallon}</small>
+                    </button>
+
+                    <button class="btn btn-warning" onclick="guardarEdicionEvaluacion()">
+
+                        💾 Guardar Cambios
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- MODAL VER EVALUACIÓN -->
+
+    <div class="modal fade" id="modalVerEvaluacion" tabindex="-1">
+
+        <div class="modal-dialog modal-xl">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-info text-white">
+
+                    <h4 class="modal-title" id="tituloVerEvaluacion">
+
+                        📋 Evaluación
+
+                    </h4>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <div class="row mb-4">
+
+                        <!-- COMPAÑÍA -->
+
+                        <div class="col-md-4">
+
+                            <h6 class="text-muted">
+                                Compañía
+                            </h6>
+
+                            <p id="verCompania"></p>
+
+                        </div>
+
+                        <!-- INSTRUCTOR -->
+
+                        <div class="col-md-4">
+
+                            <h6 class="text-muted">
+                                Instructor
+                            </h6>
+
+                            <p id="verInstructor"></p>
+
+                        </div>
+
+                        <!-- FECHA -->
+
+                        <div class="col-md-4">
+
+                            <h6 class="text-muted">
+                                Fecha
+                            </h6>
+
+                            <p id="verFecha"></p>
+
+                        </div>
+
                     </div>
-                `;
 
-                        item.addEventListener(
-                            "click",
-                            function () {
+                    <!-- PARTICIPANTES -->
 
-                                buscador.value =
-                                    c.nombre;
+                    <div class="mb-3">
+
+                        <h5>
+
+                            👥 Participantes:
+                            <span id="totalParticipantes">
+                                0
+                            </span>
+
+                        </h5>
+
+                    </div>
+
+                    <!-- TABLA -->
+
+                    <div class="table-responsive">
+
+                        <table class="table table-bordered table-hover">
+
+                            <thead class="table-dark">
+
+                                <tr>
+
+                                    <th>
+                                        Apellidos
+                                    </th>
+
+                                    <th>
+                                        Nombres
+                                    </th>
+
+                                    <th>
+                                        Documento
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tablaParticipantesEvaluacion">
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL CREAR TEST -->
+    <div class="modal fade" id="modalTest" tabindex="-1">
+
+        <div class="modal-dialog modal-xl">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-dark text-white">
+
+                    <h4 class="modal-title">
+
+                        📝 Nuevo Test
+
+                    </h4>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <div class="row g-3">
+
+                        <!-- TITULO -->
+
+                        <div class="col-md-6">
+
+                            <label>
+                                Título
+                            </label>
+
+                            <input type="text" class="form-control" id="tituloTest">
+
+                        </div>
+
+                        <!-- INSTRUCTOR -->
+
+                        <div class="col-md-6">
+
+                            <label>
+                                Instructor
+                            </label>
+
+                            <select class="form-select" id="instructorTest">
+
+                                <option value=""> Cargando instructores... </option>
+                                {% for instructor in instructores %}
+
+                                <option value="{{ instructor.id }}">
+
+                                    {{ instructor.first_name }}
+                                    {{ instructor.last_name }}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                        <!-- COMPAÑÍA -->
+
+                        <div class="col-md-6">
+
+                            <label>
+                                Compañía
+                            </label>
+
+                            <!-- INPUT BUSCADOR -->
+
+                            <input type="text" class="form-control" id="buscadorCompaniaTest"
+                                placeholder="Buscar compañía..." autocomplete="off">
+
+                            <!-- RESULTADOS -->
+
+                            <div id="listaCompaniasTest" class="list-group mt-1"></div>
+
+                            <!-- ID OCULTO -->
+
+                            <input type="hidden" id="companiaTest">
+
+                        </div>
+
+                        <!-- FECHA INICIO -->
+
+                        <div class="col-md-3">
+
+                            <label>
+                                Fecha Inicio
+                            </label>
+
+                            <input type="datetime-local" class="form-control" id="fechaInicioTest">
+
+                        </div>
+
+                        <!-- FECHA FIN -->
+
+                        <div class="col-md-3">
+
+                            <label>
+                                Fecha Fin
+                            </label>
+
+                            <input type="datetime-local" class="form-control" id="fechaFinTest">
+
+                        </div>
+
+                        <!-- INTENTOS -->
+
+                        <div class="col-md-3">
+
+                            <label>
+                                Intentos
+                            </label>
+
+                            <input type="number" class="form-control" id="intentosTest" value="1">
+
+                        </div>
+
+                        <!-- TIEMPO -->
+
+                        <div class="col-md-3">
+
+                            <label>
+                                Tiempo (min)
+                            </label>
+
+                            <input type="number" class="form-control" id="tiempoTest" value="30">
+
+                        </div>
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <div class="col-12">
+
+                            <label>
+                                Descripción
+                            </label>
+
+                            <textarea class="form-control" rows="3" id="descripcionTest"></textarea>
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <!-- PREGUNTAS -->
+
+                    <div id="contenedorPreguntas"></div>
+
+                    <!-- BOTÓN -->
+
+                    <button class="btn btn-primary mt-3" onclick="agregarPregunta()">
+
+                        ➕ Agregar Pregunta
+
+                    </button>
+
+                </div>
+
+                <!-- FOOTER -->
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="btn btn-success" onclick="guardarTest()">
+
+                        💾 Guardar Test
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- MODAL RESOLVER TEST -->
+
+    <div class="modal fade" id="modalResolverTest" tabindex="-1">
+
+        <div class="modal-dialog modal-xl">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-primary text-white">
+
+                    <h4 class="modal-title" id="tituloResolverTest">
+
+                        Resolver Test
+
+                    </h4>
+
+                    <div class="badge bg-danger p-2" id="temporizadorTest">
+
+                        00:00
+
+                    </div>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <div id="contenedorResolverTest"></div>
+
+                </div>
+
+                <!-- FOOTER -->
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-success" onclick="enviarTest()">
+
+                        ✅ Finalizar Test
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- MODAL VER TEST -->
+
+    <div class="modal fade" id="modalVerTest" tabindex="-1">
+
+        <div class="modal-dialog modal-xl">
+
+            <div class="modal-content">
+
+                <!-- HEADER -->
+
+                <div class="modal-header bg-info text-white">
+
+                    <h4 class="modal-title" id="tituloVerTest">
+
+                        Detalle Test
+
+                    </h4>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+                </div>
+
+                <!-- BODY -->
+
+                <div class="modal-body">
+
+                    <!-- INFO -->
+
+                    <div id="infoTest" class="mb-4"></div>
+
+                    <!-- TABLA -->
+
+                    <div class="table-responsive">
+
+                        <table class="table table-dark table-hover">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Apellidos
+                                    </th>
+
+                                    <th>
+                                        Nombres
+                                    </th>
 
                                 hidden.value =
                                     c.id;
@@ -2623,36 +2396,6 @@
             );
         };
 
-    </script>
-
-    <script>
-        function _getCsrf() {
-            const match = document.cookie.match(/(^|;)\s*csrftoken=([^;]+)/);
-            return match ? decodeURIComponent(match[2]) : '';
-        }
-
-        window.guardarConfigUsuario = function () {
-            const usuarioId = document.getElementById('configUsuarioId')?.value;
-            if (!usuarioId) { mostrarToast('No se encontró el usuario', 'danger'); return; }
-
-            const data = {};
-            document.querySelectorAll('#contenido-dinamico input[type="checkbox"]').forEach(cb => {
-                data[cb.name] = cb.checked;
-            });
-
-            fetch(`/configurar-usuario/${usuarioId}/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': _getCsrf() },
-                body: JSON.stringify(data),
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.error) { mostrarToast(res.error, 'danger'); return; }
-                mostrarToast(res.mensaje, 'success');
-                setTimeout(() => cargarVista('/usuarios/'), 700);
-            })
-            .catch(() => mostrarToast('Error de conexión', 'danger'));
-        };
     </script>
 </body>
 

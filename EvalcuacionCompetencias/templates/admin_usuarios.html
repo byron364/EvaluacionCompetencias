@@ -83,6 +83,22 @@
                     <input type="text" id="grado" class="form-control input-grado"
                         placeholder="Ejemplo: Capitán, Sargento, Coronel...">
                 </div>
+                <div class="mb-3">
+
+                    <button type="button" id="btnHuella" class="btn btn-success w-100"
+                        onclick="window.registrarHuella()">
+                        <i id="new_user" class="fa fa-fingerprint"></i>
+                        Registrar Huella
+                    </button>
+
+                    <!-- TEXTO ESTADO -->
+                    <small id="estadoHuella" class="text-success d-none">
+
+                        ✔ Huella registrada
+
+                    </small>
+
+                </div>
                 <div class="row">
                     <div class="col-md-6 mb-2">
                         <input type="text" class="form-control" placeholder="Nombres" id="nombres">
@@ -122,11 +138,11 @@
                     <!-- BUSCADOR COMPANIA -->
 
                     <div class="buscador-batallon mb-4">
-                        <input type="text" id="buscarBatallonExcel" class="form-control buscador-input"
-                            placeholder="Buscar batallón o ciudad...">
-                        <div id="resultadosBatallonesExcel" class="lista-batallones">
+                        <input type="text" id="buscarCompaniaExcel" class="form-control buscador-input"
+                            placeholder="Buscar compañía...">
+                        <div id="resultadosCompaniasExcel" class="lista-companias">
                         </div>
-                        <input type="hidden" id="batallonExcelSeleccionado">
+                        <input type="hidden" id="companiaExcelSeleccionada">
                     </div>
                 </div>
 
@@ -251,8 +267,8 @@
     </div>
 </div>
 
-   <!-- COMPANIAS JSON -->
-<script id="companias-data" type="application/json">
+    <!-- COMPANIAS JSON -->
+    <script id="companias-data" type="application/json">
 [
 {% for c in companias %}
 {
@@ -263,6 +279,5 @@
 {% if not forloop.last %},{% endif %}
 {% endfor %}
 ]
-</script> 
+</script>
 </div>
-

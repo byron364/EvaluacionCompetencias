@@ -1,0 +1,115 @@
+<div id="contenido-parcial">
+    <!-- HEADER -->
+    <div class="mb-4" id="tittle">
+        <h2 class="text">
+            <i class="fa fa-fingerprint"></i> Gestión Biométrica
+        </h2>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="card-admin p-4">
+        <h5>Registrar Huella Dactilar</h5>
+
+        <div class="card-body">
+
+            <table class="
+        table
+        table-hover
+        align-middle
+        text-center
+    " id="tablaBiometrico">
+
+                <thead class="table-dark">
+
+                    <tr>
+
+                        <th>Documento</th>
+
+                        <th>Nombre</th>
+
+                        <th>Rol</th>
+
+                        <th>Compañía</th>
+
+                        <th>Estado</th>
+
+                        <th>Acción</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for usuario in usuarios %}
+
+                    <tr>
+
+                        <td>
+                            {{ usuario.documento }}
+                        </td>
+
+                        <td>
+                            {{ usuario.user.first_name }}
+                            {{ usuario.user.last_name }}
+                        </td>
+
+                        <td>
+                            {{ usuario.rol }}
+                        </td>
+
+                        <td>
+
+                            {% if usuario.compania %}
+
+                            {{ usuario.compania.nombre }}
+
+                            {% else %}
+
+                            Sin compañía
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if usuario.huella %}
+
+                            <span class="badge bg-success">
+                                ✅ Registrada
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-danger">
+                                ❌ Sin huella
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <button class="btn btn-success btn-registrar-biometria"
+                                data-documento="{{ usuario.documento }}">
+
+                                👆 Registrar
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+</div>
