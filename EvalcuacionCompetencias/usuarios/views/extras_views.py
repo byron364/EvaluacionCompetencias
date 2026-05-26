@@ -1,29 +1,61 @@
 import json
+import random
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.models import User
-from ..models import ConfiguracionUsuario
+from django.db.models import Avg
+from django.utils import timezone
+from ..models import (
+    ConfiguracionUsuario, Inscripcion, EvaluacionAsignada, Calificacion,
+    Test, TestAsignado, RespuestaUsuario,
+)
 from ..decorators import rol_requerido, modulo_requerido
 from ..helpers import obtener_modulos_bloqueados
 
 
+@rol_requerido('soldado')
 def inicio(request):
-    return render(request, 'inicio.html')
+    inscripciones = Inscripcion.objects.filter(estudiante=request.user)
+    calificaciones = Calificacion.objects.filter(estudiante=request.user)
+    promedio_raw = calificaciones.aggregate(avg=Avg('nota'))['avg']
+    return render(request, 'inicio.html', {
+        'total_cursos': inscripciones.count(),
+        'total_evaluaciones': EvaluacionAsignada.objects.filter(soldado=request.user).count(),
+        'total_resultados': calificaciones.count(),
+        'promedio': round(promedio_raw, 1) if promedio_raw else 0,
+    })
 
 
-def cursos(request):
-    return render(request, 'cursos.html')
+@rol_requerido('soldado')
+def soldado_cursos(request):
+    inscripciones = Inscripcion.objects.filter(
+        estudiante=request.user
+    ).select_related('curso', 'curso__instructor')
+    return render(request, 'cursos.html', {'inscripciones': inscripciones})
 
 
+@rol_requerido('soldado')
 def evaluaciones(request):
-    return render(request, 'evaluaciones.html')
+    asignaciones = EvaluacionAsignada.objects.filter(
+        soldado=request.user
+    ).select_related('evaluacion', 'evaluacion__compania')
+    return render(request, 'evaluaciones.html', {'asignaciones': asignaciones})
 
 
+@rol_requerido('soldado')
 def resultados(request):
-    return render(request, 'resultados.html')
+    calificaciones = Calificacion.objects.filter(
+        estudiante=request.user
+    ).select_related('curso')
+    promedio_raw = calificaciones.aggregate(avg=Avg('nota'))['avg']
+    return render(request, 'resultados.html', {
+        'calificaciones': calificaciones,
+        'promedio': round(promedio_raw, 1) if promedio_raw else 0,
+    })
 
 
+@rol_requerido('soldado')
 def retroalimentacion(request):
     return render(request, 'retro.html')
 
@@ -45,6 +77,13 @@ def admin_test(request):
 
 @rol_requerido(['admin', 'instructor'])
 def admin_configuracion(request):
+    # Si es carga directa del navegador (no SPA fetch), redirigir al dashboard
+    if request.method == 'GET' and request.headers.get('Sec-Fetch-Mode') == 'navigate':
+        rol = request.user.perfil.rol
+        if rol == 'instructor':
+            return redirect('instructor_dashboard')
+        return redirect('admin_dashboard')
+
     config, _ = ConfiguracionUsuario.objects.get_or_create(
         usuario=request.user,
         defaults={'configuracion': {}}
@@ -273,4 +312,125 @@ def admin_editar_config_usuario(request, usuario_id):
         'dashboard_opciones': dashboard_opciones,
         'accesos_opciones': accesos_opciones,
         'perfil_asignado': config.perfil_asignado,
+    })
+
+
+# =========================================
+# VISTAS SOLDADO — TESTS
+# =========================================
+
+@rol_requerido('soldado')
+def soldado_tests(request):
+    now = timezone.now()
+    try:
+        compania = request.user.perfil.compania
+    except Exception:
+        compania = None
+
+    items = []
+    if compania:
+        for test in Test.objects.filter(compania=compania, activa=True).order_by('-fecha_inicio'):
+            try:
+                asignacion = TestAsignado.objects.get(test=test, soldado=request.user)
+            except TestAsignado.DoesNotExist:
+                asignacion = None
+
+            agotado = asignacion and asignacion.intentos_realizados >= test.max_intentos
+
+            if asignacion and asignacion.completado and agotado:
+                estado = 'completado'
+            elif now > test.fecha_fin:
+                estado = 'vencido'
+            elif now < test.fecha_inicio:
+                estado = 'pendiente'
+            else:
+                estado = 'disponible'
+
+            puede_presentar = (
+                estado == 'disponible'
+                and (asignacion is None or not agotado)
+            )
+
+            items.append({
+                'test': test,
+                'asignacion': asignacion,
+                'estado': estado,
+                'puede_presentar': puede_presentar,
+            })
+
+    return render(request, 'soldado_tests.html', {
+        'tests': items,
+        'compania': compania,
+    })
+
+
+@rol_requerido('soldado')
+def soldado_presentar_test(request, test_id):
+    now = timezone.now()
+    try:
+        compania = request.user.perfil.compania
+    except Exception:
+        compania = None
+
+    if not compania:
+        return redirect('soldado_tests')
+
+    try:
+        test = Test.objects.prefetch_related('preguntas__opciones').get(
+            id=test_id, compania=compania, activa=True
+        )
+    except Test.DoesNotExist:
+        return redirect('soldado_tests')
+
+    if now < test.fecha_inicio or now > test.fecha_fin:
+        return redirect('soldado_tests')
+
+    asignacion, _ = TestAsignado.objects.get_or_create(test=test, soldado=request.user)
+
+    if asignacion.completado and asignacion.intentos_realizados >= test.max_intentos:
+        return redirect('soldado_resultado_test', test_id=test_id)
+
+    if not asignacion.inicio_test:
+        asignacion.inicio_test = now
+        asignacion.save(update_fields=['inicio_test'])
+
+    preguntas = list(test.preguntas.filter(activa=True).prefetch_related('opciones').order_by('orden'))
+    if test.preguntas_aleatorias:
+        random.shuffle(preguntas)
+
+    return render(request, 'soldado_presentar_test.html', {
+        'test': test,
+        'asignacion': asignacion,
+        'preguntas': preguntas,
+        'tiempo_segundos': test.tiempo_limite * 60,
+    })
+
+
+@rol_requerido('soldado')
+def soldado_resultado_test(request, test_id):
+    try:
+        compania = request.user.perfil.compania
+    except Exception:
+        compania = None
+
+    try:
+        test = Test.objects.get(id=test_id)
+        if test.compania != compania:
+            return redirect('soldado_tests')
+        asignacion = TestAsignado.objects.get(test=test, soldado=request.user)
+    except (Test.DoesNotExist, TestAsignado.DoesNotExist):
+        return redirect('soldado_tests')
+
+    respuestas = []
+    if asignacion.completado and test.mostrar_resultado:
+        respuestas = list(
+            RespuestaUsuario.objects.filter(asignacion=asignacion)
+            .select_related('pregunta', 'opcion')
+            .order_by('pregunta__orden')
+        )
+
+    return render(request, 'soldado_resultado_test.html', {
+        'test': test,
+        'asignacion': asignacion,
+        'respuestas': respuestas,
     })

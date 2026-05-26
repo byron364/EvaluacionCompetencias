@@ -6,276 +6,281 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soldado</title>
-    <!-- FAVICON -->
     <link rel="icon" href="{% static 'img/escudo.png' %}" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
-    <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/soldado.css' %}">
-    <style>
-
-    </style>
-
 </head>
 
 <body>
 
-    <!-- FONDO DECORATIVO -->
     <div class="bg-pattern">
         <div class="pattern-overlay"></div>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <div class="background-container">
-
-        <!-- IMAGEN CENTRAL CON SOMBRA -->
         <img src="{% static 'img/fondoInicio.png' %}" class="bg-img">
 
-        <!-- CAPA -->
         <div class="overlay">
-
             <div class="container-fluid">
-                <button id="menuToggle" class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">
+                <button id="menuToggle" class="menu-toggle" type="button"
+                        aria-label="Abrir menú" aria-expanded="false">
                     <i class="fa fa-bars"></i>
                 </button>
                 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
-                <button id="menuToggle" class="menu-toggle"> <i class="fa fa-bars"></i> </button>
+
                 <div class="row">
                     <div class="col-md-2 sidebar">
                         <div class="imgEscudo">
-                            <a href="" data-url="/soldado-dashboard/"></a>
                             <img src="{% static 'img/EJC2026bl.png' %}" width="80">
                             <h5>Soldado</h5>
                         </div>
-                        <p>Nombres del soldado</p>
+                        <p>{{ request.user.get_full_name }}</p>
                         <hr>
                         <ul class="nav flex-column sidebar-menu">
                             {% if configuracion.menu_lateral.inicio %}
                             <li class="nav-item">
                                 <a class="nav-link nav-link-spa active" data-url="/inicio/">
-                                    Inicio
+                                    <i class="fa fa-home me-2"></i>Inicio
                                 </a>
                             </li>
                             {% endif %}
                             {% if configuracion.menu_lateral.cursos %}
                             <li class="nav-item">
-                                <a class="nav-link nav-link-spa" data-url="/cursos/">
-                                    Mis Cursos
+                                <a class="nav-link nav-link-spa" data-url="/soldado/cursos/">
+                                    <i class="fa fa-book me-2"></i>Mis Cursos
                                 </a>
                             </li>
                             {% endif %}
                             {% if configuracion.menu_lateral.evaluaciones %}
                             <li class="nav-item">
                                 <a class="nav-link nav-link-spa" data-url="/evaluaciones/">
-                                    Evaluaciones
+                                    <i class="fa fa-clipboard-list me-2"></i>Evaluaciones
                                 </a>
                             </li>
                             {% endif %}
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-spa" data-url="/soldado/tests/">
+                                    <i class="fa fa-file-alt me-2"></i>Mis Tests
+                                </a>
+                            </li>
                             {% if configuracion.menu_lateral.resultados %}
                             <li class="nav-item">
                                 <a class="nav-link nav-link-spa" data-url="/resultados/">
-                                    Resultados
+                                    <i class="fa fa-chart-bar me-2"></i>Mis Resultados
                                 </a>
                             </li>
                             {% endif %}
                             {% if configuracion.menu_lateral.retroalimentacion %}
                             <li class="nav-item">
                                 <a class="nav-link nav-link-spa" data-url="/retro/">
-                                    Retroalimentación
+                                    <i class="fa fa-star me-2"></i>Retroalimentación
                                 </a>
                             </li>
                             {% endif %}
                             <li class="nav-item">
                                 <a class="nav-link text-white" href="/logout/">
-                                    Cerrar sesión
+                                    <i class="fa fa-sign-out-alt me-2"></i>Cerrar sesión
                                 </a>
                             </li>
                         </ul>
-
                     </div>
 
-                    <!-- CONTENIDO -->
-                    <div class="col-md-10 content" id="contenido-dinamico">
-
-                        <img src="{% static 'img/escudo.png' %}" width="40%">
-
-                        <div class="row mt-4">
-                            {% if configuracion.menu_lateral.cursos %}
-                            <div class="col-md-3">
-                                <button class="btn btn-success w-100 nav-btn" data-url="/cursos/">Ver
-                                    Cursos</button>
-                            </div>
-                            {% endif %}
-                            {% if configuracion.menu_lateral.evaluaciones %}
-                            <div class="col-md-3">
-                                <button class="btn btn-primary w-100 nav-btn" data-url="/evaluaciones/">Presentar
-                                    Evaluación</button>
-                            </div>
-                            {% endif %}
-                            {% if configuracion.menu_lateral.resultados %}
-                            <div class="col-md-3">
-                                <button class="btn btn-warning w-100 nav-btn" data-url="/resultados/">Ver
-                                    Resultados</button>
-                            </div>
-                            {% endif %}
-                            {% if configuracion.menu_lateral.retroalimentacion %}
-                            <div class="col-md-3">
-                                <button class="btn btn-info w-100 nav-btn" data-url="/retro/">Evaluar
-                                    Instructor</button>
-                            </div>
-                            {% endif %}
-                        </div>
-
-                    </div>
-
+                    <!-- CONTENIDO DINÁMICO -->
+                    <div class="col-md-10 content" id="contenido-dinamico"></div>
                 </div>
             </div>
-
         </div>
-
     </div>
 
-</body>
-<div id="loader" class="loader">
-    <div class="spinner"></div>
-    <p>Cargando módulo...</p>
-</div>
-<script>
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p>Cargando módulo...</p>
+    </div>
+
+    <script>
     document.addEventListener("DOMContentLoaded", function () {
-
-        const content = document.getElementById("contenido-dinamico");
+        const content   = document.getElementById("contenido-dinamico");
+        const loader    = document.getElementById("loader");
         const menuToggle = document.getElementById("menuToggle");
-        const sidebar = document.querySelector(".sidebar");
-        const backdrop = document.getElementById("sidebarBackdrop");
+        const sidebar   = document.querySelector(".sidebar");
+        const backdrop  = document.getElementById("sidebarBackdrop");
+        const HOME_URL  = "/inicio/";
+        let testTimer   = null;
 
-        // 🔥 URL de inicio (dashboard)
-        const HOME_URL = "/inicio/";
-
+        // ── Menú móvil ──────────────────────────────────────
         function cerrarMenuMovil() {
             sidebar.classList.remove("active");
             backdrop.classList.remove("active");
             menuToggle.setAttribute("aria-expanded", "false");
         }
-
         menuToggle.addEventListener("click", function () {
-            sidebar.classList.toggle("active");
-            backdrop.classList.toggle("active", sidebar.classList.contains("active"));
-            menuToggle.setAttribute("aria-expanded", sidebar.classList.contains("active"));
+            const open = sidebar.classList.toggle("active");
+            backdrop.classList.toggle("active", open);
+            menuToggle.setAttribute("aria-expanded", String(open));
         });
-
         backdrop.addEventListener("click", cerrarMenuMovil);
 
-        function cargarVista(url, addToHistory = true) {
-
-            const loader = document.getElementById("loader");
-
-            loader.classList.add("active"); // 🔥 mostrar loader
-            content.classList.add("fade-out");
-
-            fetch(url, {
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-                .then(response => response.text())
-                .then(data => {
-
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(data, "text/html");
-                    const nuevoContenido = doc.getElementById("contenido-parcial");
-
-                    setTimeout(() => {
-
-                        if (nuevoContenido) {
-                            content.innerHTML = nuevoContenido.outerHTML;
-                        }
-
-                        content.classList.remove("fade-out");
-                        content.classList.add("fade-in");
-
-                        loader.classList.remove("active"); // 🔥 ocultar loader
-
-                    }, 300);
-
-                    activarMenu(url);
-
-                    if (addToHistory) {
-                        history.pushState({ url: url }, "", url);
-                    }
-
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    loader.classList.remove("active");
-                });
+        // ── Utilidades ───────────────────────────────────────
+        function getCsrf() {
+            const m = document.cookie.match(/csrftoken=([^;]+)/);
+            return m ? m[1] : "";
         }
 
         function activarMenu(url) {
             document.querySelectorAll(".nav-link-spa").forEach(link => {
-                link.classList.remove("active");
-
-                // 🔥 Detecta coincidencias parciales (mejor UX)
-                if (url.startsWith(link.dataset.url)) {
-                    link.classList.add("active");
-                }
+                link.classList.toggle("active", url.startsWith(link.dataset.url));
             });
         }
 
-        // 🔘 BOTONES PRINCIPALES
-        document.querySelectorAll(".nav-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                let url = btn.dataset.url;
-                cargarVista(url);
+        // ── Activar componentes en contenido cargado ─────────
+        function activarDinamico() {
+            // Botones de navegación interna
+            content.querySelectorAll(".nav-btn").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    const url = this.dataset.url;
+                    if (url) cargarVista(url);
+                });
             });
-        });
 
-        // 📌 SIDEBAR
-        document.querySelectorAll(".nav-link-spa").forEach(link => {
+            // Timer de test
+            const timerEl = content.querySelector("#timer-countdown");
+            if (timerEl) {
+                let secs = parseInt(timerEl.dataset.segundos) || 0;
+                if (secs > 0) {
+                    testTimer = setInterval(function () {
+                        secs--;
+                        const m = Math.floor(secs / 60);
+                        const s = secs % 60;
+                        timerEl.textContent = m + ":" + String(s).padStart(2, "0");
+                        if (secs <= 300) timerEl.style.color = "#f87171"; // rojo al quedar 5 min
+                        if (secs <= 0) {
+                            clearInterval(testTimer);
+                            testTimer = null;
+                            finalizarTest();
+                        }
+                    }, 1000);
+                }
+            }
+
+            // Formulario de test
+            const testForm = content.querySelector("#test-form");
+            if (testForm) {
+                testForm.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    finalizarTest();
+                });
+            }
+        }
+
+        // ── Finalizar test vía API ────────────────────────────
+        function finalizarTest() {
+            if (testTimer) { clearInterval(testTimer); testTimer = null; }
+
+            const form = content.querySelector("#test-form");
+            if (!form) return;
+
+            const testId = form.dataset.testId;
+            const respuestas = [];
+            form.querySelectorAll("input[type=radio]:checked").forEach(function (inp) {
+                respuestas.push({ opcion_id: parseInt(inp.value) });
+            });
+
+            const btnFinalizar = form.querySelector("#btn-finalizar");
+            if (btnFinalizar) {
+                btnFinalizar.disabled = true;
+                btnFinalizar.textContent = "Enviando...";
+            }
+
+            fetch("/finalizar-test/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCsrf(),
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({ test_id: parseInt(testId), respuestas: respuestas })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    cargarVista("/soldado/resultado-test/" + testId + "/");
+                } else {
+                    alert("Error: " + (data.error || "No se pudo finalizar el test."));
+                    if (btnFinalizar) { btnFinalizar.disabled = false; btnFinalizar.textContent = "✅ Finalizar Test"; }
+                }
+            })
+            .catch(function () {
+                alert("Error de conexión. Por favor intente de nuevo.");
+                if (btnFinalizar) { btnFinalizar.disabled = false; btnFinalizar.textContent = "✅ Finalizar Test"; }
+            });
+        }
+
+        // ── Carga de vista SPA ────────────────────────────────
+        function cargarVista(url, addToHistory) {
+            if (addToHistory === undefined) addToHistory = true;
+
+            // Detener timer si hay uno corriendo
+            if (testTimer) { clearInterval(testTimer); testTimer = null; }
+
+            loader.classList.add("active");
+            content.classList.add("fade-out");
+
+            fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+                .then(function (r) { return r.text(); })
+                .then(function (html) {
+                    const parser = new DOMParser();
+                    const doc    = parser.parseFromString(html, "text/html");
+                    const nuevo  = doc.getElementById("contenido-parcial");
+
+                    setTimeout(function () {
+                        if (nuevo) {
+                            content.innerHTML = nuevo.outerHTML;
+                        }
+                        content.classList.remove("fade-out");
+                        content.classList.add("fade-in");
+                        loader.classList.remove("active");
+                        activarDinamico();
+                    }, 280);
+
+                    activarMenu(url);
+                    if (addToHistory) history.pushState({ url: url }, "", url);
+                })
+                .catch(function (err) {
+                    console.error(err);
+                    loader.classList.remove("active");
+                });
+        }
+
+        // ── Listeners del sidebar ─────────────────────────────
+        document.querySelectorAll(".nav-link-spa").forEach(function (link) {
             link.addEventListener("click", function (e) {
                 e.preventDefault();
-
-                let url = this.dataset.url;
-
-                activarMenu(url);
-                cargarVista(url);
+                activarMenu(this.dataset.url);
+                cargarVista(this.dataset.url);
                 cerrarMenuMovil();
             });
         });
-
-        document.querySelectorAll(".sidebar .nav-link").forEach(link => {
+        document.querySelectorAll(".sidebar .nav-link").forEach(function (link) {
             link.addEventListener("click", cerrarMenuMovil);
         });
 
-        // 🔙 BOTÓN ATRÁS / ADELANTE
+        // ── Botón atrás / adelante ────────────────────────────
         window.onpopstate = function (event) {
-            let url = (event.state && event.state.url) ? event.state.url : location.pathname;
+            const url = (event.state && event.state.url) ? event.state.url : location.pathname;
             cargarVista(url, false);
         };
 
-        // 🚀 🔥 CARGA INICIAL (INICIO AUTOMÁTICO)
-        if (location.pathname === "/" || location.pathname === "/soldado-dashboard/") {
+        // ── Carga inicial ─────────────────────────────────────
+        const path = location.pathname;
+        if (path === "/" || path === "/soldado-dashboard/" || path === "/soldado/") {
             cargarVista(HOME_URL, false);
             activarMenu(HOME_URL);
         } else {
-            // Si recarga en otra ruta
-            cargarVista(location.pathname, false);
-            activarMenu(location.pathname);
+            cargarVista(path, false);
+            activarMenu(path);
         }
-
     });
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const menuToggle = document.getElementById("menuToggle");
-        const sidebar = document.querySelector(".sidebar");
-
-        menuToggle.addEventListener("click", function () {
-            sidebar.classList.toggle("active");
-        });
-    });
-</script>
-
+    </script>
+</body>
 </html>

@@ -64,70 +64,98 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const content = document.getElementById("contenido-dinamico");
-            const loader = document.getElementById("loader");
+            const content    = document.getElementById("contenido-dinamico");
+            const loader     = document.getElementById("loader");
             const menuToggle = document.getElementById("menuToggle");
-            const sidebar = document.querySelector(".sidebar");
-            const backdrop = document.getElementById("sidebarBackdrop");
-            const HOME_URL = "/instructor/inicio/";
+            const sidebar    = document.querySelector(".sidebar");
+            const backdrop   = document.getElementById("sidebarBackdrop");
+            const HOME_URL   = "/instructor/inicio/";
 
+            // ── Menú móvil ───────────────────────────────────
             function cerrarMenuMovil() {
                 sidebar.classList.remove("active");
                 backdrop.classList.remove("active");
                 menuToggle.setAttribute("aria-expanded", "false");
             }
-
             menuToggle.addEventListener("click", function () {
-                sidebar.classList.toggle("active");
-                backdrop.classList.toggle("active", sidebar.classList.contains("active"));
-                menuToggle.setAttribute("aria-expanded", sidebar.classList.contains("active"));
+                const open = sidebar.classList.toggle("active");
+                backdrop.classList.toggle("active", open);
+                menuToggle.setAttribute("aria-expanded", String(open));
             });
-
             backdrop.addEventListener("click", cerrarMenuMovil);
 
+            // ── Utilidades ───────────────────────────────────
+            function getCsrf() {
+                const m = document.cookie.match(/csrftoken=([^;]+)/);
+                return m ? m[1] : "";
+            }
+
             function activarMenu(url) {
-                document.querySelectorAll(".nav-link-spa").forEach(link => {
-                    link.classList.remove("active");
-                    if (url.startsWith(link.dataset.url)) {
-                        link.classList.add("active");
-                    }
+                document.querySelectorAll(".nav-link-spa").forEach(function (link) {
+                    link.classList.toggle("active", url.startsWith(link.dataset.url));
                 });
             }
 
+            // ── Re-adjuntar eventos tras cada carga ──────────
             function activarEventosContenido() {
-                document.querySelectorAll(".nav-btn").forEach(btn => {
+                // Botones de navegación interna
+                content.querySelectorAll(".nav-btn").forEach(function (btn) {
                     btn.addEventListener("click", function () {
-                        const url = this.dataset.url;
-                        if (url) {
-                            cargarVista(url);
-                        }
+                        if (this.dataset.url) cargarVista(this.dataset.url);
+                    });
+                });
+
+                // Formularios dentro del contenido dinámico.
+                // Enviamos vía fetch con X-CSRFToken (token fresco de la cookie)
+                // para evitar el 403 por desincronización del campo oculto en el SPA.
+                // Si el form tiene data-success-url, navegamos a esa URL tras guardar.
+                content.querySelectorAll("form").forEach(function (form) {
+                    form.addEventListener("submit", function (e) {
+                        e.preventDefault();
+                        const btn = this.querySelector("[type=submit]");
+                        const btnTextoOriginal = btn ? btn.textContent : "";
+                        if (btn) { btn.disabled = true; btn.textContent = "Guardando..."; }
+
+                        const successUrl = this.dataset.successUrl || "/configuracion/";
+                        const fd = new FormData(this);
+                        fd.delete("csrfmiddlewaretoken");
+
+                        fetch(this.action || location.pathname, {
+                            method: "POST",
+                            headers: { "X-CSRFToken": getCsrf() },
+                            body: fd
+                        })
+                        .then(function () {
+                            cargarVista(successUrl);
+                        })
+                        .catch(function (err) {
+                            console.error(err);
+                            if (btn) { btn.disabled = false; btn.textContent = btnTextoOriginal; }
+                        });
                     });
                 });
             }
 
-            function cargarVista(url, addToHistory = true) {
+            // ── Carga SPA ────────────────────────────────────
+            function cargarVista(url, addToHistory) {
+                if (addToHistory === undefined) addToHistory = true;
                 loader.classList.add("active");
                 content.classList.add("fade-out");
 
-                fetch(url, {
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
-                })
-                    .then(response => response.text())
-                    .then(data => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(data, "text/html");
+                fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+                    .then(function (r) { return r.text(); })
+                    .then(function (data) {
+                        const parser        = new DOMParser();
+                        const doc           = parser.parseFromString(data, "text/html");
                         const nuevoContenido = doc.getElementById("contenido-parcial");
 
-                        setTimeout(() => {
+                        setTimeout(function () {
                             if (nuevoContenido) {
                                 content.innerHTML = nuevoContenido.outerHTML;
                             } else {
                                 window.location.href = "/";
                                 return;
                             }
-
                             content.classList.remove("fade-out");
                             content.classList.add("fade-in");
                             loader.classList.remove("active");
@@ -135,42 +163,41 @@
                         }, 220);
 
                         activarMenu(url);
-
-                        if (addToHistory) {
-                            history.pushState({ url: url }, "", url);
-                        }
+                        if (addToHistory) history.pushState({ url: url }, "", url);
                     })
-                    .catch(error => {
+                    .catch(function (error) {
                         console.error("Error:", error);
                         loader.classList.remove("active");
                     });
             }
 
-            document.querySelectorAll(".nav-link-spa").forEach(link => {
+            // ── Sidebar ──────────────────────────────────────
+            document.querySelectorAll(".nav-link-spa").forEach(function (link) {
                 link.addEventListener("click", function (e) {
                     e.preventDefault();
-                    const url = this.dataset.url;
-                    activarMenu(url);
-                    cargarVista(url);
+                    activarMenu(this.dataset.url);
+                    cargarVista(this.dataset.url);
                     cerrarMenuMovil();
                 });
             });
-
-            document.querySelectorAll(".sidebar .nav-link").forEach(link => {
+            document.querySelectorAll(".sidebar .nav-link").forEach(function (link) {
                 link.addEventListener("click", cerrarMenuMovil);
             });
 
+            // ── Atrás / adelante ─────────────────────────────
             window.onpopstate = function (event) {
                 const url = (event.state && event.state.url) ? event.state.url : HOME_URL;
                 cargarVista(url, false);
             };
 
-            if (location.pathname === "/" || location.pathname === "/instructor-dashboard/") {
+            // ── Carga inicial ─────────────────────────────────
+            const path = location.pathname;
+            if (path === "/" || path === "/instructor-dashboard/") {
                 cargarVista(HOME_URL, false);
                 activarMenu(HOME_URL);
-            } else if (location.pathname.startsWith("/instructor/")) {
-                cargarVista(location.pathname, false);
-                activarMenu(location.pathname);
+            } else if (path.startsWith("/instructor/") || path === "/configuracion/") {
+                cargarVista(path, false);
+                activarMenu(path);
             } else {
                 cargarVista(HOME_URL, false);
                 activarMenu(HOME_URL);

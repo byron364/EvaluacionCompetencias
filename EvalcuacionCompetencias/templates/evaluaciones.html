@@ -3,14 +3,14 @@
         <h2 class="mb-4">📝 Evaluaciones</h2>
 
         <div class="row">
-            {% for evaluacion in evaluaciones %}
+            {% for asignacion in asignaciones %}
             <div class="col-md-4 mb-3">
                 <div class="card-curso azul">
-                    <h5>{{ evaluacion.titulo }}</h5>
-                    <p>Curso: {{ evaluacion.curso.nombre }}</p>
-                    <p>Fecha: {{ evaluacion.fecha }}</p>
+                    <h5>{{ asignacion.evaluacion.titulo }}</h5>
+                    <p>Compañía: {{ asignacion.evaluacion.compania.nombre }}</p>
+                    <p>Fecha: {{ asignacion.evaluacion.fecha }}</p>
                     <div class="barra">
-                        <div class="progreso" style="width: {{ evaluacion.porcentaje }}%;"></div>
+                        <div class="progreso" style="width: {% widthratio asignacion.puntaje_actual asignacion.evaluacion.puntaje_maximo 100 %}%;"></div>
                     </div>
                 </div>
             </div>
@@ -18,7 +18,7 @@
             <div class="col-12">
                 <div class="card-curso azul">
                     <h5>Sin evaluaciones disponibles</h5>
-                    <p>Aún no hay evaluaciones asociadas a tus cursos.</p>
+                    <p>Aún no hay evaluaciones asociadas a tu compañía.</p>
                 </div>
             </div>
             {% endfor %}

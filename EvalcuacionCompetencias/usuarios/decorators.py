@@ -25,7 +25,7 @@ def rol_requerido(roles):
 def modulo_requerido(clave, seccion='menu_lateral'):
     """
     Blocks access to a view if the user's effective config disables the module.
-    Returns 403 JSON for AJAX requests, redirects to dashboard for page requests.
+    Returns 403 JSON for AJAX requests, redirects to the user's own dashboard otherwise.
     """
     def decorator(view_func):
         @wraps(view_func)
@@ -42,6 +42,14 @@ def modulo_requerido(clave, seccion='menu_lateral'):
                 )
                 if is_ajax:
                     return JsonResponse({'error': 'Módulo no disponible'}, status=403)
+                try:
+                    rol = request.user.perfil.rol
+                except Exception:
+                    rol = 'admin'
+                if rol == 'instructor':
+                    return redirect('instructor_dashboard')
+                if rol == 'soldado':
+                    return redirect('soldado_dashboard')
                 return redirect('admin_dashboard')
             return view_func(request, *args, **kwargs)
         return wrapper

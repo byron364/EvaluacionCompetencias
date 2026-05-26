@@ -1,0 +1,88 @@
+<div id="contenido-parcial">
+    <div class="cursos">
+        <h2 class="mb-4" style="color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.6);">
+            Mis Tests
+        </h2>
+
+        {% if not compania %}
+        <div class="card-curso azul">
+            <h5>Sin compañía asignada</h5>
+            <p>Comunícate con el administrador para ser asignado a una compañía.</p>
+        </div>
+        {% else %}
+
+        <div class="row">
+            {% for item in tests %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card-curso {% if item.estado == 'disponible' %}verde{% elif item.estado == 'completado' %}azul{% else %}gris{% endif %}"
+                     style="display:flex; flex-direction:column; gap:.5rem;">
+
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="mb-0">{{ item.test.titulo }}</h5>
+                        {% if item.estado == 'disponible' %}
+                            <span class="badge bg-success">Disponible</span>
+                        {% elif item.estado == 'completado' %}
+                            <span class="badge bg-primary">Completado</span>
+                        {% elif item.estado == 'vencido' %}
+                            <span class="badge bg-danger">Vencido</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Próximamente</span>
+                        {% endif %}
+                    </div>
+
+                    {% if item.test.descripcion %}
+                    <p class="mb-0 small">{{ item.test.descripcion }}</p>
+                    {% endif %}
+
+                    <p class="mb-0 small">
+                        <strong>Inicio:</strong> {{ item.test.fecha_inicio|date:"d/m/Y H:i" }}<br>
+                        <strong>Fin:</strong> {{ item.test.fecha_fin|date:"d/m/Y H:i" }}<br>
+                        <strong>Tiempo:</strong> {{ item.test.tiempo_limite }} min &nbsp;|&nbsp;
+                        <strong>Intentos:</strong>
+                        {% if item.asignacion %}{{ item.asignacion.intentos_realizados }}{% else %}0{% endif %}
+                        / {{ item.test.max_intentos }}
+                    </p>
+
+                    {% if item.estado == 'completado' and item.asignacion %}
+                    <div>
+                        <strong style="font-size:1.1rem;">
+                            Nota: {{ item.asignacion.nota|floatformat:1 }}
+                        </strong>
+                        {% if item.asignacion.aprobado %}
+                            <span class="badge bg-success ms-1">Aprobado</span>
+                        {% else %}
+                            <span class="badge bg-danger ms-1">Reprobado</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2 mt-1 flex-wrap">
+                        {% if item.puede_presentar %}
+                        <button class="btn btn-success btn-sm nav-btn"
+                                data-url="/soldado/presentar-test/{{ item.test.id }}/">
+                            Presentar Test
+                        </button>
+                        {% endif %}
+                        {% if item.estado == 'completado' and item.test.mostrar_resultado %}
+                        <button class="btn btn-primary btn-sm nav-btn"
+                                data-url="/soldado/resultado-test/{{ item.test.id }}/">
+                            Ver Resultado
+                        </button>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="card-curso azul">
+                    <h5>Sin tests disponibles</h5>
+                    <p>No hay tests asignados a tu compañía en este momento.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% endif %}
+    </div>
+</div>

@@ -4,11 +4,13 @@ from .views.auth_views import login_view, logout_view, registro_view
 from .views.dashboard_views import admin_dashboard, admin_dashboard_partial, obtener_estadisticas
 from .views.instructor_views import (
     instructor_dashboard, instructor_inicio, instructor_cursos,
-    instructor_evaluaciones, instructor_soldados, instructor_reportes, soldado_dashboard
+    instructor_evaluaciones, instructor_soldados, instructor_reportes,
+    soldado_dashboard, instructor_guardar_calificacion, instructor_listar_inscritos,
 )
 from .views.extras_views import (
-    inicio, evaluaciones, resultados, retroalimentacion,
-    admin_reportes, admin_inscripciones, admin_test, admin_configuracion, admin_editar_config_usuario
+    inicio, evaluaciones, resultados, retroalimentacion, soldado_cursos,
+    admin_reportes, admin_inscripciones, admin_test, admin_configuracion, admin_editar_config_usuario,
+    soldado_tests, soldado_presentar_test, soldado_resultado_test,
 )
 from .views.usuarios_views import (
     admin_usuarios, listar_usuarios, eliminar_usuario, editar_usuario, crear_usuario,
@@ -47,8 +49,16 @@ urlpatterns = [
     path('instructor/evaluaciones/', instructor_evaluaciones, name='instructor_evaluaciones'),
     path('instructor/soldados/', instructor_soldados, name='instructor_soldados'),
     path('instructor/reportes/', instructor_reportes, name='instructor_reportes'),
+    path('instructor/guardar-calificacion/', instructor_guardar_calificacion, name='instructor_guardar_calificacion'),
+    path('instructor/listar-inscritos/', instructor_listar_inscritos, name='instructor_listar_inscritos'),
     path('soldado-dashboard/', soldado_dashboard, name='soldado_dashboard'),
     path('soldado/', soldado_dashboard),
+
+    # SPA partials — soldado tests y cursos
+    path('soldado/tests/', soldado_tests, name='soldado_tests'),
+    path('soldado/cursos/', soldado_cursos, name='soldado_cursos'),
+    path('soldado/presentar-test/<int:test_id>/', soldado_presentar_test, name='soldado_presentar_test'),
+    path('soldado/resultado-test/<int:test_id>/', soldado_resultado_test, name='soldado_resultado_test'),
 
     # SPA partials (soldado / genérico)
     path('inicio/', inicio, name='inicio'),

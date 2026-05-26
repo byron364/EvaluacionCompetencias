@@ -1,0 +1,83 @@
+<div id="contenido-parcial">
+    <div class="cursos">
+
+        <h2 class="mb-3" style="color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.6);">
+            Resultado: {{ test.titulo }}
+        </h2>
+
+        {% if asignacion.completado %}
+
+        <!-- Tarjeta de resultado principal -->
+        <div class="card-curso azul text-center mb-4" style="padding:2rem 1.5rem;">
+            <div style="font-size:4rem; font-weight:700; color:#4ade80; line-height:1.1;">
+                {{ asignacion.nota|floatformat:1 }}
+            </div>
+            <div class="text-white-50 mb-3">de {{ test.puntaje_maximo }} puntos</div>
+
+            {% if asignacion.aprobado %}
+            <div style="background:#16a34a; border-radius:8px; padding:.5rem 1.5rem; display:inline-block; font-size:1.1rem; font-weight:600; color:#fff;">
+                ✅ APROBADO
+            </div>
+            {% else %}
+            <div style="background:#dc2626; border-radius:8px; padding:.5rem 1.5rem; display:inline-block; font-size:1.1rem; font-weight:600; color:#fff;">
+                ❌ REPROBADO
+            </div>
+            {% endif %}
+
+            <div class="mt-3 small text-white-50">
+                Intentos realizados: {{ asignacion.intentos_realizados }} / {{ test.max_intentos }}
+                {% if asignacion.finalizacion_test %}
+                &nbsp;|&nbsp; Finalizado: {{ asignacion.finalizacion_test|date:"d/m/Y H:i" }}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Detalle de respuestas -->
+        {% if respuestas %}
+        <h5 class="mb-3" style="color:#fff;">Detalle de tus respuestas:</h5>
+        {% for resp in respuestas %}
+        <div class="card-curso mb-2 py-2"
+             style="border-left: 4px solid {% if resp.es_correcta %}#4ade80{% else %}#f87171{% endif %}; padding:.75rem 1rem;">
+            <p class="fw-bold mb-1 small">{{ forloop.counter }}. {{ resp.pregunta.pregunta }}</p>
+            <p class="mb-0 small">
+                Tu respuesta: <em>{{ resp.opcion.texto }}</em>
+                {% if resp.es_correcta %}
+                <span class="badge bg-success ms-2">✓ Correcta</span>
+                {% else %}
+                <span class="badge bg-danger ms-2">✗ Incorrecta</span>
+                {% endif %}
+            </p>
+        </div>
+        {% endfor %}
+
+        {% elif asignacion.completado and not test.mostrar_resultado %}
+        <div class="card-curso azul">
+            <p>El resultado detallado no está disponible para este test.</p>
+        </div>
+        {% endif %}
+
+        <!-- Reintentar si corresponde -->
+        {% if not asignacion.aprobado and asignacion.intentos_realizados < test.max_intentos %}
+        <div class="card-curso azul mt-3 text-center">
+            <p class="mb-2">Tienes {{ test.max_intentos|add:"-"|add:asignacion.intentos_realizados }} intento(s) restante(s).</p>
+            <button class="btn btn-warning nav-btn" data-url="/soldado/presentar-test/{{ test.id }}/">
+                🔄 Volver a intentar
+            </button>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="card-curso azul">
+            <h5>Test no completado</h5>
+            <p>Aún no has finalizado este test.</p>
+        </div>
+        {% endif %}
+
+        <div class="mt-4">
+            <button class="btn btn-secondary btn-sm nav-btn" data-url="/soldado/tests/">
+                ← Volver a Mis Tests
+            </button>
+        </div>
+
+    </div>
+</div>

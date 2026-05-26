@@ -1,38 +1,256 @@
 <div id="contenido-parcial">
     <div class="module-card">
+
+        <!-- ── Registrar Calificación ── -->
+        <div class="module-header mb-3">
+            <div>
+                <h2 class="hero-title fs-3 mb-1">Evaluaciones y Calificaciones</h2>
+                <p class="hero-subtitle mb-0">Registra notas y revisa el estado de tus soldados.</p>
+            </div>
+            <button class="btn btn-primary btn-sm"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#form-calificacion"
+                    aria-expanded="false">
+                <i class="fa fa-plus me-1"></i>Nueva Calificación
+            </button>
+        </div>
+
+        <div class="collapse mb-4" id="form-calificacion">
+            <div class="card card-body bg-dark border-secondary text-white">
+                <h6 class="mb-3">Registrar / Editar Calificación</h6>
+                <form action="/instructor/guardar-calificacion/"
+                      method="post"
+                      data-success-url="/instructor/evaluaciones/">
+                    {% csrf_token %}
+                    <input type="hidden" name="calificacion_id" id="id-calificacion-id" value="">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small">Curso</label>
+                            <select name="curso_id" id="sel-curso" class="form-select form-select-sm bg-dark text-white border-secondary" required>
+                                <option value="">— Selecciona un curso —</option>
+                                {% for curso in cursos %}
+                                <option value="{{ curso.id }}">{{ curso.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small">Soldado</label>
+                            <select name="estudiante_id" id="sel-estudiante" class="form-select form-select-sm bg-dark text-white border-secondary" required>
+                                <option value="">— Elige un curso primero —</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small">Nota (0–100)</label>
+                            <input type="number" name="nota" id="inp-nota"
+                                   class="form-control form-control-sm bg-dark text-white border-secondary"
+                                   min="0" max="100" step="0.1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Observaciones</label>
+                            <input type="text" name="observaciones" id="inp-obs"
+                                   class="form-control form-control-sm bg-dark text-white border-secondary"
+                                   placeholder="Opcional">
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-success btn-sm px-4">
+                                <i class="fa fa-save me-1"></i>Guardar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    onclick="limpiarFormCalificacion()">
+                                Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── Evaluaciones Militares ── -->
         <div class="module-header">
             <div>
-                <h2 class="hero-title fs-3 mb-1">Calificar evaluaciones</h2>
-                <p class="hero-subtitle mb-0">Listado de pruebas pendientes y listas para publicar.</p>
+                <h2 class="hero-title fs-3 mb-1">Evaluaciones Militares</h2>
+                <p class="hero-subtitle mb-0">Puntajes asignados a cada soldado por evaluación.</p>
             </div>
-            <span class="action-chip">12 pendientes</span>
+            <span class="action-chip">{{ total_evaluaciones }} evaluaciones</span>
+        </div>
+
+        {% for evaluacion in evaluaciones %}
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                <div>
+                    <strong class="fs-6">{{ evaluacion.titulo }}</strong>
+                    <span class="text-muted ms-2 small">
+                        {{ evaluacion.compania.nombre }} &middot; {{ evaluacion.fecha }} &middot; Máx: {{ evaluacion.puntaje_maximo }} pts
+                    </span>
+                </div>
+                {% if evaluacion.activa %}
+                <span class="status-pill status-ready">Activa</span>
+                {% else %}
+                <span class="status-pill status-pending">Cerrada</span>
+                {% endif %}
+            </div>
+
+            <div class="table-responsive">
+                <table class="table module-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Soldado</th>
+                            <th>Documento</th>
+                            <th>Grado</th>
+                            <th>Puntaje</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in evaluacion.asignaciones.all %}
+                        <tr>
+                            <td>{{ a.soldado.get_full_name }}</td>
+                            <td>{{ a.soldado.perfil.documento }}</td>
+                            <td>{{ a.soldado.perfil.grado|default:"—" }}</td>
+                            <td>
+                                <strong>{{ a.puntaje_actual }}</strong>
+                                <span class="text-muted small"> / {{ evaluacion.puntaje_maximo }}</span>
+                            </td>
+                            <td>
+                                {% if a.completada %}
+                                <span class="status-pill status-ready">Completada</span>
+                                {% else %}
+                                <span class="status-pill status-pending">Pendiente</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">
+                                Sin soldados asignados a esta evaluación.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-muted py-4">No tienes evaluaciones militares registradas.</p>
+        {% endfor %}
+
+        <hr class="my-4">
+
+        <!-- ── Calificaciones de Curso ── -->
+        <div class="module-header">
+            <div>
+                <h2 class="hero-title fs-3 mb-1">Calificaciones de Curso</h2>
+                <p class="hero-subtitle mb-0">Notas registradas en los cursos que dictas.</p>
+            </div>
+            <span class="action-chip">{{ total_calificaciones }} registros</span>
         </div>
 
         <div class="table-responsive">
             <table class="table module-table align-middle">
                 <thead>
                     <tr>
-                        <th>Evaluación</th>
+                        <th>Soldado</th>
+                        <th>Grado</th>
                         <th>Curso</th>
+                        <th>Nota</th>
+                        <th>Observaciones</th>
                         <th>Fecha</th>
-                        <th>Estado</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for evaluacion in evaluaciones %}
+                    {% for cal in calificaciones %}
                     <tr>
-                        <td>{{ evaluacion.titulo }}</td>
-                        <td>{{ evaluacion.curso.nombre }}</td>
-                        <td>{{ evaluacion.fecha }}</td>
-                        <td><span class="status-pill status-progress">{{ evaluacion.porcentaje }}%</span></td>
+                        <td>{{ cal.estudiante.get_full_name }}</td>
+                        <td>{{ cal.estudiante.perfil.grado|default:"—" }}</td>
+                        <td>{{ cal.curso.nombre }}</td>
+                        <td><strong>{{ cal.nota }}</strong></td>
+                        <td class="text-muted small">{{ cal.observaciones|default:"—" }}</td>
+                        <td class="text-muted small">{{ cal.creado_en|date:"d/m/Y" }}</td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm"
+                                    onclick="editarCalificacion('{{ cal.id }}','{{ cal.curso.id }}','{{ cal.estudiante.id }}','{{ cal.nota }}','{{ cal.observaciones|default:'' }}')">
+                                Editar
+                            </button>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="text-center">No hay evaluaciones registradas para tus cursos.</td>
+                        <td colspan="7" class="text-center text-muted py-3">
+                            No hay calificaciones registradas. Usa el botón <strong>Nueva Calificación</strong> para agregar.
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
     </div>
 </div>
+
+<script>
+(function () {
+    // Cargar soldados inscritos al cambiar el curso seleccionado
+    const selCurso = document.getElementById("sel-curso");
+    const selEst   = document.getElementById("sel-estudiante");
+
+    if (selCurso) {
+        selCurso.addEventListener("change", function () {
+            const cursoId = this.value;
+            selEst.innerHTML = '<option value="">Cargando...</option>';
+            if (!cursoId) {
+                selEst.innerHTML = '<option value="">— Elige un curso primero —</option>';
+                return;
+            }
+            fetch("/instructor/listar-inscritos/?curso_id=" + cursoId, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.soldados && data.soldados.length > 0) {
+                    selEst.innerHTML = '<option value="">— Selecciona un soldado —</option>' +
+                        data.soldados.map(s =>
+                            `<option value="${s.id}">${s.grado ? s.grado + " " : ""}${s.nombre}</option>`
+                        ).join("");
+                } else {
+                    selEst.innerHTML = '<option value="">Sin soldados inscritos</option>';
+                }
+            })
+            .catch(() => {
+                selEst.innerHTML = '<option value="">Error cargando soldados</option>';
+            });
+        });
+    }
+
+    window.editarCalificacion = function(calId, cursoId, estId, nota, obs) {
+        // Mostrar el formulario colapsado
+        const collapseEl = document.getElementById("form-calificacion");
+        if (collapseEl && !collapseEl.classList.contains("show")) {
+            const bsCollapse = new bootstrap.Collapse(collapseEl, { show: true });
+        }
+        // Rellenar los campos
+        document.getElementById("id-calificacion-id").value = calId;
+        document.getElementById("inp-nota").value = nota;
+        document.getElementById("inp-obs").value = obs;
+
+        const curso = document.getElementById("sel-curso");
+        curso.value = cursoId;
+        curso.dispatchEvent(new Event("change"));
+
+        // Seleccionar estudiante tras cargar el select (esperar el fetch)
+        setTimeout(function () {
+            const sel = document.getElementById("sel-estudiante");
+            if (sel) sel.value = estId;
+        }, 600);
+    };
+
+    window.limpiarFormCalificacion = function() {
+        document.getElementById("id-calificacion-id").value = "";
+        document.getElementById("inp-nota").value = "";
+        document.getElementById("inp-obs").value = "";
+        const curso = document.getElementById("sel-curso");
+        if (curso) { curso.value = ""; curso.dispatchEvent(new Event("change")); }
+    };
+})();
+</script>
